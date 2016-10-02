@@ -3,7 +3,7 @@ package controllers
 import (
 	"github.com/astaxie/beego"
 	"github.com/xianyouQ/go-dockermgr/utils"
-	"fmt"
+	//"fmt"
 )
 
 type MainController struct {
@@ -12,6 +12,13 @@ type MainController struct {
 var registryClient utils.RegistryClient
 
 func init() {
+	beego.SetStaticPath("/css","static/css")
+	beego.SetStaticPath("/img","static/img")
+	beego.SetStaticPath("/js","static/js")
+	beego.SetStaticPath("/vendor","static/vendor")
+	beego.SetStaticPath("/fonts","static/fonts")
+	beego.SetStaticPath("/tpl","views")
+	beego.SetStaticPath("/l10n","static/i10n")
 	var registryserver,registryauthserver utils.ServerInfo
 	registryPort,_ := beego.AppConfig.Int("registryserver.port")
 	registryAuthPort,_ := beego.AppConfig.Int("registryauthserver.port")
@@ -22,10 +29,5 @@ func init() {
 		TokenMap: map[string]string{},Username: beego.AppConfig.String("registryserver.username"),Password: beego.AppConfig.String("registryserver.password")}
 }
 func (c *MainController) Get() {
-	c.Data["Website"] = "beego.me"
-	c.Data["Email"] = "astaxie@gmail.com"
-	//result := registryClient.GetCatalog()
-	ipRange,_ := utils.NewCidrfromString("10.200.20.1/22")
-	c.Data["Test"] = string(fmt.Sprint(ipRange.IpList()))
-	c.TplName = "index.tpl"
+	c.TplName = "index.html"
 }

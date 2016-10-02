@@ -1,5 +1,9 @@
 package utils
 
+
+/*
+deprecated,use github.com/heroku/docker-registry-client instead
+*/
 import (
     "net/http"
     "io/ioutil"
