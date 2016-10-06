@@ -98,11 +98,27 @@ func AddCidr(net string,start string,end string) error {
 }
 
 
-func PreRequestIp() {
-
+func RequestIp(service Service,cidr Cidr,num int) ([]Ip,error){
+    var IpList []Ip
+    ip := Ip{}
+    o := orm.NewOrm()
+    _:=o.Begin()
+    qnum,err := o.QueryTable(ip).Filter("BelongNet__id",cidr.Id).Filter("Status",IpUnUsed).Limit(num).Update(orm.Params{
+        "Status":IpAllocated
+    })
+    if err != nil {
+        _ := o.Rollback()
+        return IpList,err
+    }
+    if qnum < num {
+        _ := o.Rollback()
+        return IpList,errors.New("No enough ip")
+    }
+    o.Commit()
+    return IpList,nil
 }
 
-func PostRequestIp() {
+func RecycleIp (IpList []Ip) error {
     
 }
 

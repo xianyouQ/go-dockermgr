@@ -17,6 +17,10 @@ type Service struct {
     MarathonConf string `orm:"type(text)"`
 }
 
+func init() {
+    orm.RegisterModel(new(Service))
+}
+
 func AddService(serivcename string) error {
 
 }

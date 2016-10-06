@@ -22,6 +22,9 @@ type RegistryConf struct {
     Password string `orm:"size(20)"`
 }
 
+func init() {
+    orm.RegisterModel(new(SerMgrConfvice),new(RegistryConf))
+}
 
 func (self *MgrConf) SetMarathonConf(conf string) error {
     if conf == self.MarathonConfTemplate {

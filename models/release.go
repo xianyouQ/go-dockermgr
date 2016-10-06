@@ -3,6 +3,7 @@ package models
 import (
     "github.com/astaxie/beego"
     "github.com/astaxie/beego/orm"
+    . "github.com/beego/admin/src/models"
     "time"
 )
 const (
@@ -21,4 +22,8 @@ type ReleaseTask struct {
     OperationUser *User `orm:"rel(fk)"`
     ReviewUser *User `orm:"rel(fk)"`
     TaskStatus int
+}
+
+func init() {
+    orm.RegisterModel(new(ReleaseTask))
 }
