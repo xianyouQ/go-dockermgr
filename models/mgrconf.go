@@ -3,7 +3,7 @@ package models
 import (
     "github.com/astaxie/beego"
     "github.com/astaxie/beego/orm"
-    "github.com/gambol99/go-marathon/marathon"
+    "github.com/xianyouQ/go-dockermgr/utils"
     "time"
 )
 
@@ -30,8 +30,7 @@ func (self *MgrConf) SetMarathonConf(conf string) error {
     if conf == self.MarathonConfTemplate {
         return nil
     }
-    MarathonConf := &marathon.Application{}
-    err := json.Unmarshal([]byte(conf),&stb)
+    _,err := utils.CreateMarathonAppFromJson(conf)
     if err != nil {
         return err
     }
@@ -40,4 +39,5 @@ func (self *MgrConf) SetMarathonConf(conf string) error {
     if num,err := o.Update(self,"MarathonConfTemplate"); err !=nil {
          return  err
      }
+     return nil
 } 

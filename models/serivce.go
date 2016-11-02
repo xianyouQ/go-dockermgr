@@ -3,7 +3,6 @@ package models
 import (
     "github.com/astaxie/beego"
     "github.com/astaxie/beego/orm"
-    "github.com/gambol99/go-marathon/marathon"
     "encoding/json"
 )
 
@@ -34,8 +33,7 @@ func (self *Service) SetMarathonConf(conf string) error {
     if conf == self.MarathonConf {
         return nil
     }
-    MarathonConf := &marathon.Application{}
-    err := json.Unmarshal([]byte(conf),&stb)
+    _,err := utils.CreateMarathonAppFromJson(conf)
     if err != nil {
         return err
     }
