@@ -1,17 +1,25 @@
 package models
 
 import (
-    "github.com/astaxie/beego"
+    //"github.com/astaxie/beego"
     "github.com/astaxie/beego/orm"
     "github.com/xianyouQ/go-dockermgr/utils"
     "time"
 )
 
-type MgrConf struct{
+type MgrConf struct {
     Id int `orm:"auto"`
     Version time.Time `orm:"auto_now"`
-    Registrys *[]RegistryConf `orm:"rel(m2m)"`
+    Registrys *RegistryConf `orm:"rel(fk)"`
     MarathonConfTemplate string `orm:"type(text)"`
+    MarathonSerConf MarathonSerConf `orm:"rel(fk)"`
+}
+
+type MarathonSerConf struct {
+    Server string `orm:"size(50)"`
+    HTTPBasicAuthUser string `orm:"size(50)"`
+    HTTPBasicPassword string `orm:"size(50)"`
+    PollingWaitTime int `orm:"size(50)"`
 }
 
 type RegistryConf struct {
@@ -23,7 +31,7 @@ type RegistryConf struct {
 }
 
 func init() {
-    orm.RegisterModel(new(SerMgrConfvice),new(RegistryConf))
+    orm.RegisterModel(new(MgrConf),new(RegistryConf))
 }
 
 func (self *MgrConf) SetMarathonConf(conf string) error {
@@ -41,3 +49,5 @@ func (self *MgrConf) SetMarathonConf(conf string) error {
      }
      return nil
 } 
+
+//func (slf *RegistryConf) 

@@ -8,7 +8,6 @@ import (
     "net/http"
     "crypto/tls"
     "time"
-	"github.com/rogpeppe/godef/vendor/9fans.net/go/plan9/client"
 )
 
 type MarathonClient struct {
@@ -52,17 +51,11 @@ func CreateMarathonAppFromJson(conf string) (*marathon.Application,error) {
     return MarathonApp,nil
 }
 
-func (slf *MarathonClient) ListApplications() error {
-    applications,err := slf.Client.Applications()
+func (slf *MarathonClient) ListApplicationsFromGroup(name string) ([]*marathon.Application,error) {
+    var Apps []*marathon.Application
+    group,err := slf.Client.Group(name)
     if err != nil {
-        return err
+        return Apps,err
     }
-    //for _, application := range applications.Apps {
-    //
-    //}
-
-}
-
-func (slf *MarathonClient) ListGroups() {
-
+    return group.Apps,nil
 }

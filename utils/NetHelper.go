@@ -74,6 +74,12 @@ func (self IpHelper)GetMacAddr(base string) string {
     result := fmt.Sprintf("%s:%x:%x:%x",base,self.Ip[1],self.Ip[2],self.Ip[3])
     return result
 }
+
+func GetMacAddr( Ip net.IP,base string) string {
+    Ip = Ip.To4()
+    result := fmt.Sprintf("%s:%x:%x:%x",base,Ip[1],Ip[2],Ip[3])
+    return result
+}
 //
 func NewCidrfromString(netstr string) (CidrHelper,error) {
     var resultCidr CidrHelper
