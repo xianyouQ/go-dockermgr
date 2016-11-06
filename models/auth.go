@@ -1,14 +1,9 @@
 package models
 
 import (
-    //"github.com/astaxie/beego"
-    //"github.com/astaxie/beego/orm"
+    "github.com/beego/admin/src/models"
 )
 
-type User struct {
-    UserName string `orm:"size(30)"`
-}
-
-type Permisson struct {
-    
+func init() {
+    //log.
 }

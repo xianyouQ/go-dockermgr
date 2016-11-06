@@ -63,6 +63,10 @@
       "YOUR_STUFF": "Your Stuff",
       "PROFILE" : "Profile",
       "DOCUMENTS" : "Documents"
+    },
+    "manager_nav" : {
+      "Manager_TITLE": "ManageMent",
+      "USER" : "USERS"
     }
   },
   "MILESTONE" : "Milestone",

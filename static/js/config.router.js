@@ -529,6 +529,21 @@ angular.module('app')
                     url: '/playlist/{fold}',
                     templateUrl: 'tpl/music.playlist.html'
                 })
+                .state('management', {
+                  url: '/management',
+                  abstract: true,
+                  templateUrl: 'tpl/layout.html'
+              })
+                .state('management.users', {
+                  url: '/users',
+                  templateUrl: 'tpl/management_users.html',
+                  resolve: {
+                      deps: ['uiLoad',
+                        function( uiLoad ){
+                          return uiLoad.load( ['js/app/contact/contact.js'] );
+                      }]
+                  }
+              })
       }
     ]
   );

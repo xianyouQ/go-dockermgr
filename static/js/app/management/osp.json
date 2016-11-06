@@ -1,0 +1,10 @@
+{
+  "subbus":[
+    {
+      "name":"osp-kvm"
+    },
+    {
+        "name":"osp-test"
+    }
+  ]
+}

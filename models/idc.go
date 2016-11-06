@@ -7,5 +7,5 @@ import (
 type IdcConf struct {
     Id int `orm:"auto"`
     MgrConf *MgrConf `orm:ref(fk)`
-    Cidrs []*Cidr `orm:ref()`
+    Cidrs []*Cidr `orm:ref(m2m)`
 }

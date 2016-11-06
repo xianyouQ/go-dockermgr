@@ -4,7 +4,7 @@ app.controller('ContactCtrl', ['$scope', '$http', '$filter', function($scope, $h
     $scope.item = $filter('orderBy')($scope.items, 'first')[0];
     $scope.item.selected = true;
   });
-
+ 
   $scope.filter = '';
   $scope.groups = [
     {name: 'Coworkers'}, 
