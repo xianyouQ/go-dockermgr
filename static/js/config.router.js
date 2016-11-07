@@ -540,7 +540,7 @@ angular.module('app')
                   resolve: {
                       deps: ['uiLoad',
                         function( uiLoad ){
-                          return uiLoad.load( ['js/app/contact/contact.js'] );
+                          return uiLoad.load( ['js/app/management/users.js'] );
                       }]
                   }
               })

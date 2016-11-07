@@ -71,6 +71,12 @@
   },
   "MILESTONE" : "Milestone",
   "RELEASE" : "Release"
+},
+"content" : {
+  "management" : {
+    "no_mainbus" : "没有主业务",
+    "no_subbus" : "没有从业务",
+    "no_people" : "没有相应的人员"
+  }
 }
-
 }

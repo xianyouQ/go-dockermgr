@@ -5,7 +5,7 @@
   app.settings.container = false;
   app.hideAside = false;
   app.hideFooter = true;
-  " ng-controller="ContactCtrl">
+  " ng-controller="ManageMentUsersCtrl">
 
 
 
@@ -16,11 +16,11 @@
         <div class="cell scrollable hover">
           <div class="cell-inner">
             <div class="list-group no-radius no-border no-bg m-b-none">
-              <a ng-repeat="item in groups"  class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectGroup(item)">
+              <a ng-repeat="item in mainbuses|orderBy:'name'"  class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectMainBus(item)">
                 <span class="block m-l-n" ng-class="{'m-n': item.selected }">{{ item.name ? item.name : 'Untitled' }}</span>
               </a>
             </div>
-            <div class="text-center pos-abt w-full" style="top:50%;" ng-hide="(items | filter:{group:filter} | filter:query).length">No Contacts</div>
+            <div class="text-center pos-abt w-full" style="top:50%;" ng-hide="mainbuses.length" translate="content.management.no_mainbus">No MainBuses</div>
           </div>
         </div>
       </div>
@@ -35,10 +35,11 @@
         <div class="cell scrollable hover">
           <div class="cell-inner">
             <div class="list-group no-radius no-border no-bg m-b-none">
-              <a ng-repeat="item in groups" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectGroup(item)">
+              <a ng-repeat="item in subbuses| filter:{mainbus:mainfilter}| orderBy:'name'" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectSubBus(item)">
                 <span class="block m-l-n" ng-class="{'m-n': item.selected }">{{ item.name ? item.name : 'Untitled' }}</span>
+              </a>
             </div>
-            <div class="text-center pos-abt w-full" style="top:50%;" ng-hide="(items | filter:{group:filter} | filter:query).length">No Contacts</div>
+            <div class="text-center pos-abt w-full" style="top:50%;" ng-hide="(subbuses | filter:{mainbus:mainfilter}).length" translate="content.management.no_subbus">No SubBus</div>
           </div>
         </div>
       </div>
@@ -53,20 +54,19 @@
           <div class="cell-inner">
             <div class="m-t-n-xxs">
               <div class="list-group list-group-lg no-radius no-border no-bg m-b-none">
-                <a ng-repeat="item in items | filter:{group:filter} | filter:query | orderBy:'first'" class="list-group-item m-l" ng-class="{'select m-l-none': item.selected }" ng-click="selectItem(item)">
+                <a ng-repeat="item in people | orderBy:'name'" class="list-group-item m-l" ng-class="{'select m-l-none': item.selected }" ng-click="selectPeople(item)">
                   <span class="block text-ellipsis m-l-n text-md" ng-class="{'m-l-none': item.selected }">
-                    {{ item.first }} <strong>{{ item.last }}</strong>
-                    <span ng-hide="item.first || item.last">No Name</span>
+                    {{ item.name }}
                   </span>
                 </a>
               </div>
             </div>
-            <div class="text-center pos-abt w-full" style="top:50%;" ng-hide="(items | filter:{group:filter} | filter:query).length">No Contacts</div>
+            <div class="text-center pos-abt w-full" style="top:50%;" ng-hide="people.length" translate="content.management.no_people">No People</div>
           </div>
         </div>
       </div>
       <div class="wrapper b-t text-center">
-        <a href class="btn btn-sm btn-default btn-addon" ng-click="createItem()"><i class="fa fa-plus fa-fw m-r-xs"></i> New Contact</a>
+        <a href class="btn btn-sm btn-default btn-addon" ng-click="createPerson()"><i class="fa fa-plus fa-fw m-r-xs"></i> New Contact</a>
       </div>
     </div>
   </div>

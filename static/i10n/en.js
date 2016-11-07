@@ -71,6 +71,13 @@
   },
   "MILESTONE" : "Milestone",
   "RELEASE" : "Release"
+},
+"content" : {
+  "management" : {
+    "no_mainbus" : "No MainBus",
+    "no_subbus" : "No SubBus",
+    "no_people" : "no people"
+  }
 }
 
 }
