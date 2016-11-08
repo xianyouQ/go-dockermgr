@@ -40,6 +40,7 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter', function($s
   $scope.people = [] ;
   $scope.mainfilter = '';
   $scope.subfilter = '';
+  
 
   $http.get('js/app/management/bussiness.json').then(function (resp) {
     $scope.subbuses = resp.data.subbuses;
