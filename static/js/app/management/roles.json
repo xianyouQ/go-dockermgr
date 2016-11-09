@@ -1,4 +1,9 @@
 {
+"names":[
+  {"name":"developer"},
+  {"name":"ops"},
+  {"name":"qa"}
+],
 "roles":{
   "developer":{
       "name":"developer",

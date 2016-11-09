@@ -1,4 +1,4 @@
-app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter', function($scope, $http, $filter) {
+app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',function($scope, $http, $filter,$modal) {
 
   function isObjectValueEqual(a, b) {
     // Of course, we can do it use for in 
@@ -36,13 +36,30 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter', function($s
     }
     return false;
  }
+
+ Array.prototype.remove=function(obj){ 
+  for(var i =0;i <this.length;i++){ 
+    var temp = this[i]; 
+    if(!isNaN(obj)){ 
+      temp=i; 
+    } 
+    if(isObjectValueEqual(temp,obj)){ 
+      for(var j = i;j <this.length;j++){ 
+        this[j]=this[j+1]; 
+        } 
+      this.length = this.length-1; 
+      } 
+  } 
+  } 
   $scope.mainbuses = [] ;
   $scope.people = [] ;
   $scope.mainfilter = '';
   $scope.subfilter = '';
+  $scope.rolenames = [];
 
   $http.get('js/app/management/roles.json').then(function (resp) {
     $scope.roles = resp.data.roles;
+    $scope.rolenames = resp.data.names;
   });
 
   $http.get('js/app/management/bussiness.json').then(function (resp) {
@@ -58,6 +75,9 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter', function($s
   });
     $http.get('js/app/management/people.json').then(function(resp) {
       angular.forEach(resp.data.people,function(item) {
+        if ($scope.roles.length == 0 ) {
+          return ;
+        }
         item.docker = $scope.roles[item.role].docker;
         item.releaseNew = $scope.roles[item.role].releaseNew;
         item.releaseVerify = $scope.roles[item.role].releaseVerify;
@@ -84,10 +104,58 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter', function($s
     $scope.subfilter = item.name;
 
   };
+  $scope.deleteUser = function(selectPerson) {
+    //$http()
+    console.log(selectPerson);
+    $scope.people.remove(selectPerson);
+  };
+  $scope.addUser = function() {
+      var modalInstance = $modal.open({
+        templateUrl: 'addUserModalContent.html',
+        controller: 'addUserModalInstanceCtrl',
+        size: 'lg',
+        resolve: {
+          rolenames: function () {
+            return $scope.rolenames;
+          }
+        }
+      });
 
+      modalInstance.result.then(function (newUser) {
+        console.log($scope.roles);
+        console.log(newUser);
+        newUser.docker = $scope.roles[newUser.role].docker;
+        newUser.releaseNew = $scope.roles[newUser.role].releaseNew;
+        newUser.releaseVerify = $scope.roles[newUser.role].releaseVerify;
+        newUser.releaseOperation = $scope.roles[newUser.role].releaseOperation;
+        $scope.people.push(newUser);
+      }, function () {
+        //log error
+      });
+  };
+  $scope.attachUser = function() {
 
+  };
   $scope.returnMain = function() {
     $scope.mainfilter = '';
     $scope.subfilter = '';
   }
 }]);
+
+  app.controller('addUserModalInstanceCtrl', ['$scope', '$modalInstance','rolenames',function($scope, $modalInstance,$rolenames) {
+    $scope.rolenames = $rolenames
+    $scope.newUser = {"name":"","role":""};
+    $scope.ok = function () {
+      if ($scope.newUser.name == "" || $scope.newUser.role == ""){
+        
+      }
+      else {
+      $modalInstance.close($scope.newUser);
+      }
+    };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }])
+  ; 

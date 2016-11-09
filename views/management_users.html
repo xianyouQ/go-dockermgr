@@ -7,7 +7,9 @@
   app.hideFooter = true;
   " ng-controller="ManageMentUsersCtrl">
 
-
+  <script type="text/ng-template" id="addUserModalContent.html">
+    <div ng-include="'tpl/add_user_modal.html'"></div>
+  </script>
 
     <!-- column -->
   <div class="col w b-r" ng-hide="mainfilter.length">
@@ -53,18 +55,25 @@
   <!-- /column -->
 
 
+
+
   <!-- column -->
   <div class="col bg-white-only" ng-show="subfilter.length">
     <div class="vbox">
+      <div class="wrapper-sm b-b">
+            <div class="m-t-n-xxs m-b-n-xxs m-l-xs">
+              <a class="btn btn-xs btn-default" ng-click="addUser()">Add</a>
+              <a class="btn btn-xs btn-default" ng-click="attachUser()">Attach</a>
+            </div>
+      </div>
       <div class="row-row">
         <div class="cell">
           <div class="cell-inner">
-
             <div class="wrapper-lg">
               <div class="panel-body b-b b-light">
                  Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r"/>
               </div>
-              <table class="table m-b-none" ui-jq="footable" data-filter="#filter" data-page-size="20">
+              <table class="table m-b-none" ui-jq="footable" ui-refresh="people" data-filter="#filter" data-page-size="5">
                 <thead>
                   <tr>
                       <th>
@@ -84,7 +93,10 @@
                       </th>
                       <th>
                           Release Operation
-                      </th> 
+                      </th>
+                      <th>
+                        delete
+                      </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -95,9 +107,10 @@
                       <td><i class="glyphicon" ng-class="{true:'glyphicon-ok',false:'glyphicon-remove'}[person.releaseNew]"></i></td>
                       <td><i class="glyphicon" ng-class="{true:'glyphicon-ok',false:'glyphicon-remove'}[person.releaseVerify]"></i></td>
                       <td><i class="glyphicon" ng-class="{true:'glyphicon-ok',false:'glyphicon-remove'}[person.releaseOperation]"></i></td>
+                      <td><button class="btn m-b-xs btn-sm btn-danger" ng-click="deleteUser(person)"><i class="fa fa-trash-o"></i></button></td>
                   </tr>
                 </tbody>
-                <t foot class="hide-if-no-paging">
+                <tfoot class="hide-if-no-paging">
                   <tr>
                       <td colspan="5" class="text-center">
                           <ul class="pagination"></ul>
@@ -105,19 +118,12 @@
                   </tr>
                 </tfoot>
               </table>
-              
             </div>
           </div>
         </div>
       </div>
-        <div class="m-t-n-xxs m-b-n-xxs m-l-xs">
-          <a class="btn btn-xs btn-default pull-right" ng-hide="!item" ng-click="deleteUser(item)"><i class="fa fa-times"></i></a>
-          <a class="btn btn-xs btn-default" ng-hide="item.editing" ng-click="addUser(item)">Add</a>
-          <a class="btn btn-xs btn-default" ng-hide="item.editing" ng-click="editUser(item)">Edit</a>
-          <a class="btn btn-xs btn-default" ng-show="item.editing" ng-click="doneEditing(item)">Done</a>
-        </div>
+  <!-- /column -->
     </div>
   </div>
-  <!-- /column -->
 </div>
 <!-- /hbox layout -->
