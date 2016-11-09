@@ -10,7 +10,7 @@
 
 
     <!-- column -->
-  <div class="col w b-r">
+  <div class="col w b-r" ng-hide="mainfilter.length">
     <div class="vbox">
       <div class="row-row">
         <div class="cell scrollable hover">
@@ -29,8 +29,13 @@
   <!-- /column -->
  
   <!-- column -->
-  <div class="col w b-r">
+  <div class="col w b-r" ng-show="mainfilter.length">
     <div class="vbox">
+      <div class="wrapper-sm b-b">
+        <div class="m-t-n-xxs m-b-n-xxs m-l-xs">
+          <a class="btn btn-xs btn-default" ng-hide="item.editing" ng-click="returnMain()">返回</a>
+        </div>
+      </div>
       <div class="row-row">
         <div class="cell scrollable hover">
           <div class="cell-inner">
@@ -49,35 +54,57 @@
 
 
   <!-- column -->
-  <div class="col bg-white-only">
+  <div class="col bg-white-only" ng-show="subfilter.length">
     <div class="vbox">
       <div class="row-row">
         <div class="cell">
           <div class="cell-inner">
 
             <div class="wrapper-lg">
-                    <table ui-jq="dataTable" ui-options="{
-                        sAjaxSource: 'vendor/jquery/datatables/datatable.json',
-                        aoColumns: [
-                          { mData: 'engine' },
-                          { mData: 'browser' },
-                          { mData: 'platform' },
-                          { mData: 'version' },
-                          { mData: 'grade' }
-                        ]
-                      }" class="table table-striped m-b-none">
-                      <thead>
-                        <tr>
-                          <th  style="width:20%">Rendering engine</th>
-                          <th  style="width:25%">Browser</th>
-                          <th  style="width:25%">Platform(s)</th>
-                          <th  style="width:15%">Engine version</th>
-                          <th  style="width:15%">CSS grade</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                      </tbody>
-                    </table>
+              <div class="panel-body b-b b-light">
+                 Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r"/>
+              </div>
+              <table class="table m-b-none" ui-jq="footable" data-filter="#filter" data-page-size="20">
+                <thead>
+                  <tr>
+                      <th>
+                          User Name
+                      </th>
+                      <th>
+                          Role
+                      </th>
+                      <th>
+                          Container Manager
+                      </th>
+                      <th>
+                          Release New
+                      </th>
+                      <th>
+                          Release verify
+                      </th>
+                      <th>
+                          Release Operation
+                      </th> 
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr ng-repeat="person in people">
+                      <td>{{person.name}}</td>
+                      <td>{{person.role}}</td>
+                      <td><i class="glyphicon" ng-class="{true:'glyphicon-ok',false:'glyphicon-remove'}[person.docker]"></i></td>
+                      <td><i class="glyphicon" ng-class="{true:'glyphicon-ok',false:'glyphicon-remove'}[person.releaseNew]"></i></td>
+                      <td><i class="glyphicon" ng-class="{true:'glyphicon-ok',false:'glyphicon-remove'}[person.releaseVerify]"></i></td>
+                      <td><i class="glyphicon" ng-class="{true:'glyphicon-ok',false:'glyphicon-remove'}[person.releaseOperation]"></i></td>
+                  </tr>
+                </tbody>
+                <t foot class="hide-if-no-paging">
+                  <tr>
+                      <td colspan="5" class="text-center">
+                          <ul class="pagination"></ul>
+                      </td>
+                  </tr>
+                </tfoot>
+              </table>
               
             </div>
           </div>

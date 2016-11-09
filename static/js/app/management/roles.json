@@ -1,0 +1,25 @@
+{
+"roles":{
+  "developer":{
+      "name":"developer",
+      "docker":false,
+      "releaseNew":true,
+      "releaseVerify":false,
+      "releaseOperation":false
+    },
+    "qa":{
+      "name":"qa",
+      "docker":false,
+      "releaseNew":true,
+      "releaseVerify":true,
+      "releaseOperation":false
+    },
+    "ops":{
+      "name":"ops",
+      "docker":true,
+      "releaseNew":true,
+      "releaseVerify":true,
+      "releaseOperation":true
+    }
+  }
+}

@@ -161,7 +161,13 @@ angular.module('app')
               })
               .state('app.table.footable', {
                   url: '/footable',
-                  templateUrl: 'tpl/table_footable.html'
+                  templateUrl: 'tpl/table_footable.html',
+                    resolve: {
+                      deps: ['uiLoad',
+                        function( uiLoad ){
+                          return uiLoad.load( ['js/app/management/users.js'] );
+                      }]
+                  }
               })
               .state('app.table.grid', {
                   url: '/grid',

@@ -40,7 +40,10 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter', function($s
   $scope.people = [] ;
   $scope.mainfilter = '';
   $scope.subfilter = '';
-  
+
+  $http.get('js/app/management/roles.json').then(function (resp) {
+    $scope.roles = resp.data.roles;
+  });
 
   $http.get('js/app/management/bussiness.json').then(function (resp) {
     $scope.subbuses = resp.data.subbuses;
@@ -52,9 +55,17 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter', function($s
     })
     $scope.mainbus = $filter('orderBy')($scope.mainbuses, 'name')[0];
     $scope.mainbus.selected = true;
-    $scope.mainfilter = $scope.mainbus.name;
   });
-
+    $http.get('js/app/management/people.json').then(function(resp) {
+      angular.forEach(resp.data.people,function(item) {
+        item.docker = $scope.roles[item.role].docker;
+        item.releaseNew = $scope.roles[item.role].releaseNew;
+        item.releaseVerify = $scope.roles[item.role].releaseVerify;
+        item.releaseOperation = $scope.roles[item.role].releaseOperation;
+        $scope.people.push(item)
+      });
+       $scope.person = $filter('orderBy')($scope.people, 'name')[0];
+    })
   $scope.selectMainBus = function(item){    
     angular.forEach($scope.mainbuses, function(item) {
       item.selected = false;
@@ -62,7 +73,6 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter', function($s
     $scope.mainbus = item;
     $scope.mainbus.selected = true;
     $scope.mainfilter = item.name;
-    console.log(item.name)
   };
 
   $scope.selectSubBus = function(item){    
@@ -72,20 +82,12 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter', function($s
     $scope.subbus = item;
     $scope.subbus.selected = true;
     $scope.subfilter = item.name;
-    $http.get('js/app/management/people.json').then(function(resp) {
-      $scope.people = resp.data.people ;
-      $scope.person = $filter('orderBy')($scope.people, 'name')[0];
-      $scope.person.selected = true ;
-    })
-  };
-  $scope.selectPeople = function(item) {
-    angular.forEach($scope.people,function(item) {
-      item.selected = false;
-    });
-    $scope.person = item;
-    $scope.person.selected = true;
-  }
-  $scope.createPerson = function() {
 
+  };
+
+
+  $scope.returnMain = function() {
+    $scope.mainfilter = '';
+    $scope.subfilter = '';
   }
 }]);
