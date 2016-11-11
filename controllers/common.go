@@ -2,15 +2,16 @@ package controllers
 
 import (
 	"github.com/astaxie/beego"
-	//"fmt"
+	"github.com/xianyouQ/go-dockermgr/auth"
 )
 
-type MainController struct {
+type CommonController struct {
 	beego.Controller
 }
 
 
 func init() {
+	
 	beego.SetStaticPath("/css","static/css")
 	beego.SetStaticPath("/img","static/img")
 	beego.SetStaticPath("/js","static/js")
@@ -18,7 +19,7 @@ func init() {
 	beego.SetStaticPath("/fonts","static/fonts")
 	beego.SetStaticPath("/tpl","views")
 	beego.SetStaticPath("/l10n","static/i10n")
-
+	auth.AccessRegister()
 }
 func (c *MainController) Get() {
 	c.TplName = "index.html"

@@ -12,3 +12,5 @@ func Json2Map(jsonstr []byte) (s map[string]interface{}, err error) {
     }
     return result,nil
 }
+
+
