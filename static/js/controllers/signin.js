@@ -8,10 +8,10 @@ app.controller('SigninFormController', ['$scope', '$http', '$state', function($s
     $scope.login = function() {
       $scope.authError = null;
       // Try to login
-      $http.post('api/login', {email: $scope.user.email, password: $scope.user.password})
+      $http.post('api/auth/login', {name: $scope.user.name, password: $scope.user.password})
       .then(function(response) {
         if ( !response.data.user ) {
-          $scope.authError = 'Email or Password not right';
+          $scope.authError = 'UserName or Password not right';
         }else{
           $state.go('app.dashboard-v1');
         }

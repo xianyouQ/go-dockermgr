@@ -18,7 +18,6 @@ type Node struct {
 	Pid    int64   `form:"Pid"  valid:"Required"`
 	Remark string  `orm:"null;size(200)" form:"Remark" valid:"MaxSize(200)"`
 	Status int     `orm:"default(2)" form:"Status" valid:"Range(1,2)"`
-	Group  *Group  `orm:"rel(fk)"`
 	Role   []*Role `orm:"rel(m2m)"`
 }
 
@@ -54,7 +53,7 @@ func GetNodelist(page int64, page_size int64, sort string) (nodes []orm.Params, 
 	} else {
 		offset = (page - 1) * page_size
 	}
-	qs.Limit(page_size, offset).OrderBy(sort).Values(&nodes, "Id", "Title", "Name", "Status", "Pid", "Remark", "Group__id")
+	qs.Limit(page_size, offset).OrderBy(sort).Values(&nodes, "Id", "Title", "Name", "Status", "Pid", "Remark")
 	count, _ = qs.Count()
 	return nodes, count
 }
@@ -82,7 +81,6 @@ func AddNode(n *Node) (int64, error) {
 	node.Pid = n.Pid
 	node.Remark = n.Remark
 	node.Status = n.Status
-	node.Group = n.Group
 
 	id, err := o.Insert(node)
 	return id, err
@@ -121,12 +119,8 @@ func DelNodeById(Id int64) (int64, error) {
 	return status, err
 }
 
-func GetNodelistByGroupid(Groupid int64) (nodes []orm.Params, count int64) {
-	o := orm.NewOrm()
-	node := new(Node)
-	count, _ = o.QueryTable(node).Filter("Group", Groupid).RelatedSel().Values(&nodes)
-	return nodes, count
-}
+
+
 
 func GetNodeTree(pid int64, level int64) ([]orm.Params, error) {
 	o := orm.NewOrm()

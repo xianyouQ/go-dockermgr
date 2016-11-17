@@ -110,27 +110,6 @@ func GetNodelistByRoleId(Id int64) (nodes []orm.Params, count int64) {
 	return nodes, count
 }
 
-func DelGroupNode(roleid int64, groupid int64) error {
-	var nodes []*Node
-	var node Node
-	role := Role{Id: roleid}
-	o := orm.NewOrm()
-	num, err := o.QueryTable(node).Filter("Group", groupid).RelatedSel().All(&nodes)
-	if err != nil {
-		return err
-	}
-	if num < 1 {
-		return nil
-	}
-	for _, n := range nodes {
-		m2m := o.QueryM2M(n, "Role")
-		_, err1 := m2m.Remove(&role)
-		if err1 != nil {
-			return err1
-		}
-	}
-	return nil
-}
 func AddRoleNode(roleid int64, nodeid int64) (int64, error) {
 	o := orm.NewOrm()
 	role := Role{Id: roleid}

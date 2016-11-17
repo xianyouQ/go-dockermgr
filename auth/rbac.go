@@ -16,14 +16,14 @@ import (
 func AccessRegister() {
 	var Check = func(ctx *context.Context) {
 		user_auth_type, _ := strconv.Atoi(beego.AppConfig.String("user_auth_type"))
-		rbac_auth_gateway := beego.AppConfig.String("rbac_auth_gateway")
 		var accesslist map[string]bool
 		if user_auth_type > 0 {
 			params := strings.Split(strings.ToLower(ctx.Request.RequestURI), "/")
 			if CheckAccess(params) {
 				uinfo := ctx.Input.Session("userinfo")
 				if uinfo == nil {
-					ctx.Redirect(302, rbac_auth_gateway)
+					ctx.Output.JSON(&map[string]interface{}{"status": false, "info": "未登录"}, true, false)
+					return
 				}
 				//admin用户不用认证权限
 				adminuser := beego.AppConfig.String("rbac_admin_user")

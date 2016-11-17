@@ -10,6 +10,11 @@ type CommonController struct {
 }
 
 
+func (this *CommonController) Rsp(status bool, str string) {
+	this.Data["json"] = &map[string]interface{}{"status": status, "info": str}
+	this.ServeJSON()
+}
+
 func init() {
 	
 	beego.SetStaticPath("/css","static/css")
@@ -20,7 +25,4 @@ func init() {
 	beego.SetStaticPath("/tpl","views")
 	beego.SetStaticPath("/l10n","static/i10n")
 	auth.AccessRegister()
-}
-func (c *MainController) Get() {
-	c.TplName = "index.html"
 }
