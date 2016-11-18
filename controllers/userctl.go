@@ -61,7 +61,7 @@ func (this *UserController) DelUser() {
 }
 
 //登录
-func (this *MainController) Login() {
+func (this *UserController) Login() {
 	username := this.GetString("username")
 	password := this.GetString("password")
 	user, err := auth.CheckLogin(username, password)
@@ -78,13 +78,13 @@ func (this *MainController) Login() {
 }
 
 //退出
-func (this *MainController) Logout() {
+func (this *UserController) Logout() {
 	this.DelSession("userinfo")
 	this.Rsp(true, "退出成功")
 }
 
 //修改密码
-func (this *MainController) Changepwd() {
+func (this *UserController) Changepwd() {
 	userinfo := this.GetSession("userinfo")
 	if userinfo == nil {
 		this.Rsp(false,"请先登录")

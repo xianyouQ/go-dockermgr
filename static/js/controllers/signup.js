@@ -7,10 +7,14 @@ app.controller('SignupFormController', ['$scope', '$http', '$state', function($s
     $scope.signup = function() {
       $scope.authError = null;
       // Try to create
-      $http.post('api/auth/signup', {name: $scope.user.name, password: $scope.user.password})
+      if ($scope.user.password !== $scope.user.password1) {
+        $scope.authError = "password not match";
+        return
+      }
+      $http.post('api/auth/user', {Username: $scope.user.name, Password: $scope.user.password,Repassword: $scope.user.password1})
       .then(function(response) {
         if ( !response.data.user ) {
-          $scope.authError = response;
+          $scope.authError = "new user fail";
         }else{
           $state.go('app.dashboard-v1');
         }

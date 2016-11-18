@@ -3,8 +3,8 @@
 /* Controllers */
 
 angular.module('app')
-  .controller('AppCtrl', ['$scope', '$translate', '$localStorage', '$window', 
-    function(              $scope,   $translate,   $localStorage,   $window ) {
+  .controller('AppCtrl', ['$scope', '$translate', '$localStorage', '$window', '$state','authService',
+    function($scope,   $translate,   $localStorage,   $window , $state,authService) {
       // add 'ie' classes to html
       var isIE = !!navigator.userAgent.match(/MSIE/i);
       isIE && angular.element($window.document.body).addClass('ie');
@@ -37,7 +37,13 @@ angular.module('app')
           container: false
         }
       }
-
+ 
+      $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {  
+       if( authService.isUrlAccessibleForUser(toState)===undefined)  {
+          $state.go('access.signup',{},{notify:false});
+          
+       }
+   });  
       // save settings to local storage
       if ( angular.isDefined($localStorage.settings) ) {
         $scope.app.settings = $localStorage.settings;

@@ -17,10 +17,8 @@ type User struct {
 	Username      string    `orm:"unique;size(32)" form:"Username"  valid:"Required;MaxSize(20);MinSize(6)"`
 	Password      string    `orm:"size(32)" form:"Password" valid:"Required;MaxSize(20);MinSize(6)"`
 	Repassword    string    `orm:"-" form:"Repassword" valid:"Required"`
-	Nickname      string    `orm:"unique;size(32)" form:"Nickname" valid:"Required;MaxSize(20);MinSize(2)"`
+	Nickname      string    `orm:"unique;size(32)" form:"Nickname" valid:"MaxSize(20);MinSize(2)"`
 	Email         string    `orm:"size(32)" form:"Email" valid:"Email"`
-	Remark        string    `orm:"null;size(200)" form:"Remark" valid:"MaxSize(200)"`
-	Status        int       `orm:"default(2)" form:"Status" valid:"Range(1,2)"`
 	Lastlogintime time.Time `orm:"null;type(datetime)" form:"-"`
 	Createtime    time.Time `orm:"type(datetime);auto_now_add" `
 	Role          []*Role   `orm:"rel(m2m)"`
@@ -82,8 +80,6 @@ func AddUser(u *User) (int64, error) {
 	user.Password = Strtomd5(u.Password)
 	user.Nickname = u.Nickname
 	user.Email = u.Email
-	user.Remark = u.Remark
-	user.Status = u.Status
 
 	id, err := o.Insert(user)
 	return id, err
@@ -105,15 +101,11 @@ func UpdateUser(u *User) (int64, error) {
 	if len(u.Email) > 0 {
 		user["Email"] = u.Email
 	}
-	if len(u.Remark) > 0 {
-		user["Remark"] = u.Remark
-	}
+
 	if len(u.Password) > 0 {
 		user["Password"] = Strtomd5(u.Password)
 	}
-	if u.Status != 0 {
-		user["Status"] = u.Status
-	}
+
 	if len(user) == 0 {
 		return 0, errors.New("update field is empty")
 	}
