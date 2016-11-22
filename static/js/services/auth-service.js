@@ -12,11 +12,12 @@ app.factory('authService', function ($http) {
             if(user == undefined) {
                 return undefined;
             }
+            /*
             for (var j = 0; j < userRole.length; j++) {
                 if (role == userRole[j]) {
                     return true;
                 }
-            }
+            }*/
             return false;
         },
  
@@ -24,6 +25,7 @@ app.factory('authService', function ($http) {
             if(user == undefined) {
                 return undefined;
             }
+            /*
             for (var i = 0; i < userRole.length; i++) {
                 var role = userRole[i];
                 var validUrlsForRole = userRoleRouteMap[role];
@@ -34,10 +36,17 @@ app.factory('authService', function ($http) {
                     }
                 }
             }
-            return false;
+            */
+            return true;
         },
         returnUser: function () {
             return user
+        },
+        login: function(loginuser) {
+            user = loginuser;
+        },
+        logout: function() {
+            user = undefined;
         }
     };
 });

@@ -25,5 +25,5 @@ type ReleaseTask struct {
 }
 
 func init() {
-    orm.RegisterModel(new(ReleaseTask))
+    //orm.RegisterModel(new(ReleaseTask))
 }

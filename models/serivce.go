@@ -17,7 +17,7 @@ type Service struct {
 }
 
 func init() {
-    orm.RegisterModel(new(Service))
+    //orm.RegisterModel(new(Service))
 }
 
 func AddService(serivcename string) error {

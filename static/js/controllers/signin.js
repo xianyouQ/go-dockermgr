@@ -2,18 +2,22 @@
 
 /* Controllers */
   // signin controller
-app.controller('SigninFormController', ['$scope', '$http', '$state', function($scope, $http, $state) {
+app.controller('SigninFormController', ['$scope', '$http', '$state','authService' ,function($scope, $http, $state,authService) {
     $scope.user = {};
     $scope.authError = null;
     $scope.login = function() {
       $scope.authError = null;
       // Try to login
-
- $http.post('api/auth/sign', {Username: $scope.user.name, Password: $scope.user.password})
-      .then(function(response) {
-        if ( !response.data.user ) {
-          $scope.authError = 'UserName or Password not right';
-        }else{
+      if (authService.returnUser()!== undefined) {
+        $scope.authError = "重复登陆";
+        $state.go('app.dashboard-v1');
+      }
+      $http.post('api/auth/sign', {Username: $scope.user.name, Password: $scope.user.password})
+          .then(function(response) {
+          if ( !response.data.status ) {
+            $scope.authError = response.data.info;
+          }else{
+          authService.login(response.data.info);
           $state.go('app.dashboard-v1');
         }
       }, function(x) {

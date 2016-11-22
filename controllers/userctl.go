@@ -3,7 +3,7 @@ package controllers
 import (
 	m "github.com/xianyouQ/go-dockermgr/auth/models"
 	"github.com/xianyouQ/go-dockermgr/auth"
-	"github.com/astaxie/beego/logs"
+	//"github.com/astaxie/beego/logs"
 	"encoding/json"
 )
 
@@ -66,16 +66,24 @@ func (this *UserController) DelUser() {
 
 //登录
 func (this *UserController) Login() {
-	logs.GetLogger("auth").Println(string(this.Ctx.Input.RequestBody))
-	username := this.GetString("Username")
-	logs.GetLogger("auth").Println(username)
-	password := this.GetString("Password")
-	user, err := auth.CheckLogin(username, password)
+	uinfo := this.Ctx.Input.Session("userinfo")
+	if uinfo != nil {
+		this.Rsp(false,"不可重复登陆");
+		return
+	}
+	u := m.User{}
+	if err := json.Unmarshal(this.Ctx.Input.RequestBody, &u); err != nil {
+		//handle error
+		this.Rsp(false, err.Error())
+		return
+	}
+
+	user, err := auth.CheckLogin(u.Username, u.Password)
 	if err == nil {
 		this.SetSession("userinfo", user)
-		accesslist, _ := auth.GetAccessList(user.Id)
-		this.SetSession("accesslist", accesslist)
-		this.Rsp(true, "登录成功")
+		//accesslist, _ := auth.GetAccessList(user.Id)
+		//this.SetSession("accesslist", accesslist)
+		this.Rsp(true, u.Username)
 		return
 	} else {
 		this.Rsp(false, err.Error())
