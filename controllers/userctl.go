@@ -3,6 +3,8 @@ package controllers
 import (
 	m "github.com/xianyouQ/go-dockermgr/auth/models"
 	"github.com/xianyouQ/go-dockermgr/auth"
+	"github.com/astaxie/beego/logs"
+	"encoding/json"
 )
 
 
@@ -14,12 +16,14 @@ type UserController struct {
 
 func (this *UserController) AddUser() {
 	u := m.User{}
-	if err := this.ParseForm(&u); err != nil {
+	
+	if err := json.Unmarshal(this.Ctx.Input.RequestBody, &u); err != nil {
 		//handle error
 		this.Rsp(false, err.Error())
 		return
 	}
 	id, err := m.AddUser(&u)
+	
 	if err == nil && id > 0 {
 		this.Rsp(true, "Success")
 		return
@@ -62,8 +66,10 @@ func (this *UserController) DelUser() {
 
 //登录
 func (this *UserController) Login() {
-	username := this.GetString("username")
-	password := this.GetString("password")
+	logs.GetLogger("auth").Println(string(this.Ctx.Input.RequestBody))
+	username := this.GetString("Username")
+	logs.GetLogger("auth").Println(username)
+	password := this.GetString("Password")
 	user, err := auth.CheckLogin(username, password)
 	if err == nil {
 		this.SetSession("userinfo", user)

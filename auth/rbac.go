@@ -10,6 +10,7 @@ import (
 	"github.com/astaxie/beego/context"
 	. "github.com/beego/admin/src/lib"
 	m "github.com/xianyouQ/go-dockermgr/auth/models"
+	
 )
 
 //check access and register user's nodes
@@ -17,9 +18,14 @@ func AccessRegister() {
 	var Check = func(ctx *context.Context) {
 		user_auth_type, _ := strconv.Atoi(beego.AppConfig.String("user_auth_type"))
 		rbac_auth_gateway := beego.AppConfig.String("rbac_auth_gateway")
+		rbac_auth_signup := beego.AppConfig.String("rbac_auth_signup")
+		requestUrl := strings.ToLower(ctx.Request.RequestURI)
 		var accesslist map[string]bool
+		if requestUrl==rbac_auth_gateway || requestUrl==rbac_auth_signup {
+			return
+		}
 		if user_auth_type > 0 {
-			params := strings.Split(strings.ToLower(ctx.Request.RequestURI), "/")
+			params := strings.Split(requestUrl, "/")
 			if CheckAccess(params) {
 				uinfo := ctx.Input.Session("userinfo")
 				if uinfo == nil {

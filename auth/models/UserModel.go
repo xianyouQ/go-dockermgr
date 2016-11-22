@@ -17,7 +17,7 @@ type User struct {
 	Username      string    `orm:"unique;size(32)" form:"Username"  valid:"Required;MaxSize(20);MinSize(6)"`
 	Password      string    `orm:"size(32)" form:"Password" valid:"Required;MaxSize(20);MinSize(6)"`
 	Repassword    string    `orm:"-" form:"Repassword" valid:"Required"`
-	Nickname      string    `orm:"unique;size(32)" form:"Nickname" valid:"MaxSize(20);MinSize(2)"`
+	Nickname      string    `orm:"size(32)" form:"Nickname" valid:"MaxSize(20);MinSize(2)"`
 	Email         string    `orm:"size(32)" form:"Email" valid:"Email"`
 	Lastlogintime time.Time `orm:"null;type(datetime)" form:"-"`
 	Createtime    time.Time `orm:"type(datetime);auto_now_add" `

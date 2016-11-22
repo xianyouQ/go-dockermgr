@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/astaxie/beego"
 	"github.com/xianyouQ/go-dockermgr/auth"
+	
 )
 
 type CommonController struct {
@@ -16,7 +17,6 @@ func (this *CommonController) Rsp(status bool, str string) {
 }
 
 func init() {
-	
 	beego.SetStaticPath("/css","static/css")
 	beego.SetStaticPath("/img","static/img")
 	beego.SetStaticPath("/js","static/js")

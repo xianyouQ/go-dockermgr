@@ -8,9 +8,8 @@ app.controller('SigninFormController', ['$scope', '$http', '$state', function($s
     $scope.login = function() {
       $scope.authError = null;
       // Try to login
-$state.go('app.dashboard-v1');
-/*
- $http.post('api/auth/sign', {username: $scope.user.name, password: $scope.user.password})
+
+ $http.post('api/auth/sign', {Username: $scope.user.name, Password: $scope.user.password})
       .then(function(response) {
         if ( !response.data.user ) {
           $scope.authError = 'UserName or Password not right';
@@ -20,7 +19,7 @@ $state.go('app.dashboard-v1');
       }, function(x) {
         $scope.authError = 'Server Error';
       });
-*/
+
     };
   }])
 ;

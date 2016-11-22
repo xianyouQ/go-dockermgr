@@ -37,12 +37,19 @@ angular.module('app')
           container: false
         }
       }
- 
-      $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {  
-       if( authService.isUrlAccessibleForUser(toState)===undefined)  {
-          $state.go('access.signup',{},{notify:false});
+      $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {   
+        var authresult = authService.isUrlAccessibleForUser(toState);
+       if( authresult===undefined && toState.name !== "access.signin" && toState.name !== "access.signup")  {
+          event.preventDefault();
+          $state.go('access.signin');
           
        }
+       if( authresult===false && toState.name !== "lockme") {
+         event.preventDefault();
+         $state.go('lockme');
+         
+       }
+       
    });  
       // save settings to local storage
       if ( angular.isDefined($localStorage.settings) ) {
