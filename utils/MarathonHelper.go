@@ -2,7 +2,7 @@ package utils
 
 import (
     "github.com/astaxie/beego"
-    outMarathon "github.com/xianyouQ/go-dockermgr/3rd/github.com/gambol99/go-marathon"
+    outMarathon "github.com/xianyouQ/go-marathon"
     "encoding/json"
     "net"
     "net/http"
