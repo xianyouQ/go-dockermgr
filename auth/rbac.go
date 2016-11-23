@@ -10,7 +10,6 @@ import (
 	"github.com/astaxie/beego/context"
 	. "github.com/beego/admin/src/lib"
 	m "github.com/xianyouQ/go-dockermgr/auth/models"
-	"github.com/astaxie/beego/logs"
 	
 )
 
@@ -22,7 +21,6 @@ func AccessRegister() {
 		rbac_auth_signup := beego.AppConfig.String("rbac_auth_signup")
 		requestUrl := strings.ToLower(ctx.Request.RequestURI)
 		var accesslist map[string]bool
-		logs.GetLogger("auth").Println(ctx.Input.Session("userinfo"))
 		if requestUrl==rbac_auth_gateway || requestUrl==rbac_auth_signup {
 			return
 		}

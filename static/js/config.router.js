@@ -551,6 +551,21 @@ angular.module('app')
                       }]
                   }
               })
+                .state('docker', {
+                  url: '/docker',
+                  abstract: true,
+                  templateUrl: 'tpl/layout.html'
+              })
+                .state('docker.dashboard', {
+                  url: '/dashboard',
+                  templateUrl: 'tpl/management_users.html',
+                  resolve: {
+                      deps: ['uiLoad',
+                        function( uiLoad ){
+                          return uiLoad.load( ['js/app/management/users.js'] );
+                      }]
+                  }
+              })
       }
     ]
   );

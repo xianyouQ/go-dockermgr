@@ -67,6 +67,10 @@
     "manager_nav" : {
       "Manager_TITLE": "ManageMent",
       "USER" : "USERS"
+    },
+    "docker_nav" : {
+      "dockermgr_TITLE": "Docker ManageMent",
+      "dashboard" : "Dashboard"
     }
   },
   "MILESTONE" : "Milestone",

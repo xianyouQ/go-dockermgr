@@ -3,7 +3,6 @@ package controllers
 import (
 	"github.com/astaxie/beego"
 	"github.com/xianyouQ/go-dockermgr/auth"
-	
 )
 
 type CommonController struct {
@@ -11,8 +10,8 @@ type CommonController struct {
 }
 
 
-func (this *CommonController) Rsp(status bool, str string) {
-	this.Data["json"] = &map[string]interface{}{"status": status, "info": str}
+func (this *CommonController) Rsp(status bool, info string,data interface{}) {
+	this.Data["json"] = &map[string]interface{}{"status": status, "info": info,"data":data}
 	this.ServeJSON()
 }
 

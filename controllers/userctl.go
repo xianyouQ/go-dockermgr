@@ -19,16 +19,16 @@ func (this *UserController) AddUser() {
 	
 	if err := json.Unmarshal(this.Ctx.Input.RequestBody, &u); err != nil {
 		//handle error
-		this.Rsp(false, err.Error())
+		this.Rsp(false, err.Error(),nil)
 		return
 	}
 	id, err := m.AddUser(&u)
 	
 	if err == nil && id > 0 {
-		this.Rsp(true, "Success")
+		this.Rsp(true, "Success",nil)
 		return
 	} else {
-		this.Rsp(false, err.Error())
+		this.Rsp(false, err.Error(),nil)
 		return
 	}
 
@@ -38,15 +38,15 @@ func (this *UserController) UpdateUser() {
 	u := m.User{}
 	if err := this.ParseForm(&u); err != nil {
 		//handle error
-		this.Rsp(false, err.Error())
+		this.Rsp(false, err.Error(),nil)
 		return
 	}
 	id, err := m.UpdateUser(&u)
 	if err == nil && id > 0 {
-		this.Rsp(true, "Success")
+		this.Rsp(true, "Success",nil)
 		return
 	} else {
-		this.Rsp(false, err.Error())
+		this.Rsp(false, err.Error(),nil)
 		return
 	}
 
@@ -56,10 +56,10 @@ func (this *UserController) DelUser() {
 	Id, _ := this.GetInt64("Id")
 	status, err := m.DelUserById(Id)
 	if err == nil && status > 0 {
-		this.Rsp(true, "Success")
+		this.Rsp(true, "Success",nil)
 		return
 	} else {
-		this.Rsp(false, err.Error())
+		this.Rsp(false, err.Error(),nil)
 		return
 	}
 }
@@ -67,14 +67,17 @@ func (this *UserController) DelUser() {
 //登录
 func (this *UserController) Login() {
 	uinfo := this.Ctx.Input.Session("userinfo")
+	data := make(map[string]string)
 	if uinfo != nil {
-		this.Rsp(false,"不可重复登陆");
+		data["Username"] = uinfo.(m.User).Username
+		//datajson,_ := json.Marshal(data)
+		this.Rsp(false,"不可重复登陆", data);
 		return
 	}
 	u := m.User{}
 	if err := json.Unmarshal(this.Ctx.Input.RequestBody, &u); err != nil {
 		//handle error
-		this.Rsp(false, err.Error())
+		this.Rsp(false, err.Error(),nil)
 		return
 	}
 
@@ -83,10 +86,12 @@ func (this *UserController) Login() {
 		this.SetSession("userinfo", user)
 		//accesslist, _ := auth.GetAccessList(user.Id)
 		//this.SetSession("accesslist", accesslist)
-		this.Rsp(true, u.Username)
+		data["Username"] = user.Username
+		//datajson,_ := json.Marshal(data)
+		this.Rsp(true, "登陆成功",data)
 		return
 	} else {
-		this.Rsp(false, err.Error())
+		this.Rsp(false, err.Error(),nil)
 		return
 	}
 }
@@ -94,20 +99,20 @@ func (this *UserController) Login() {
 //退出
 func (this *UserController) Logout() {
 	this.DelSession("userinfo")
-	this.Rsp(true, "退出成功")
+	this.Rsp(true, "退出成功",nil)
 }
 
 //修改密码
 func (this *UserController) Changepwd() {
 	userinfo := this.GetSession("userinfo")
 	if userinfo == nil {
-		this.Rsp(false,"请先登录")
+		this.Rsp(false,"请先登录",nil)
 	}
 	oldpassword := this.GetString("oldpassword")
 	newpassword := this.GetString("newpassword")
 	repeatpassword := this.GetString("repeatpassword")
 	if newpassword != repeatpassword {
-		this.Rsp(false, "两次输入密码不一致")
+		this.Rsp(false, "两次输入密码不一致",nil)
 	}
 	user, err := auth.CheckLogin(userinfo.(m.User).Username, oldpassword)
 	if err == nil {
@@ -116,13 +121,13 @@ func (this *UserController) Changepwd() {
 		u.Password = newpassword
 		id, err := m.UpdateUser(&u)
 		if err == nil && id > 0 {
-			this.Rsp(true, "密码修改成功")
+			this.Rsp(true, "密码修改成功",nil)
 			return
 		} else {
-			this.Rsp(false, err.Error())
+			this.Rsp(false, err.Error(),nil)
 			return
 		}
 	}
-	this.Rsp(false, "密码有误")
+	this.Rsp(false, "密码有误",nil)
 
 }

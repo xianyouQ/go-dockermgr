@@ -16,8 +16,12 @@ app.controller('SigninFormController', ['$scope', '$http', '$state','authService
           .then(function(response) {
           if ( !response.data.status ) {
             $scope.authError = response.data.info;
+            if ("Username" in response.data.data) {
+              authService.login(response.data.data.Username);
+              $state.go('app.dashboard-v1');
+            }
           }else{
-          authService.login(response.data.info);
+          authService.login(response.data.data.Username);
           $state.go('app.dashboard-v1');
         }
       }, function(x) {

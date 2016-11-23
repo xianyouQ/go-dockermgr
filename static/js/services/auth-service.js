@@ -1,15 +1,17 @@
 'use strict';
 
-app.factory('authService', function ($http) {
+app.factory('authService', function ($http,$localStorage) {
  
     var userRole = []; // obtained from backend
     var userRoleRouteMap = {};
-    var user;
+    $localStorage.$default({
+        user:undefined
+    });
  
     return {
  
         userHasRole: function (role) {
-            if(user == undefined) {
+            if($localStorage.user == undefined) {
                 return undefined;
             }
             /*
@@ -22,7 +24,7 @@ app.factory('authService', function ($http) {
         },
  
         isUrlAccessibleForUser: function (route) {
-            if(user == undefined) {
+            if($localStorage.user == undefined) {
                 return undefined;
             }
             /*
@@ -40,13 +42,15 @@ app.factory('authService', function ($http) {
             return true;
         },
         returnUser: function () {
-            return user
+            return $localStorage.user
         },
         login: function(loginuser) {
-            user = loginuser;
+             console.log("add auth");
+            $localStorage.user = loginuser;
         },
         logout: function() {
-            user = undefined;
+            console.log("removing auth");
+            $localStorage.user = undefined;
         }
     };
 });
