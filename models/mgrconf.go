@@ -44,7 +44,7 @@ func (self *MgrConf) SetMarathonConf(conf string) error {
     }
     self.MarathonConfTemplate = conf
     o := orm.NewOrm()
-    if num,err := o.Update(self,"MarathonConfTemplate"); err !=nil {
+    if _,err := o.Update(self,"MarathonConfTemplate"); err !=nil {
          return  err
      }
      return nil

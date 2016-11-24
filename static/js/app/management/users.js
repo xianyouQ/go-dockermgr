@@ -73,7 +73,7 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
     $scope.mainbus = $filter('orderBy')($scope.mainbuses, 'name')[0];
     $scope.mainbus.selected = true;
   });
-    $http.get('js/app/management/people.json').then(function(resp) {
+    $http.get('js/app/management/people1.json').then(function(resp) {
       angular.forEach(resp.data.people,function(item) {
         if ($scope.roles.length == 0 ) {
           return ;

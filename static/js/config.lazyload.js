@@ -86,13 +86,6 @@ angular.module('app')
                   ]
               },
               {
-                  name: 'toaster',
-                  files: [
-                      'vendor/modules/angularjs-toaster/toaster.js',
-                      'vendor/modules/angularjs-toaster/toaster.css'
-                  ]
-              },
-              {
                   name: 'textAngular',
                   files: [
                       'vendor/modules/textAngular/textAngular-sanitize.min.js',

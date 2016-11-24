@@ -1,31 +1,32 @@
 package models
 
 import (
-    "github.com/astaxie/beego"
     "github.com/astaxie/beego/orm"
-    "encoding/json"
+    "github.com/xianyouQ/go-dockermgr/utils"
 )
 
 type Service struct {
     Id int `orm:"auto"`
     Name string `orm:"size(20);unique"`
-    //Image string `orm:"size(100)"`
-    //Tag string `orm:"size(100)"`
+    Code string `orm:"size(20);unique"`
     Instances *[]Ip `orm:"reverse(many)"`
     ReleaseTask *[]ReleaseTask `orm:"reverse(many)"`
     MarathonConf string `orm:"type(text)"`
 }
 
+
 func init() {
-    //orm.RegisterModel(new(Service))
+    orm.RegisterModel(new(Service))
 }
 
-func AddService(serivcename string) error {
-
-}
-
-func DelService(servicename string) error {
-
+func AddService(name string,code string) error {
+    service := Service{Name:name,Code:code}
+    o := orm.NewOrm()
+    _,err := o.Insert(service)
+    if err!=nil {
+        return err
+    }
+    return nil
 }
 
 
@@ -39,7 +40,7 @@ func (self *Service) SetMarathonConf(conf string) error {
     }
     o := orm.NewOrm()
     self.MarathonConf = conf
-    if num,err := o.Update(self,"MarathonConf"); err !=nil {
+    if _,err := o.Update(self,"MarathonConf"); err !=nil {
          return  err
      }
 
@@ -50,7 +51,7 @@ func (self *Service) SetMarathonConf(conf string) error {
 func (self Service) GetInstances() ([]*Ip,error) {
     o := orm.NewOrm()
     var Ips []*Ip
-    num,err := o.QueryTable("Ip").Filter("BelongService",self.Id).RelatedSel().All(&Ips)
+    _,err := o.QueryTable("Ip").Filter("BelongService",self.Id).RelatedSel().All(&Ips)
     if err != nil {
         return Ips,err
     }
@@ -60,7 +61,7 @@ func (self Service) GetInstances() ([]*Ip,error) {
 func (self Service) GetInstancesWithCidr(cidr Cidr) ([]*Ip,error) {
     o := orm.NewOrm()
     var Ips []*Ip
-    num,err := o.QueryTable("Ip").Filter("BelongService",self.Id).Filter("BelongNet",cidr.Id).RelatedSel().All(&Ips)
+    _,err := o.QueryTable("Ip").Filter("BelongService",self.Id).Filter("BelongNet",cidr.Id).RelatedSel().All(&Ips)
     if err != nil {
         return Ips,err
     }

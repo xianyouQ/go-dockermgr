@@ -8,7 +8,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
-	. "github.com/beego/admin/src/lib"
+	. "github.com/xianyouQ/go-dockermgr/auth/lib"
 	m "github.com/xianyouQ/go-dockermgr/auth/models"
 	
 )

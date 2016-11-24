@@ -1,17 +1,14 @@
 'use strict';
 
-app.factory('authService', function ($http,$localStorage) {
+app.factory('authService', function ($sessionStorage) {
  
     var userRole = []; // obtained from backend
     var userRoleRouteMap = {};
-    $localStorage.$default({
-        user:undefined
-    });
- 
+    var lastState;
     return {
  
         userHasRole: function (role) {
-            if($localStorage.user == undefined) {
+            if($sessionStorage.user == undefined) {
                 return undefined;
             }
             /*
@@ -24,7 +21,8 @@ app.factory('authService', function ($http,$localStorage) {
         },
  
         isUrlAccessibleForUser: function (route) {
-            if($localStorage.user == undefined) {
+            if($sessionStorage.user == undefined) {
+                lastState = route;
                 return undefined;
             }
             /*
@@ -42,15 +40,18 @@ app.factory('authService', function ($http,$localStorage) {
             return true;
         },
         returnUser: function () {
-            return $localStorage.user
+            return $sessionStorage.user
         },
         login: function(loginuser) {
              console.log("add auth");
-            $localStorage.user = loginuser;
+            $sessionStorage.user = loginuser;
         },
         logout: function() {
             console.log("removing auth");
-            $localStorage.user = undefined;
+            $sessionStorage.user = undefined;
+        },
+        getLastState: function() {
+            return lastState;
         }
     };
 });

@@ -41,7 +41,10 @@ func GetCidrFromOrm() []utils.CidrHelper {
     var Cidrs []Cidr
     o := orm.NewOrm()
     cidr := new(Cidr)
-    qs,_ := o.QueryTable(cidr).All(&Cidrs)
+    _,err := o.QueryTable(cidr).All(&Cidrs)
+    if err !=nil {
+
+    }
     for _,iter := range Cidrs {
         mCidrHelper,_ := utils.NewCidrfromString(iter.Net)
         CidrList = append(CidrList,mCidrHelper)
@@ -69,7 +72,7 @@ func AddCidr(net string,start string,end string) error {
     mcidr.Net = newCidr.Net.String()
     mcidr.StartIp = newCidr.StartIp.String()
     mcidr.EndIp = newCidr.EndIp.String()
-    id,err := o.Insert(&mcidr)
+    _,err = o.Insert(&mcidr)
     if err != nil {
 
     }
@@ -82,7 +85,7 @@ func AddCidr(net string,start string,end string) error {
         newIp.Status = IpUnUsed
         IpList = append(IpList,*newIp)
     }
-    num,err := o.InsertMulti(len(IpList),IpList)
+    _,err = o.InsertMulti(len(IpList),IpList)
     if err != nil {
 
     }

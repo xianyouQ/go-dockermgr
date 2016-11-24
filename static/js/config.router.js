@@ -102,12 +102,9 @@ angular.module('app')
                   resolve: {
                       deps: ['$ocLazyLoad',
                         function( $ocLazyLoad){
-                          return $ocLazyLoad.load('toaster').then(
-                              function(){
-                                 return $ocLazyLoad.load('js/controllers/toaster.js');
+                            return $ocLazyLoad.load('js/controllers/toaster.js');
                               }
-                          );
-                      }]
+                      ]
                   }
               })
               .state('app.ui.jvectormap', {
@@ -342,11 +339,13 @@ angular.module('app')
                   url: '/forgotpwd',
                   templateUrl: 'tpl/page_forgotpwd.html'
               })
-              .state('access.404', {
-                  url: '/404',
-                  templateUrl: 'tpl/page_404.html'
+              .state('access.error', {
+                  url: '/error/:errorCode',
+                  templateUrl: 'tpl/page_error.html',
+                  controller: function($scope,$stateParams) {
+                    $scope.errorCode = $stateParams.errorCode;
+                  }
               })
-
               // fullCalendar
               .state('app.calendar', {
                   url: '/calendar',
@@ -551,6 +550,16 @@ angular.module('app')
                       }]
                   }
               })
+                .state('management.idcs', {
+                  url: '/idcs',
+                  templateUrl: 'tpl/management_idcs.html',
+                  resolve: {
+                      deps: ['uiLoad',
+                        function( uiLoad ){
+                          return uiLoad.load( ['js/app/management/idcs.js'] );
+                      }]
+                  }
+              })
                 .state('docker', {
                   url: '/docker',
                   abstract: true,
@@ -558,7 +567,7 @@ angular.module('app')
               })
                 .state('docker.dashboard', {
                   url: '/dashboard',
-                  templateUrl: 'tpl/management_users.html',
+                  templateUrl: 'tpl/docker_dashboard.html',
                   resolve: {
                       deps: ['uiLoad',
                         function( uiLoad ){

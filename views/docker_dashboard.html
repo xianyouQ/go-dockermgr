@@ -1,0 +1,129 @@
+<!-- hbox layout -->
+<div class="hbox hbox-auto-xs hbox-auto-sm bg-light " ng-init="
+  app.settings.asideFixed = true;
+  app.settings.asideDock = false;
+  app.settings.container = false;
+  app.hideAside = false;
+  app.hideFooter = true;
+  " ng-controller="ManageMentUsersCtrl">
+
+  <script type="text/ng-template" id="addUserModalContent.html">
+    <div ng-include="'tpl/add_user_modal.html'"></div>
+  </script>
+
+    <!-- column -->
+  <div class="col w b-r" ng-hide="mainfilter.length">
+    <div class="vbox">
+      <div class="row-row">
+        <div class="cell scrollable hover">
+          <div class="cell-inner">
+            <div class="list-group no-radius no-border no-bg m-b-none">
+              <a ng-repeat="item in mainbuses|orderBy:'name'"  class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectMainBus(item)">
+                <span class="block m-l-n" ng-class="{'m-n': item.selected }">{{ item.name ? item.name : 'Untitled' }}</span>
+              </a>
+            </div>
+            <div class="text-center pos-abt w-full" style="top:50%;" ng-hide="mainbuses.length" translate="content.management.no_mainbus">No MainBuses</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /column -->
+ 
+  <!-- column -->
+  <div class="col w b-r" ng-show="mainfilter.length">
+    <div class="vbox">
+      <div class="wrapper-sm b-b">
+        <div class="m-t-n-xxs m-b-n-xxs m-l-xs">
+          <a class="btn btn-xs btn-default" ng-hide="item.editing" ng-click="returnMain()">返回</a>
+        </div>
+      </div>
+      <div class="row-row">
+        <div class="cell scrollable hover">
+          <div class="cell-inner">
+            <div class="list-group no-radius no-border no-bg m-b-none">
+              <a ng-repeat="item in subbuses| filter:{mainbus:mainfilter}| orderBy:'name'" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectSubBus(item)">
+                <span class="block m-l-n" ng-class="{'m-n': item.selected }">{{ item.name ? item.name : 'Untitled' }}</span>
+              </a>
+            </div>
+            <div class="text-center pos-abt w-full" style="top:50%;" ng-hide="(subbuses | filter:{mainbus:mainfilter}).length" translate="content.management.no_subbus">No SubBus</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /column -->
+
+
+
+
+  <!-- column -->
+  <div class="col bg-white-only" ng-show="subfilter.length">
+    <div class="vbox">
+      <div class="wrapper-sm b-b">
+            <div class="m-t-n-xxs m-b-n-xxs m-l-xs">
+              <a class="btn btn-xs btn-default" ng-click="addUser()">Add</a>
+              <a class="btn btn-xs btn-default" ng-click="attachUser()">Attach</a>
+            </div>
+      </div>
+      <div class="row-row">
+        <div class="cell">
+          <div class="cell-inner">
+            <div class="wrapper-lg">
+              <div class="panel-body b-b b-light">
+                 Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r"/>
+              </div>
+              <table class="table m-b-none" ui-jq="footable" ui-refresh="people" data-filter="#filter" data-page-size="5">
+                <thead>
+                  <tr>
+                      <th>
+                          User Name
+                      </th>
+                      <th>
+                          Role
+                      </th>
+                      <th>
+                          Container Manager
+                      </th>
+                      <th>
+                          Release New
+                      </th>
+                      <th>
+                          Release verify
+                      </th>
+                      <th>
+                          Release Operation
+                      </th>
+                      <th>
+                        delete
+                      </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr ng-repeat="person in people">
+                      <td>{{person.name}}</td>
+                      <td>{{person.role}}</td>
+                      <td><i class="glyphicon" ng-class="{true:'glyphicon-ok',false:'glyphicon-remove'}[person.docker]"></i></td>
+                      <td><i class="glyphicon" ng-class="{true:'glyphicon-ok',false:'glyphicon-remove'}[person.releaseNew]"></i></td>
+                      <td><i class="glyphicon" ng-class="{true:'glyphicon-ok',false:'glyphicon-remove'}[person.releaseVerify]"></i></td>
+                      <td><i class="glyphicon" ng-class="{true:'glyphicon-ok',false:'glyphicon-remove'}[person.releaseOperation]"></i></td>
+                      <td><button class="btn m-b-xs btn-sm btn-danger" ng-click="deleteUser(person)"><i class="fa fa-trash-o"></i></button></td>
+                  </tr>
+                </tbody>
+                <tfoot class="hide-if-no-paging">
+                  <tr>
+                      <td colspan="5" class="text-center">
+                          <ul class="pagination"></ul>
+                      </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+  <!-- /column -->
+    </div>
+  </div>
+</div>
+<!-- /hbox layout -->

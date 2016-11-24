@@ -31,10 +31,9 @@ type MesosInfo struct {
 
 var (
     marathonClient outMarathon.Marathon 
-    marathonURL string
 )
 func init() {
-    marathonURL = beego.AppConfig.String("marathonUrl")
+    marathonURL := beego.AppConfig.String("marathonUrl")
     config :=  outMarathon.NewDefaultConfig()
     config.URL = marathonURL 
     config.HTTPClient = &http.Client{
