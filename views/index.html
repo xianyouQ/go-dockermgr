@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="vendor/modules/angularjs-toaster/toaster.css" type="text/css" />
 </head>
 <body ng-controller="AppCtrl">
+  <toaster-container toaster-options="{'position-class': 'toast-top-right', 'close-button':true}"></toaster-container>
   <div class="app" id="app" ng-class="{'app-header-fixed':app.settings.headerFixed, 'app-aside-fixed':app.settings.asideFixed, 'app-aside-folded':app.settings.asideFolded, 'app-aside-dock':app.settings.asideDock, 'container':app.settings.container}" ui-view></div>
 
 

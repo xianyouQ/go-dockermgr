@@ -1,7 +1,7 @@
 package models
 
 import (
-    //"github.com/astaxie/beego"
+    "github.com/astaxie/beego"
     "github.com/astaxie/beego/orm"
     . "github.com/xianyouQ/go-dockermgr/auth/models"
     "time"
@@ -25,6 +25,9 @@ type ReleaseTask struct {
     TaskStatus int
 }
 
+func ( this *ReleaseTask) TableName() string {
+    return beego.AppConfig.String("dockermgr_release_table")
+}
 func init() {
     orm.RegisterModel(new(ReleaseTask))
 }

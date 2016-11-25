@@ -1,6 +1,7 @@
 package models
 
 import (
+    "github.com/astaxie/beego"
     "github.com/astaxie/beego/orm"
     "github.com/xianyouQ/go-dockermgr/utils"
 )
@@ -9,11 +10,14 @@ type Service struct {
     Id int `orm:"auto"`
     Name string `orm:"size(20);unique"`
     Code string `orm:"size(20);unique"`
-    Instances *[]Ip `orm:"reverse(many)"`
-    ReleaseTask *[]ReleaseTask `orm:"reverse(many)"`
+    Instances []*Ip `orm:"reverse(many)"`
+    ReleaseTask []*ReleaseTask `orm:"reverse(many)"`
     MarathonConf string `orm:"type(text)"`
 }
 
+func ( this *Service) TableName() string {
+    return beego.AppConfig.String("dockermgr_service_table")
+}
 
 func init() {
     orm.RegisterModel(new(Service))

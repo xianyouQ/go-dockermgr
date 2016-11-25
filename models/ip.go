@@ -19,6 +19,7 @@ type Cidr struct {
     StartIp string `orm:"size(20)"`
     EndIp string `orm:"size(20)"`
     IpList []*Ip `orm:"reverse(many)"`
+    BelongIdc *IdcConf `orm:"rel(fk)"`
 
 }
 
@@ -32,9 +33,17 @@ type Ip struct {
 }
 
 var (
-    GlobalCidrList = GetCidrFromOrm()
+    GlobalCidrList []utils.CidrHelper
     BaseMac = beego.AppConfig.String("basemacstring")
 )
+
+func ( this *Ip) TableName() string {
+    return beego.AppConfig.String("dockermgr_ip_table")
+}
+
+func ( this *Cidr) TableName() string {
+    return beego.AppConfig.String("dockermgr_cidr_table")
+}
 
 func GetCidrFromOrm() []utils.CidrHelper {
     CidrList := make([]utils.CidrHelper,0,5)

@@ -1,0 +1,22 @@
+<div class="modal-body wrapper-lg">
+  <div class="row">
+      <p>New IDC</p>
+      <form role="form">
+        <div class="form-group" class="form-validation">
+        <div class="text-danger wrapper text-center" ng-show="formError">
+          {{formError}}
+        </div>
+          <label>IdcName</label>
+          <input type="text" class="form-control" ng-model="newIdc.name"  placeholder="Enter IDC Name" required>
+        </div>
+        <div class="form-group">
+          <label>IdcCode</label>
+          <input type="text" class="form-control"  ng-model="newIdc.code"  placeholder="Enter IDC Code" required>
+        </div>
+        <div class="checkbox m-t-lg">
+          <button type="submit" class="btn btn-sm btn-success pull-right text-uc m-t-n-xs" ng-click="ok()" ng-disabled='form.$invalid'><strong>New</strong></button>
+          <button class="btn btn-sm btn-success pull-right text-uc m-t-n-xs" ng-click="cancel()"><strong>cancel</strong></button>
+        </div>
+      </form>
+  </div>
+</div>

@@ -43,11 +43,9 @@ app.factory('authService', function ($sessionStorage) {
             return $sessionStorage.user
         },
         login: function(loginuser) {
-             console.log("add auth");
             $sessionStorage.user = loginuser;
         },
         logout: function() {
-            console.log("removing auth");
             $sessionStorage.user = undefined;
         },
         getLastState: function() {

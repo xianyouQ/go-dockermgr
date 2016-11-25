@@ -6,7 +6,9 @@
   app.hideAside = false;
   app.hideFooter = true;
   " ng-controller="ManageMentIDCsCtrl">
- 
+  <script type="text/ng-template" id="addIDCModalContent.html">
+    <div ng-include="'tpl/add_idc_modal.html'"></div>
+  </script>
   <!-- column -->
   <div class="col w b-r">
     <div class="vbox">
@@ -16,14 +18,14 @@
             <div class="list-group no-radius no-border no-bg m-b-none">
               <a class="list-group-item b-b" ng-class="{'focus': (filter == '')}>ALL IDCS</a>
               <a ng-repeat="item in groups" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectIDC(item)">
-                <span class="block m-l-n" ng-class="{'m-n': item.selected }">{{ item.name ? item.name : 'Untitled' }}</span>
+                <span class="block m-l-n" ng-class="{'m-n': item.selected }">{{ item.name}}</span>
               </a>
             </div>
           </div>
         </div>
       </div>
       <div class="wrapper b-t">
-        <a href class="btn btn-sm btn-default" ng-click="createGroup()"><i class="fa fa-plus fa-fw m-r-xs"></i> New Group</a>
+        <a href class="btn btn-sm btn-default" ng-click="createIDC()"><i class="fa fa-plus fa-fw m-r-xs"></i> New IDC</a>
       </div>
     </div>
   </div>

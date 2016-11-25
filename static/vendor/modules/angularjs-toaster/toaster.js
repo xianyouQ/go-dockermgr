@@ -125,6 +125,7 @@ function ($compile, $timeout, $sce, toasterConfig, toaster) {
 
             scope.toasters = [];
             scope.$on('toaster-newToast', function () {
+                console.log("new toaster");
                 addToast(toaster.toast);
             });
 

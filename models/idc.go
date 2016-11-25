@@ -1,7 +1,10 @@
 package models
 
 import (
+    "github.com/astaxie/beego"
     "github.com/astaxie/beego/orm"
+    "github.com/astaxie/beego/validation"
+    "errors"
 )
 
 const (
@@ -11,24 +14,61 @@ const (
 type IdcConf struct {
     Id int `orm:"auto"`
     Status int
-    IdcName string `orm:"size(30);unique"`
-    IdcCode string `orm:"size(30);unique"`
-    MgrConf *MgrConf `orm:"ref(one)"`
-    Cidrs []*Cidr `orm:"reverse(many)"`
+    IdcName string `orm:"size(30);unique" valid:"Required"`
+    IdcCode string `orm:"size(30);unique" valid:"Required"`
+    MgrConf *MgrConf `orm:"null;rel(one)"`
+    Cidrs []*Cidr `orm:"null;reverse(many)"`
+}
+
+
+func ( this *IdcConf) TableName() string {
+    return beego.AppConfig.String("dockermgr_idc_table")
+}
+
+func checkIdc(idc *IdcConf) (err error) {
+	valid := validation.Validation{}
+	b, _ := valid.Valid(&idc)
+	if !b {
+		for _, err := range valid.Errors {
+			return errors.New(err.Message)
+		}
+	}
+	return nil
 }
 
 func AddIdc(name string,code string) error {
+    var err error
     idc := IdcConf{IdcName:name,IdcCode:code,Status:IdcEnable}
+    err = checkIdc(&idc)
     o := orm.NewOrm()
-    _,err := o.Insert(idc)
+    _,err = o.Insert(idc)
     if err!=nil {
         return err
     }
     return nil
 }
+func GetIdcs() ([]*IdcConf,error) {
+    var idcs []*IdcConf
+    o := orm.NewOrm()
+    _,err := o.QueryTable(beego.AppConfig.String("dockermgr_idc_table")).All(&idcs,"IdcName","IdcCode","Status")
+    if err != nil {
+        return idcs,err
+    }
+    return idcs,nil
+}
 
-func toggleStatus(name string,status int) error {
-    idc := IdcConf{IdcName:name,Status:status}
+func GetMgrConf(code string) (*IdcConf,error) {
+    var idc *IdcConf
+    o := orm.NewOrm()
+    _,err := o.QueryTable(beego.AppConfig.String("dockermgr_idc_table")).All(&idc,"MgrConf")
+    if err != nil {
+        return idc,err
+    }
+    return idc,nil
+}
+
+func toggleStatus(code string,status int) error {
+    idc := IdcConf{IdcCode:code,Status:status}
     o := orm.NewOrm()
     if _, err := o.Update(&idc,"Status"); err != nil {
         return err
@@ -36,12 +76,12 @@ func toggleStatus(name string,status int) error {
     return nil
 }
 
-func EnableIdc (name string) error {
-    return toggleStatus(name,IdcEnable)
+func EnableIdc (code string) error {
+    return toggleStatus(code,IdcEnable)
 }
 
-func DisableIdc (name string) error {
-    return toggleStatus(name,IdcDisable)
+func DisableIdc (code string) error {
+    return toggleStatus(code,IdcDisable)
 }
 
 func init() {
