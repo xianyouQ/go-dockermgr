@@ -6,6 +6,8 @@ import (
     "github.com/xianyouQ/go-dockermgr/utils"
     "errors"
     "fmt"
+    
+	"github.com/astaxie/beego/logs"
 )
 
 const (
@@ -45,7 +47,7 @@ func ( this *Cidr) TableName() string {
     return beego.AppConfig.String("dockermgr_cidr_table")
 }
 
-func GetCidrFromOrm() []utils.CidrHelper {
+func getCidrFromOrm() []utils.CidrHelper {
     CidrList := make([]utils.CidrHelper,0,5)
     var Cidrs []Cidr
     o := orm.NewOrm()
@@ -67,7 +69,11 @@ func GetCidrFromOrm() []utils.CidrHelper {
 func AddCidr(net string,start string,end string) error {
     newCidr,err := utils.NewCidrwithStartEnd(net,start,end)
     if err != nil {
-
+        return err
+    }
+    if GlobalCidrList == nil {
+        logs.GetLogger("Ip").Println("init globalCidrList")
+        GlobalCidrList = getCidrFromOrm()
     }
     for _,iter := range GlobalCidrList {
         if ok := iter.Overlaps(newCidr); ok {
@@ -75,7 +81,7 @@ func AddCidr(net string,start string,end string) error {
             return errors.New(errorstring)
         }
     }
-    GlobalCidrList = append(GlobalCidrList,newCidr)
+    
     o := orm.NewOrm()
     mcidr := new(Cidr)
     mcidr.Net = newCidr.Net.String()
@@ -83,8 +89,9 @@ func AddCidr(net string,start string,end string) error {
     mcidr.EndIp = newCidr.EndIp.String()
     _,err = o.Insert(&mcidr)
     if err != nil {
-
+        return err
     }
+    GlobalCidrList = append(GlobalCidrList,newCidr)
     IpList := make([]Ip,0,125)
     for _,iter := range newCidr.IpList() {
         newIp := new(Ip)
@@ -96,7 +103,7 @@ func AddCidr(net string,start string,end string) error {
     }
     _,err = o.InsertMulti(len(IpList),IpList)
     if err != nil {
-
+        return err
     }
     return nil
 

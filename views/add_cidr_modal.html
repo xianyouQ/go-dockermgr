@@ -1,0 +1,24 @@
+<div class="modal-body wrapper-lg">
+  <div class="row">
+      <p>New Cidr</p>
+      <form role="form">
+        <div class="form-group">
+          <label>Net</label>
+          <input type="text" class="form-control" ng-model="newCidr.Net"  placeholder="Enter netstring">
+        </div>
+        <div class="form-group">
+          <label>StartIP</label>
+          <input type="text" class="form-control" ng-model="newCidr.StartIP" placeholder="Enter StartIP">
+        </div>
+        <div class="form-group">
+          <label>EndIP</label>
+          <input type="text" class="form-control" ng-model="newCidr.EndIP" placeholder="Enter EndIP">
+        </div>
+        <div class="checkbox m-t-lg">
+          <button type="submit" class="btn btn-sm btn-success pull-right text-uc m-t-n-xs" ng-click="ok()"><strong>commit</strong></button>
+          <button class="btn btn-sm btn-success pull-right text-uc m-t-n-xs" ng-click="cancel()"><strong>cancel</strong></button>
+        </div>
+      </form>
+  
+  </div>
+</div>

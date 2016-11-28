@@ -12,7 +12,7 @@ const (
     IdcDisable
 )
 type IdcConf struct {
-    Id int `orm:"auto"`
+    Id int `orm:"pk;auto"`
     Status int
     IdcName string `orm:"size(30);unique" valid:"Required"`
     IdcCode string `orm:"size(30);unique" valid:"Required"`
@@ -36,10 +36,10 @@ func checkIdc(idc *IdcConf) (err error) {
 	return nil
 }
 
-func AddIdc(name string,code string) error {
+func AddIdc(idc *IdcConf) error {
     var err error
-    idc := IdcConf{IdcName:name,IdcCode:code,Status:IdcEnable}
-    err = checkIdc(&idc)
+    idc.Status = IdcEnable
+    err = checkIdc(idc)
     o := orm.NewOrm()
     _,err = o.Insert(idc)
     if err!=nil {
@@ -50,7 +50,7 @@ func AddIdc(name string,code string) error {
 func GetIdcs() ([]*IdcConf,error) {
     var idcs []*IdcConf
     o := orm.NewOrm()
-    _,err := o.QueryTable(beego.AppConfig.String("dockermgr_idc_table")).All(&idcs,"IdcName","IdcCode","Status")
+    _,err := o.QueryTable(beego.AppConfig.String("dockermgr_idc_table")).RelatedSel().All(&idcs)
     if err != nil {
         return idcs,err
     }
@@ -65,6 +65,20 @@ func GetMgrConf(code string) (*IdcConf,error) {
         return idc,err
     }
     return idc,nil
+}
+
+func UpdateIdc(idc *IdcConf) error {
+     var err error
+     err = checkIdc(idc)
+     if err!=nil {
+        return err
+     }
+     o := orm.NewOrm()
+    _,err = o.Update(idc)
+    if err!=nil {
+        return err
+    }
+    return nil
 }
 
 func toggleStatus(code string,status int) error {

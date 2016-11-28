@@ -1,6 +1,6 @@
 'use strict';
 
-app.factory('myIntercepoter', ['$q','authService','toaster',function($q,authService,toaster) {
+app.factory('myIntercepoter', ['$q','$window','$timeout','authService','toaster',function($q,$window,$timeout,authService,toaster) {
     var myIntercepoter = {
     request: function(config){
       return config;
@@ -12,11 +12,15 @@ app.factory('myIntercepoter', ['$q','authService','toaster',function($q,authServ
       return res;
     },
     responseError: function(err){
-      if(-1 === err.status) {
+      if(0 === err.status) {
         toaster.pop("error","","Server timeout");
       } else if(401 === err.status) {
         authService.logout();
         toaster.pop("error","","session timeout");
+        $timeout(function(
+        ){
+          $window.location.reload();
+        },2000);
       } else {
         toaster.pop("error",err.status,"request error");
       }

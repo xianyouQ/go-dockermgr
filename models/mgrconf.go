@@ -27,9 +27,7 @@ type MarathonSerConf struct {
 
 type RegistryConf struct {
     Id int `orm:"auto"`
-    Host string `orm:"size(20)"`
-    Port int 
-    Schema string `orm:"size(10)"`
+    Server string `orm:"size(50)"`
     UserName string `orm:"size(20)"`
     Password string `orm:"size(20)"`
     BelongMgrConf *MgrConf `orm:"reverse(one)"`

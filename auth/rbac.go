@@ -30,7 +30,7 @@ func AccessRegister() {
 				uinfo := ctx.Input.Session("userinfo")
 				if uinfo == nil {
 					 //ctx.Redirect(302, rbac_auth_gateway)
-					 ctx.Output.SetStatus(401)
+					ctx.Output.SetStatus(401)
 					ctx.Output.JSON(&map[string]interface{}{"status": false, "info": "未登录"}, true, false)
 					
 					return
