@@ -52,21 +52,21 @@ func AddOrUpdateIdc(idc *IdcConf) error {
         return err
     }
     o := orm.NewOrm()
-    pid,err = o.InsertOrUpdate(idc)
-    logs.GetLogger("idcModel").Println(pid)
+    pid,err = o.InsertOrUpdate(idc)  //返回值都是什么意思
     if err!=nil {
         return err
     }
-    isNew := true
-    for _,IdcConfIter := range GlobalIdcConfList{
-        if int64(IdcConfIter.Id) == pid {
-            isNew = false
-            IdcConfIter = idc
+    if pid != 0 {
+        GlobalIdcConfList = append(GlobalIdcConfList,idc)
+    } else {
+        for _,IdcConfIter := range GlobalIdcConfList{
+            if IdcConfIter.Id == idc.Id {
+                IdcConfIter = idc
+            }
         }
     }
-    if isNew == true {
-        GlobalIdcConfList = append(GlobalIdcConfList,idc)
-    }
+    test,_:=json.Marshal(GlobalIdcConfList)
+    logs.GetLogger("idcModel").Println(string(test))
     return nil
 }
 func getIdcsfromOrm() ([]*IdcConf,error) {
@@ -81,8 +81,6 @@ func getIdcsfromOrm() ([]*IdcConf,error) {
     if err!=nil {
          return idcs,err
     }
-    cidrjson,_ := json.Marshal(tempCidrs)
-    logs.GetLogger("idcModels").Println(string(cidrjson))
     for _,IdcConfIter := range idcs{
         for _,Cidriter := range tempCidrs {
             if Cidriter.BelongIdc.Id == IdcConfIter.Id {

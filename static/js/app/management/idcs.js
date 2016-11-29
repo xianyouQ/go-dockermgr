@@ -56,7 +56,7 @@ app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal',func
  $scope.commitMarathonConf = function () {
     $http.post('/api/marathon/conf',$scope.selectedidc).then(function(response) {
           if (response.data.status ){
-            //$modalInstance.close($scope.newCidr);
+            $scope.selectedidc.MarathonSerConf = response.data.data
           }
           if  (!response.data.status ) {
             console.log(response.data.info)
@@ -70,7 +70,7 @@ app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal',func
  $scope.commitRegistryConf = function () {
     $http.post('/api/registry/conf',$scope.selectedidc).then(function(response) {
           if (response.data.status ){
-            //$modalInstance.close($scope.newCidr);
+            $scope.selectedidc.RegistryConf = response.data.data
           }
           if  (!response.data.status ) {
             console.log(response.data.info)

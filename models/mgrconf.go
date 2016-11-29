@@ -61,35 +61,37 @@ func checkRegistryConf(conf *RegistryConf) error {
     return nil
 }
 
-func AddOrUpdateMarathonSerConf(newConf *MarathonSerConf) error {
+func AddOrUpdateMarathonSerConf(newConf *MarathonSerConf) (int64,error) {
     var err error
+    var id int64
     err = checkMarathonSerConf(newConf)
     if err != nil {
-        return err
+        return id,err
     }
     _,err = utils.CreateMarathonAppFromJson(newConf.MarathonConfTemplate)
     if err != nil {
-        return err
+        return id,err
     }
      o := orm.NewOrm()
-    _,err = o.InsertOrUpdate(newConf)
+    id,err = o.InsertOrUpdate(newConf)
     if err!=nil {
-        return err
+        return id,err
     }
-    return nil
+    return id,nil
 }
 
 
-func AddOrUpdateRegistryConf(newConf *RegistryConf) error {
+func AddOrUpdateRegistryConf(newConf *RegistryConf) (int64,error) {
     var err error
+    var id int64
     err = checkRegistryConf(newConf)
     if err != nil {
-        return err
+        return id,err
     }
      o := orm.NewOrm()
-    _,err = o.InsertOrUpdate(newConf)
+    id,err = o.InsertOrUpdate(newConf)
     if err!=nil {
-        return err
+        return id,err
     }
-    return nil
+    return id,nil
 }
