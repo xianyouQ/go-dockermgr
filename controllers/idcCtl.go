@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"github.com/xianyouQ/go-dockermgr/models"
-
 	"encoding/json"
 )
 
@@ -18,16 +17,17 @@ func (c *IDCController) RequestIdcs() {
 		c.Rsp(false,err.Error(),nil)
 		return
 	}
+
 	c.Rsp(true,"success",Idcs)
 }
 
-func (c *IDCController) AddIdc() {
+func (c *IDCController) AddOrUpdateIdc() {
 	newIdc := models.IdcConf{}
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &newIdc);err != nil {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
-	err := models.AddIdc(&newIdc)
+	err := models.AddOrUpdateIdc(&newIdc)
 	if err != nil {
 		c.Rsp(false,err.Error(),nil)
 		return
@@ -35,16 +35,3 @@ func (c *IDCController) AddIdc() {
 	c.Rsp(true,"success",newIdc)
 }
 
-func (c *IDCController) UpdateIdc() {
-	newIdc := models.IdcConf{}
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &newIdc);err != nil {
-		c.Rsp(false, err.Error(),nil)
-		return
-	}
-	err := models.UpdateIdc(&newIdc)
-	if err != nil {
-		c.Rsp(false,err.Error(),nil)
-		return
-	}
-	c.Rsp(true,"success",newIdc)
-}

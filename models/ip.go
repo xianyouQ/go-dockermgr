@@ -6,8 +6,6 @@ import (
     "github.com/xianyouQ/go-dockermgr/utils"
     "errors"
     "fmt"
-    
-	"github.com/astaxie/beego/logs"
 )
 
 const (
@@ -31,11 +29,10 @@ type Ip struct {
     IpAddr string `orm:"unique;size(20)"`
     MacAddr string `orm:"unique;size(20)"`
     Status int 
-    BelongService *Service `orm:"rel(fk)"`
+    BelongService *Service `orm:"null;rel(fk)"`
 }
 
 var (
-    GlobalCidrList []utils.CidrHelper
     BaseMac = beego.AppConfig.String("basemacstring")
 )
 
@@ -47,55 +44,52 @@ func ( this *Cidr) TableName() string {
     return beego.AppConfig.String("dockermgr_cidr_table")
 }
 
-func getCidrFromOrm() []utils.CidrHelper {
-    CidrList := make([]utils.CidrHelper,0,5)
-    var Cidrs []Cidr
+func GetCidrFromOrm() ([]*Cidr,error) {
+    var Cidrs []*Cidr
     o := orm.NewOrm()
     cidr := new(Cidr)
     _,err := o.QueryTable(cidr).All(&Cidrs)
     if err !=nil {
-
+        return Cidrs,err
     }
-    for _,iter := range Cidrs {
-        mCidrHelper,_ := utils.NewCidrfromString(iter.Net)
-        CidrList = append(CidrList,mCidrHelper)
-    }
-    return CidrList
+    return Cidrs,nil
 }
 
 
 
 
-func AddCidr(net string,start string,end string) error {
-    newCidr,err := utils.NewCidrwithStartEnd(net,start,end)
+func AddCidr(cidr *Cidr) error {
+    var err error
+    var newCidr utils.CidrHelper
+    newCidr,err = utils.NewCidrwithStartEnd(cidr.Net,cidr.StartIp,cidr.EndIp)
     if err != nil {
         return err
     }
-    if GlobalCidrList == nil {
-        logs.GetLogger("Ip").Println("init globalCidrList")
-        GlobalCidrList = getCidrFromOrm()
-    }
-    for _,iter := range GlobalCidrList {
-        if ok := iter.Overlaps(newCidr); ok {
-            errorstring := fmt.Sprintf("new Cidr %s Overlaps with %s",net,iter)
-            return errors.New(errorstring)
+
+    for _,Idciter := range GlobalIdcConfList {
+        for _,CidrIter := range Idciter.Cidrs {
+            iterCidrHelper,_ := utils.NewCidrfromString(CidrIter.Net)
+            if ok := iterCidrHelper.Overlaps(newCidr); ok {
+                errorstring := fmt.Sprintf("new Cidr %s Overlaps with %s",cidr.Net,CidrIter)
+                return errors.New(errorstring)
+            }
         }
     }
     
     o := orm.NewOrm()
-    mcidr := new(Cidr)
-    mcidr.Net = newCidr.Net.String()
-    mcidr.StartIp = newCidr.StartIp.String()
-    mcidr.EndIp = newCidr.EndIp.String()
-    _,err = o.Insert(&mcidr)
+    _,err = o.Insert(cidr)
     if err != nil {
         return err
     }
-    GlobalCidrList = append(GlobalCidrList,newCidr)
+    for _,idcConfIter := range GlobalIdcConfList {
+        if idcConfIter.Id == cidr.BelongIdc.Id {
+            idcConfIter.Cidrs = append(idcConfIter.Cidrs,cidr)
+        }
+    }
     IpList := make([]Ip,0,125)
     for _,iter := range newCidr.IpList() {
         newIp := new(Ip)
-        newIp.BelongNet = mcidr
+        newIp.BelongNet = cidr
         newIp.IpAddr = iter.String()
         newIp.MacAddr = utils.GetMacAddr(iter,BaseMac)
         newIp.Status = IpUnUsed

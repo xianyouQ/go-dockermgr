@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/astaxie/beego"
 	"github.com/xianyouQ/go-dockermgr/auth"
+
 )
 
 type CommonController struct {

@@ -34,9 +34,14 @@ app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal',func
         templateUrl: 'addCidrModalContent.html',
         controller: 'addCidrModalInstanceCtrl',
         size: 'lg',
+        resolve: {
+          selectedidc: function () {
+            return $scope.selectedidc;
+          }
+        }
       });
       modalInstance.result.then(function (newCidr) {
-        $scope.idcs.Cidrs.push(newIdc);
+        $scope.selectedidc.Cidrs.push(newCidr);
       }, function () {
         //log error
       });
@@ -47,17 +52,43 @@ app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal',func
   };
  $scope.doneEditing = function() {
    $scope.selectedidc.editing = false;
- }
+ };
+ $scope.commitMarathonConf = function () {
+    $http.post('/api/marathon/conf',$scope.selectedidc).then(function(response) {
+          if (response.data.status ){
+            //$modalInstance.close($scope.newCidr);
+          }
+          if  (!response.data.status ) {
+            console.log(response.data.info)
+          }
+        }, function(x) {
+        console.log('Server Error')
+      });
+ };
+
+
+ $scope.commitRegistryConf = function () {
+    $http.post('/api/registry/conf',$scope.selectedidc).then(function(response) {
+          if (response.data.status ){
+            //$modalInstance.close($scope.newCidr);
+          }
+          if  (!response.data.status ) {
+            console.log(response.data.info)
+          }
+        }, function(x) {
+        console.log('Server Error')
+      });
+ };
 
 }]);
 
   app.controller('addIDCModalInstanceCtrl', ['$scope', '$modalInstance','$http',function($scope, $modalInstance,$http) {
    
-    $scope.newIdc = {"name":"","code":""};
+    $scope.newIdc = {"IdcName":"","IdcCode":""};
     $scope.formError = null;
     $scope.ok = function () {
       $scope.formError = null;
-        $http.post('api/idc',{IdcName:$scope.newIdc.name,IdcCode:$scope.newIdc.code}).then(function(response) {
+        $http.post('api/idc',$scope.newIdc).then(function(response) {
           if (response.data.status ){
             $modalInstance.close(response.data.data);
           }
@@ -75,13 +106,14 @@ app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal',func
     };
   }]); 
 
-    app.controller('addCidrModalInstanceCtrl', ['$scope', '$modalInstance','$http',function($scope, $modalInstance,$http) {
+    app.controller('addCidrModalInstanceCtrl', ['$scope', '$modalInstance','$http','selectedidc',function($scope, $modalInstance,$http,$selectedidc) {
    
     $scope.newCidr = {"Net":"","StartIP":"","EndIP":""};
+    $scope.newCidr.BelongIdc = $selectedidc
     $scope.formError = null;
     $scope.ok = function () {
       $scope.formError = null;
-        $http.post('api/idc',{Net:$scope.newCidr.Net,StartIP:$scope.newCidr.StartIP,EndIP:$scope.newCidr.EndIP}).then(function(response) {
+        $http.post('/api/Cidr/Add',$scope.newCidr).then(function(response) {
           if (response.data.status ){
             $modalInstance.close($scope.newCidr);
           }

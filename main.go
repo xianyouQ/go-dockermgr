@@ -20,7 +20,8 @@ func init() {
 	
 }
 func main() {
-	orm.RunCommand()
+	//orm.RunCommand()
+	orm.Debug = true
 	beego.Run()
 }
 

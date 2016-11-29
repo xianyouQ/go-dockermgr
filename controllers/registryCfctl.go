@@ -6,45 +6,27 @@ import (
 	"encoding/json"
 )
 
-type IDCController struct {
+type RegistryCfController struct {
 	CommonController
 }
 
 
 
-func (c *IDCController) RequestIdcs() {
-	Idcs,err := models.GetIdcs()
-	if err != nil {
-		c.Rsp(false,err.Error(),nil)
-		return
-	}
-	c.Rsp(true,"success",Idcs)
-}
-
-func (c *IDCController) AddIdc() {
-	newIdc := models.IdcConf{}
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &newIdc);err != nil {
+func (c *RegistryCfController) AddOrUpdateRegistryConf() {
+	var err error
+	belongIdc := models.IdcConf{}
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &belongIdc);err != nil {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
-	err := models.AddIdc(&newIdc)
-	if err != nil {
+	err = models.AddOrUpdateRegistryConf(belongIdc.RegistryConf)
+	if err !=nil {
 		c.Rsp(false,err.Error(),nil)
-		return
 	}
-	c.Rsp(true,"success",newIdc)
+	err = models.AddOrUpdateIdc(&belongIdc)
+	if err !=nil {
+		c.Rsp(false,err.Error(),nil)
+	}
+	c.Rsp(true,"success",nil)
 }
 
-func (c *IDCController) UpdateIdc() {
-	newIdc := models.IdcConf{}
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &newIdc);err != nil {
-		c.Rsp(false, err.Error(),nil)
-		return
-	}
-	err := models.UpdateIdc(&newIdc)
-	if err != nil {
-		c.Rsp(false,err.Error(),nil)
-		return
-	}
-	c.Rsp(true,"success",newIdc)
-}
