@@ -50,7 +50,10 @@
                       <strong>MgrConf Base</strong>
                     </div>
                     <div class="panel-body">
-                        <div class="form-group">
+                        <div class="form-group form-validation">
+                         <div class="text-danger wrapper text-center" ng-show="formError">
+                          {{formError}}
+                        </div>
                           <label>IdcName</label>
                           <input type="text" class="form-control"  placeholder="" ng-model="selectedidc.IdcName" required>
                         </div>
@@ -60,7 +63,7 @@
                         </div>
                     </div>
                     <footer class="panel-footer text-right bg-light lter">
-                      <button type="submit" class="btn btn-success">Submit</button>
+                      <button type="submit" class="btn btn-success"  ng-disabled='form.$invalid'>Submit</button>
                     </footer>
                   </div>
                 </div>
@@ -69,7 +72,10 @@
                       <strong>MarathonConf</strong>
                     </div>
                     <div class="panel-body">                    
-                        <div class="form-group">
+                        <div class="form-group form-validation">
+                         <div class="text-danger wrapper text-center" ng-show="MarathonformError">
+                          {{MarathonformError}}
+                        </div>
                             <label>Marathon Server</label>
                             <input type="text" class="form-control"  placeholder="http://127.0.0.1:8080" ng-model="selectedidc.MarathonSerConf.Server" required >
                         </div>
@@ -88,7 +94,7 @@
                         </div>
                     </div>
                     <footer class="panel-footer text-right bg-light lter">
-                      <button type="submit" class="btn btn-success" ng-click="commitMarathonConf()">Submit</button>
+                      <button type="submit" class="btn btn-success" ng-click="commitMarathonConf()" ng-disabled='form.$invalid'>Submit</button>
                     </footer>
                   </div>
                    <div class="panel panel-default">
@@ -96,7 +102,10 @@
                       <strong>RegistryConf</strong>
                     </div>
                     <div class="panel-body">                    
-                        <div class="form-group">
+                        <div class="form-group form-validation">
+                         <div class="text-danger wrapper text-center" ng-show="RegistryformError">
+                          {{RegistryformError}}
+                        </div>
                             <label>Registry Server</label>
                             <input type="text" class="form-control" placeholder="http://127.0.0.1:8080" ng-model="selectedidc.RegistryConf.Server" required >
                         </div>
@@ -111,7 +120,7 @@
                         </div>
                     </div>
                     <footer class="panel-footer text-right bg-light lter">
-                      <button type="submit" class="btn btn-success" ng-click="commitRegistryConf()">Submit</button>
+                      <button type="submit" class="btn btn-success" ng-click="commitRegistryConf()" ng-disabled='form.$invalid'>Submit</button>
                     </footer>
                   </div>
                    <div class="panel panel-default">

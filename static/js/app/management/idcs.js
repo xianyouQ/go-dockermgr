@@ -1,11 +1,16 @@
-app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal',function($scope, $http, $filter,$modal) {
+app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal','toaster',function($scope, $http, $filter,$modal,toaster) {
     $scope.idcs = [];
     $scope.selectedidc = null;
 
     $http.get('api/idc').then(function (resp) {
-      $scope.idcs = resp.data.data;
-      $scope.selectedidc = $filter('orderBy')($scope.idcs, 'first')[0];
-      $scope.selectedidc.selected = true;
+      if (resp.data.status ){
+        $scope.idcs = resp.data.data;
+        $scope.selectedidc = $filter('orderBy')($scope.idcs, 'first')[0];
+        $scope.selectedidc.selected = true;
+      }
+      else {
+        toaster.pop("error","get idc error",resp.data.info);
+      } 
   });
 
   $scope.selectIDC = function (item) {
@@ -54,12 +59,13 @@ app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal',func
    $scope.selectedidc.editing = false;
  };
  $scope.commitMarathonConf = function () {
+   $scope.MarathonformError = null;
     $http.post('/api/marathon/conf',$scope.selectedidc).then(function(response) {
           if (response.data.status ){
             $scope.selectedidc.MarathonSerConf = response.data.data
           }
           if  (!response.data.status ) {
-            console.log(response.data.info)
+            $scope.MarathonformError = response.data.info;
           }
         }, function(x) {
         console.log('Server Error')
@@ -68,12 +74,13 @@ app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal',func
 
 
  $scope.commitRegistryConf = function () {
+   $scope.RegistryformError = null;
     $http.post('/api/registry/conf',$scope.selectedidc).then(function(response) {
           if (response.data.status ){
             $scope.selectedidc.RegistryConf = response.data.data
           }
           if  (!response.data.status ) {
-            console.log(response.data.info)
+            $scope.RegistryformError = response.data.info;
           }
         }, function(x) {
         console.log('Server Error')
@@ -88,6 +95,9 @@ app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal',func
     $scope.formError = null;
     $scope.ok = function () {
       $scope.formError = null;
+      if ($scope.newIdc.IdcName == "" || $scope.newIdc.IdcCode == ""){
+        return
+      }
         $http.post('api/idc',$scope.newIdc).then(function(response) {
           if (response.data.status ){
             $modalInstance.close(response.data.data);
@@ -112,7 +122,10 @@ app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal',func
     $scope.newCidr.BelongIdc = $selectedidc
     $scope.formError = null;
     $scope.ok = function () {
-      $scope.formError = null;
+    $scope.formError = null;
+    if ($scope.newCidr.Net == "" || $scope.newCidr.StartIP == "" || $scope.newCidr.EndIP == ""){
+          return
+      }
         $http.post('/api/Cidr/Add',$scope.newCidr).then(function(response) {
           if (response.data.status ){
             $modalInstance.close($scope.newCidr);

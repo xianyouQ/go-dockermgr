@@ -5,8 +5,6 @@ import (
     "github.com/astaxie/beego/orm"
     "github.com/astaxie/beego/validation"
     "errors"
-	"github.com/astaxie/beego/logs"
-	"encoding/json"
 )
 
 const (
@@ -16,8 +14,8 @@ const (
 type IdcConf struct {
     Id int `orm:"pk;auto"`
     Status int
-    IdcName string `orm:"size(30);unique" valid:"Required"`
-    IdcCode string `orm:"size(30);unique" valid:"Required"`
+    IdcName string `orm:"size(30);unique" valid:"Required;MinSize(2)"`
+    IdcCode string `orm:"size(30);unique" valid:"Required;MinSize(2)"`
     RegistryConf *RegistryConf `orm:"null;rel(one)"`
     MarathonSerConf *MarathonSerConf `orm:"null;rel(one)"`
     Cidrs []*Cidr `orm:"null;reverse(many)"`
@@ -46,27 +44,32 @@ func checkIdc(idc *IdcConf) (err error) {
 func AddOrUpdateIdc(idc *IdcConf) error {
     var err error
     var pid int64
-    idc.Status = IdcEnable
     err = checkIdc(idc)
     if err!=nil {
         return err
     }
     o := orm.NewOrm()
-    pid,err = o.InsertOrUpdate(idc)  //返回值都是什么意思
-    if err!=nil {
-        return err
+    if(idc.Id == 0) {
+        idc.Status = IdcEnable
+        pid,err = o.Insert(idc)
+        if err != nil {
+            return err
+        }
+    } else {
+        _,err = o.Update(idc)
+        if err != nil {
+            return err
+        }
     }
     if pid != 0 {
         GlobalIdcConfList = append(GlobalIdcConfList,idc)
     } else {
-        for _,IdcConfIter := range GlobalIdcConfList{
+        for inx,IdcConfIter := range GlobalIdcConfList{
             if IdcConfIter.Id == idc.Id {
-                IdcConfIter = idc
+                GlobalIdcConfList[inx] = idc
             }
         }
     }
-    test,_:=json.Marshal(GlobalIdcConfList)
-    logs.GetLogger("idcModel").Println(string(test))
     return nil
 }
 func getIdcsfromOrm() ([]*IdcConf,error) {

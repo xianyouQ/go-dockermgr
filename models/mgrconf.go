@@ -10,19 +10,19 @@ import (
 
 type MarathonSerConf struct {
     Id int `orm:"auto"`
-    Server string `orm:"size(50);unique" valid:"Required"`
-    HttpBasicAuthUser string `orm:"size(50)" valid:"Required"`
-    HttpBasicPassword string `orm:"size(50)" valid:"Required"`
-    MarathonConfTemplate string `orm:"type(text)" valid:"Required"`
+    Server string `orm:"size(50);unique" valid:"Required;MinSize(5)"`
+    HttpBasicAuthUser string `orm:"size(50)" valid:"Required;MinSize(2)"`
+    HttpBasicPassword string `orm:"size(50)" valid:"Required;MinSize(2)"`
+    MarathonConfTemplate string `orm:"type(text)" valid:"Required;MinSize(5)"`
     //BelongIdc *IdcConf `orm:"reverse(one)"` 防止解析json的时候循环解析
     
 }
 
 type RegistryConf struct {
     Id int `orm:"auto"`
-    Server string `orm:"size(50);unique" valid:"Required"`
-    UserName string `orm:"size(20)" valid:"Required"`
-    Password string `orm:"size(20)" valid:"Required"`
+    Server string `orm:"size(50);unique" valid:"Required;MinSize(5)"`
+    UserName string `orm:"size(20)" valid:"Required;MinSize(2)"`
+    Password string `orm:"size(20)" valid:"Required;MinSize(2)"`
     //BelongIdc *IdcConf `orm:"reverse(one)"`
 }
 
@@ -73,9 +73,16 @@ func AddOrUpdateMarathonSerConf(newConf *MarathonSerConf) (int64,error) {
         return id,err
     }
      o := orm.NewOrm()
-    id,err = o.InsertOrUpdate(newConf)
-    if err!=nil {
-        return id,err
+    if(newConf.Id == 0) {
+        id,err = o.Insert(newConf)
+        if err != nil {
+            return id,err
+        }
+    } else {
+        _,err = o.Update(newConf)
+        if err != nil {
+            return id,err
+        }
     }
     return id,nil
 }
@@ -89,9 +96,16 @@ func AddOrUpdateRegistryConf(newConf *RegistryConf) (int64,error) {
         return id,err
     }
      o := orm.NewOrm()
-    id,err = o.InsertOrUpdate(newConf)
-    if err!=nil {
-        return id,err
+    if(newConf.Id == 0) {
+        id,err = o.Insert(newConf)
+        if err != nil {
+            return id,err
+        }
+    } else {
+        _,err = o.Update(newConf)
+        if err != nil {
+            return id,err
+        }
     }
     return id,nil
 }

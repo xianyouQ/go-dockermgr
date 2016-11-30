@@ -1,13 +1,9 @@
 package utils
 
 import (
-    "github.com/astaxie/beego"
     outMarathon "github.com/xianyouQ/go-marathon"
     "encoding/json"
-    "net"
     "net/http"
-    "crypto/tls"
-    "time"
 	"fmt"
 	"io/ioutil"
     "strings"
@@ -33,6 +29,7 @@ var (
     marathonClient outMarathon.Marathon 
 )
 func init() {
+    /*
     marathonURL := beego.AppConfig.String("marathonUrl")
     config :=  outMarathon.NewDefaultConfig()
     config.URL = marathonURL 
@@ -54,6 +51,7 @@ func init() {
         //log.Fatalf("Failed to create a client for marathon, error: %s", err)
     }
     marathonClient = client
+    */
 }
 
 func CreateMarathonAppFromJson(conf string) (*outMarathon.Application,error) {

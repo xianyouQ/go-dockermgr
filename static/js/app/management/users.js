@@ -52,10 +52,31 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
   } 
   } 
   $scope.mainbuses = [] ;
+  $scope.services = [];
+  $scope.count = undefined;
   $scope.people = [] ;
   $scope.mainfilter = '';
   $scope.subfilter = '';
   $scope.rolenames = [];
+
+  $http.get("/api/service/get").then(function (resp) {
+        if (resp.data.status ){
+        $scope.services = resp.data.data;
+        $scope.selectedservice = $filter('orderBy')($scope.services, 'first')[0];
+        $scope.selectedservice.selected = true;
+      }
+      else {
+        toaster.pop("error","get service error",resp.data.info);
+      } 
+  });
+  $http.get("/api/service/count").then(function (resp) {
+        if (resp.data.status ){
+        $scope.count = resp.data.data;
+      }
+      else {
+        toaster.pop("error","get count error",resp.data.info);
+      } 
+  });
 
   $http.get('js/app/management/roles.json').then(function (resp) {
     $scope.roles = resp.data.roles;

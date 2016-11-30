@@ -23,6 +23,7 @@ func (c *RegistryCfController) AddOrUpdateRegistryConf() {
 	id,err = models.AddOrUpdateRegistryConf(belongIdc.RegistryConf)
 	if err !=nil {
 		c.Rsp(false,err.Error(),nil)
+		return
 	}
 	if id != 0 {
 		belongIdc.RegistryConf.Id = int(id)
@@ -30,6 +31,7 @@ func (c *RegistryCfController) AddOrUpdateRegistryConf() {
 	err = models.AddOrUpdateIdc(&belongIdc)
 	if err !=nil {
 		c.Rsp(false,err.Error(),nil)
+		return
 	}
 	c.Rsp(true,"success",belongIdc.RegistryConf)
 }

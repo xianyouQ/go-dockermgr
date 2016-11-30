@@ -4,6 +4,10 @@ import (
     "github.com/astaxie/beego"
     "github.com/astaxie/beego/orm"
     "github.com/xianyouQ/go-dockermgr/utils"
+	"github.com/astaxie/beego/validation"
+    "strings"
+    "errors"
+
 )
 
 type Service struct {
@@ -23,11 +27,67 @@ func init() {
     orm.RegisterModel(new(Service))
 }
 
-func AddService(name string,code string) error {
-    service := Service{Name:name,Code:code}
+
+func checkService(newService *Service) error {
+    separator := beego.AppConfig.String("service_separator")
+    separateCount,err := beego.AppConfig.Int("service_separate_count")
+    if err != nil {
+        return err
+    }
+	valid := validation.Validation{}
+	b, _ := valid.Valid(&newService)
+	if !b {
+		for _, err1 := range valid.Errors {
+			return errors.New(err1.Message)
+		}
+	}
+    codeSplits := strings.Split(newService.Code,separator)
+    if len(codeSplits) != separateCount {
+        return errors.New("invaild service code")
+    }
+	return nil
+
+}
+func AddService(newService *Service) (int64,error) {
+    var err error
+    var id int64
+    err = checkService(newService)
+    if err != nil {
+        return id,err
+    }
     o := orm.NewOrm()
-    _,err := o.Insert(service)
+    id,err = o.Insert(newService)
     if err!=nil {
+        return id,err
+    }
+    return id,nil
+}
+
+
+func QueryService() ([]*Service,error) {
+    var err error
+    var Services []*Service
+    o := orm.NewOrm()
+    _,err = o.QueryTable(beego.AppConfig.String("dockermgr_service_table")).All(&Services)
+    if err !=nil {
+        return Services,err
+    }
+    return  Services,nil
+}
+
+func DelService(oldService *Service) error {
+    var err error
+    var count int64
+    o := orm.NewOrm()
+    count,err = o.QueryTable(beego.AppConfig.String("dockermgr_ip_table")).Filter("BelongService",oldService.Id).Count()
+    if err != nil {
+        return err
+    }
+    if count > 0 {
+        return errors.New("Instance is not null")
+    } 
+    _,err = o.Delete(oldService)
+    if err != nil {
         return err
     }
     return nil
@@ -52,22 +112,16 @@ func (self *Service) SetMarathonConf(conf string) error {
 
 } 
 
-func (self Service) GetInstances() ([]*Ip,error) {
-    o := orm.NewOrm()
-    var Ips []*Ip
-    _,err := o.QueryTable("Ip").Filter("BelongService",self.Id).RelatedSel().All(&Ips)
-    if err != nil {
-        return Ips,err
-    }
-    return Ips,nil
-}
 
-func (self Service) GetInstancesWithCidr(cidr Cidr) ([]*Ip,error) {
+/*
+
+func (self Service) GetInstancesWithIdc(idc IdcConf) ([]*Ip,error) {
     o := orm.NewOrm()
     var Ips []*Ip
-    _,err := o.QueryTable("Ip").Filter("BelongService",self.Id).Filter("BelongNet",cidr.Id).RelatedSel().All(&Ips)
+    _,err := o.QueryTable(beego.AppConfig.String("dockermgr_ip_table")).Filter("BelongService",self.Id).Filter("BelongNet__in",IdcConf.Cidr).RelatedSel().All(&Ips)
     if err != nil {
         return Ips,err
     }
     return Ips,nil
 }
+*/
