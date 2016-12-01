@@ -1,16 +1,37 @@
 package utils
 
 import (
-    "encoding/json"
+	"crypto/md5"
+	"encoding/hex"
+	"strconv"
 )
 
 
-func Json2Map(jsonstr []byte) (s map[string]interface{}, err error) {
-    var result map[string]interface{}
-    if err := json.Unmarshal(jsonstr, &result); err != nil {
-        return nil,err
-    }
-    return result,nil
+
+
+func Strtomd5(s string) string {
+	h := md5.New()
+	h.Write([]byte(s))
+	rs := hex.EncodeToString(h.Sum(nil))
+	return rs
 }
 
+//password hash function
+func Pwdhash(str string) string {
+	return Strtomd5(str)
+}
 
+func StringsToJson(str string) string {
+	rs := []rune(str)
+	jsons := ""
+	for _, r := range rs {
+		rint := int(r)
+		if rint < 128 {
+			jsons += string(r)
+		} else {
+			jsons += "\\u" + strconv.FormatInt(int64(rint), 16) // json
+		}
+	}
+
+	return jsons
+}

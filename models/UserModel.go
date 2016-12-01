@@ -8,7 +8,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego/validation"
-	. "github.com/xianyouQ/go-dockermgr/auth/lib"
+	"github.com/xianyouQ/go-dockermgr/utils"
 )
 
 //用户表
@@ -21,7 +21,7 @@ type User struct {
 	Email         string    `orm:"size(32)" form:"Email" valid:"Email"`
 	Lastlogintime time.Time `orm:"null;type(datetime)" form:"-"`
 	Createtime    time.Time `orm:"type(datetime);auto_now_add" `
-	Role          []*Role   `orm:"rel(m2m)"`
+	ServiceAuths          []*ServiceAuth   `orm:"rel(m2m)"`
 }
 
 func (u *User) TableName() string {
@@ -54,17 +54,18 @@ func init() {
 /************************************************************/
 
 //get user list
-func Getuserlist(page int64, page_size int64, sort string) (users []orm.Params, count int64) {
+func Getuserlist(page int64, page_size int64, sort string) ([]*User, int64) {
 	o := orm.NewOrm()
-	user := new(User)
-	qs := o.QueryTable(user)
+	var users []*User
+	var count int64
+	qs := o.QueryTable(beego.AppConfig.String("rbac_user_table"))
 	var offset int64
 	if page <= 1 {
 		offset = 0
 	} else {
 		offset = (page - 1) * page_size
 	}
-	qs.Limit(page_size, offset).OrderBy(sort).Values(&users)
+	qs.Limit(page_size, offset).OrderBy(sort).All(&users)
 	count, _ = qs.Count()
 	return users, count
 }
@@ -77,7 +78,7 @@ func AddUser(u *User) (int64, error) {
 	o := orm.NewOrm()
 	user := new(User)
 	user.Username = u.Username
-	user.Password = Strtomd5(u.Password)
+	user.Password = utils.Strtomd5(u.Password)
 	user.Nickname = u.Nickname
 	user.Email = u.Email
 
@@ -103,7 +104,7 @@ func UpdateUser(u *User) (int64, error) {
 	}
 
 	if len(u.Password) > 0 {
-		user["Password"] = Strtomd5(u.Password)
+		user["Password"] = utils.Strtomd5(u.Password)
 	}
 
 	if len(user) == 0 {

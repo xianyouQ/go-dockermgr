@@ -2,6 +2,7 @@ package utils
 
 import (
     outMarathon "github.com/xianyouQ/go-marathon"
+    m "github.com/xianyouQ/go-dockermgr/models"
     "encoding/json"
     "net/http"
 	"fmt"
@@ -25,34 +26,8 @@ type MesosInfo struct {
     DiskPercent float32 `json:"master/disk_percent"`
 }
 
-var (
-    marathonClient outMarathon.Marathon 
-)
-func init() {
-    /*
-    marathonURL := beego.AppConfig.String("marathonUrl")
-    config :=  outMarathon.NewDefaultConfig()
-    config.URL = marathonURL 
-    config.HTTPClient = &http.Client{
-    Timeout: (time.Duration(10) * time.Second),
-    Transport: &http.Transport{
-        Dial: (&net.Dialer{
-            Timeout:   10 * time.Second,
-            KeepAlive: 10 * time.Second,
-        }).Dial,
-        TLSClientConfig: &tls.Config{
-            InsecureSkipVerify: true,
-            },
-        },
-    }
 
-    client,err := outMarathon.NewClient(config)
-    if err != nil {
-        //log.Fatalf("Failed to create a client for marathon, error: %s", err)
-    }
-    marathonClient = client
-    */
-}
+
 
 func CreateMarathonAppFromJson(conf string) (*outMarathon.Application,error) {
     MarathonApp := &outMarathon.Application{}
@@ -64,7 +39,7 @@ func CreateMarathonAppFromJson(conf string) (*outMarathon.Application,error) {
     return MarathonApp,nil
 }
 
-func  ListApplicationsFromGroup(name string) ([]*outMarathon.Application,error) {
+func  ListApplicationsFromGroup(name string,marathonClient outMarathon.Marathon) ([]*outMarathon.Application,error) {
     var Apps []*outMarathon.Application
     group,err := marathonClient.Group(name)
     if err != nil {
@@ -73,7 +48,7 @@ func  ListApplicationsFromGroup(name string) ([]*outMarathon.Application,error) 
     return group.Apps,nil
 }
 
-func  GetMesosInfo() (*MesosInfo,error) {
+func  GetMesosInfo(marathonClient outMarathon.Marathon) (*MesosInfo,error) {
      mesosInfo := new(MesosInfo)
      marathonInfo,err := marathonClient.Info()
      if err !=nil {
@@ -103,4 +78,13 @@ func  GetMesosInfo() (*MesosInfo,error) {
     mesosInfo.MemIdle = mesosInfo.MemTotal - mesosInfo.MemUserd
     mesosInfo.DiskIdle = mesosInfo.DiskTotal - mesosInfo.DiskUserd
     return mesosInfo,nil
+}
+
+func NewMarathonClient(idc *m.IdcConf) (outMarathon.Marathon,error){
+        config :=  outMarathon.NewDefaultConfig()
+        config.URL = idc.MarathonSerConf.Server
+        config.HTTPBasicAuthUser = idc.MarathonSerConf.HttpBasicAuthUser
+        config.HTTPBasicPassword = idc.MarathonSerConf.HttpBasicPassword
+        client,err := outMarathon.NewClient(config)
+        return client,err
 }

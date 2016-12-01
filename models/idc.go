@@ -5,6 +5,7 @@ import (
     "github.com/astaxie/beego/orm"
     "github.com/astaxie/beego/validation"
     "errors"
+	"time"
 )
 
 const (
@@ -22,9 +23,7 @@ type IdcConf struct {
 }
 
 
-var (
-    GlobalIdcConfList []*IdcConf
-)
+
 
 func ( this *IdcConf) TableName() string {
     return beego.AppConfig.String("dockermgr_idc_table")
@@ -44,6 +43,8 @@ func checkIdc(idc *IdcConf) (err error) {
 func AddOrUpdateIdc(idc *IdcConf) error {
     var err error
     var pid int64
+    var idcs []*IdcConf
+    
     err = checkIdc(idc)
     if err!=nil {
         return err
@@ -61,15 +62,20 @@ func AddOrUpdateIdc(idc *IdcConf) error {
             return err
         }
     }
+    idcs,err = GetIdcs()
+    if err != nil {
+        return err
+    }
     if pid != 0 {
-        GlobalIdcConfList = append(GlobalIdcConfList,idc)
+        idcs = append(idcs,idc)
     } else {
-        for inx,IdcConfIter := range GlobalIdcConfList{
+        for inx,IdcConfIter := range idcs{
             if IdcConfIter.Id == idc.Id {
-                GlobalIdcConfList[inx] = idc
+                idcs[inx] = idc
             }
         }
     }
+    bm.Put("idcs",idcs,3600*time.Second)
     return nil
 }
 func getIdcsfromOrm() ([]*IdcConf,error) {
@@ -95,16 +101,6 @@ func getIdcsfromOrm() ([]*IdcConf,error) {
     return idcs,nil
 }
 
-func GetIdcs() ([]*IdcConf,error) {
-    var err error
-    if GlobalIdcConfList == nil {
-       GlobalIdcConfList,err = getIdcsfromOrm()
-       if err!=nil {
-           return GlobalIdcConfList,err
-       }
-    }
-    return GlobalIdcConfList,nil
-}
 
 
 

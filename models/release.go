@@ -3,7 +3,6 @@ package models
 import (
     "github.com/astaxie/beego"
     "github.com/astaxie/beego/orm"
-    . "github.com/xianyouQ/go-dockermgr/auth/models"
     "time"
 )
 const (

@@ -29,7 +29,6 @@ func init() {
 
 
 func checkService(newService *Service) error {
-    separator := beego.AppConfig.String("service_separator")
     separateCount,err := beego.AppConfig.Int("service_separate_count")
     if err != nil {
         return err
@@ -41,7 +40,7 @@ func checkService(newService *Service) error {
 			return errors.New(err1.Message)
 		}
 	}
-    codeSplits := strings.Split(newService.Code,separator)
+    codeSplits := strings.Split(newService.Code,"-")
     if len(codeSplits) != separateCount {
         return errors.New("invaild service code")
     }

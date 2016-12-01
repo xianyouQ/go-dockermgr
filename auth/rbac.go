@@ -8,9 +8,8 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
-	. "github.com/xianyouQ/go-dockermgr/auth/lib"
-	m "github.com/xianyouQ/go-dockermgr/auth/models"
-	
+	m "github.com/xianyouQ/go-dockermgr/models"
+	"github.com/xianyouQ/go-dockermgr/utils"
 )
 
 //check access and register user's nodes
@@ -20,140 +19,97 @@ func AccessRegister() {
 		rbac_auth_gateway := beego.AppConfig.String("rbac_auth_gateway")
 		rbac_auth_signup := beego.AppConfig.String("rbac_auth_signup")
 		requestUrl := strings.ToLower(ctx.Request.RequestURI)
-		var accesslist map[string]bool
+		var accesslist []string
+		var err error
 		if requestUrl==rbac_auth_gateway || requestUrl==rbac_auth_signup {
 			return
 		}
 		if user_auth_type > 0 {
-			params := strings.Split(requestUrl, "/")
-			if CheckAccess(params) {
-				uinfo := ctx.Input.Session("userinfo")
-				if uinfo == nil {
-					 //ctx.Redirect(302, rbac_auth_gateway)
-					ctx.Output.SetStatus(401)
-					ctx.Output.JSON(&map[string]interface{}{"status": false, "info": "未登录"}, true, false)
-					
-					return
-				}
+			uinfo := ctx.Input.Session("userinfo")
+			if uinfo == nil {
+				 //ctx.Redirect(302, rbac_auth_gateway)
+				ctx.Output.SetStatus(401)
+				ctx.Output.JSON(&map[string]interface{}{"status": false, "info": "未登录"}, true, false)	
+				return
+			}
 				//admin用户不用认证权限
-				adminuser := beego.AppConfig.String("rbac_admin_user")
-				if uinfo.(m.User).Username == adminuser {
-					return
-				}
-
-				if user_auth_type == 1 {
-					listbysession := ctx.Input.Session("accesslist")
-					if listbysession != nil {
-						accesslist = listbysession.(map[string]bool)
-					}
-				} else if user_auth_type == 2 {
-
-					accesslist, _ = GetAccessList(uinfo.(m.User).Id)
-				}
-
-				ret := AccessDecision(params, accesslist)
-				if !ret {
-					ctx.Output.JSON(&map[string]interface{}{"status": false, "info": "权限不足"}, true, false)
-				}
+			adminuser := beego.AppConfig.String("rbac_admin_user")
+			if uinfo.(m.User).Username == adminuser {
+				return
 			}
 
+			if user_auth_type == 1 {
+					listbysession := ctx.Input.Session("accesslist")
+					if listbysession != nil {
+						accesslist = listbysession.([]string)
+					} else {
+						accesslist,err = AccessList(uinfo.(m.User).Id)
+						if err != nil {
+							ctx.Output.SetStatus(403)
+							ctx.Output.JSON(&map[string]interface{}{"status": false, "info": "获取权限信息失败"}, true, false)
+						}
+						ctx.Output.Session("accesslist",accesslist)
+					}
+				ret := AccessDecision(ctx.Request.RequestURI, accesslist)
+				if !ret {
+					ctx.Output.SetStatus(403)
+					ctx.Output.JSON(&map[string]interface{}{"status": false, "info": "权限不足"}, true, false)
+					return
+				}
+			}
 		}
 	}
 	beego.InsertFilter("/api/*", beego.BeforeRouter, Check)
 }
 
-//Determine whether need to verify
-func CheckAccess(params []string) bool {
-	if len(params) < 3 {
-		return false
-	}
-	for _, nap := range strings.Split(beego.AppConfig.String("not_auth_package"), ",") {
-		if params[1] == nap {
-			return false
-		}
-	}
-	return true
-}
+
 
 //To test whether permissions
-func AccessDecision(params []string, accesslist map[string]bool) bool {
-	if CheckAccess(params) {
-		s := fmt.Sprintf("%s/%s/%s", params[1], params[2], params[3])
-		if len(accesslist) < 1 {
-			return false
-		}
-		_, ok := accesslist[s]
-		if ok != false {
+func AccessDecision(url string,accesslist []string) bool {
+	for _,access := range accesslist {
+		if access == url {
 			return true
 		}
-	} else {
-		return true
 	}
 	return false
 }
 
-type AccessNode struct {
-	Id        int64
-	Name      string
-	Childrens []*AccessNode
-}
 
-//Access permissions list
-func GetAccessList(uid int64) (map[string]bool, error) {
-	list, err := m.AccessList(uid)
+
+func AccessList(uid int64) ([]string,error){
+	var err error
+	var auths []*m.ServiceAuth
+	var roles []*m.Role
+	nodes := make([]string,5,5)
+	auths,err = m.GetAuthList(uid)
 	if err != nil {
-		return nil, err
+		return nodes,err
 	}
-	alist := make([]*AccessNode, 0)
-	for _, l := range list {
-		if l["Pid"].(int64) == 0 && l["Level"].(int64) == 1 {
-			anode := new(AccessNode)
-			anode.Id = l["Id"].(int64)
-			anode.Name = l["Name"].(string)
-			alist = append(alist, anode)
-		}
+	roles,err = m.GetRoleNodes()
+	if err != nil {
+		return nodes,err
 	}
-	for _, l := range list {
-		if l["Level"].(int64) == 2 {
-			for _, an := range alist {
-				if an.Id == l["Pid"].(int64) {
-					anode := new(AccessNode)
-					anode.Id = l["Id"].(int64)
-					anode.Name = l["Name"].(string)
-					an.Childrens = append(an.Childrens, anode)
-				}
-			}
-		}
-	}
-	for _, l := range list {
-		if l["Level"].(int64) == 3 {
-			for _, an := range alist {
-				for _, an1 := range an.Childrens {
-					if an1.Id == l["Pid"].(int64) {
-						anode := new(AccessNode)
-						anode.Id = l["Id"].(int64)
-						anode.Name = l["Name"].(string)
-						an1.Childrens = append(an1.Childrens, anode)
+	for _,auth := range auths {
+		for _,role := range roles {
+			if auth.Role.Id == role.Id {
+				if auth.Service == nil {
+					for _,node := range role.Node {
+						nodes = append(nodes,node.Name)
 					}
+				} else {
+					for _,node := range role.Node {
+						nodename := fmt.Sprintf("%s/%s",auth.Service.Name,node.Name)
+						nodes = append(nodes,nodename)
+					}	
+					
 				}
-
-			}
+	
+			} 
 		}
 	}
-	accesslist := make(map[string]bool)
-	for _, v := range alist {
-		for _, v1 := range v.Childrens {
-			for _, v2 := range v1.Childrens {
-				vname := strings.Split(v.Name, "/")
-				v1name := strings.Split(v1.Name, "/")
-				v2name := strings.Split(v2.Name, "/")
-				str := fmt.Sprintf("%s/%s/%s", strings.ToLower(vname[0]), strings.ToLower(v1name[0]), strings.ToLower(v2name[0]))
-				accesslist[str] = true
-			}
-		}
-	}
-	return accesslist, nil
+	return nodes,err
 }
+
 
 //check login
 func CheckLogin(username string, password string) (user m.User, err error) {
@@ -161,7 +117,7 @@ func CheckLogin(username string, password string) (user m.User, err error) {
 	if user.Id == 0 {
 		return user, errors.New("用户不存在")
 	}
-	if user.Password != Pwdhash(password) {
+	if user.Password != utils.Pwdhash(password) {
 		return user, errors.New("密码错误")
 	}
 	return user, nil

@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	m "github.com/xianyouQ/go-dockermgr/auth/models"
+	m "github.com/xianyouQ/go-dockermgr/models"
 	"github.com/xianyouQ/go-dockermgr/auth"
 	//"github.com/astaxie/beego/logs"
 	"encoding/json"

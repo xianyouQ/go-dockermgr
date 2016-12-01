@@ -61,12 +61,16 @@ func GetCidrFromOrm() ([]*Cidr,error) {
 func AddCidr(cidr *Cidr) error {
     var err error
     var newCidr utils.CidrHelper
+    var idcs []*IdcConf
     newCidr,err = utils.NewCidrwithStartEnd(cidr.Net,cidr.StartIp,cidr.EndIp)
     if err != nil {
         return err
     }
-
-    for _,Idciter := range GlobalIdcConfList {
+    idcs,err = GetIdcs()
+    if err !=nil {
+        return err
+    }
+    for _,Idciter := range idcs {
         for _,CidrIter := range Idciter.Cidrs {
             iterCidrHelper,_ := utils.NewCidrfromString(CidrIter.Net)
             if ok := iterCidrHelper.Overlaps(newCidr); ok {
@@ -81,7 +85,7 @@ func AddCidr(cidr *Cidr) error {
     if err != nil {
         return err
     }
-    for _,idcConfIter := range GlobalIdcConfList {
+    for _,idcConfIter := range idcs {
         if idcConfIter.Id == cidr.BelongIdc.Id {
             idcConfIter.Cidrs = append(idcConfIter.Cidrs,cidr)
         }
