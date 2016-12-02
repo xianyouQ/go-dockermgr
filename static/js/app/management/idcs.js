@@ -2,7 +2,7 @@ app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal','toa
     $scope.idcs = [];
     $scope.selectedidc = null;
 
-    $http.get('api/idc').then(function (resp) {
+    $http.get('/api/idc').then(function (resp) {
       if (resp.data.status ){
         $scope.idcs = resp.data.data;
         $scope.selectedidc = $filter('orderBy')($scope.idcs, 'first')[0];
@@ -52,12 +52,6 @@ app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal','toa
       });
   };
 
-  $scope.editItem = function (){
-    $scope.selectedidc.editing = true;
-  };
- $scope.doneEditing = function() {
-   $scope.selectedidc.editing = false;
- };
  $scope.commitMarathonConf = function () {
    $scope.MarathonformError = null;
     $http.post('/api/marathon/conf',$scope.selectedidc).then(function(response) {
@@ -98,7 +92,7 @@ app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal','toa
       if ($scope.newIdc.IdcName == "" || $scope.newIdc.IdcCode == ""){
         return
       }
-        $http.post('api/idc',$scope.newIdc).then(function(response) {
+        $http.post('/api/idc',$scope.newIdc).then(function(response) {
           if (response.data.status ){
             $modalInstance.close(response.data.data);
           }

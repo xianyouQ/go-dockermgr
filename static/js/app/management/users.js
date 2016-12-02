@@ -53,14 +53,35 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
   } 
   $scope.mainbuses = [] ;
   $scope.services = [];
-  $scope.count = undefined;
+  $scope.filter = new Map();
+  $scope.count = [];
   $scope.people = [] ;
-  $scope.mainfilter = '';
-  $scope.subfilter = '';
   $scope.rolenames = [];
+
+
+  $http.get("/api/service/count").then(function (resp) {
+        if (resp.data.status ){
+          for(var i = 0 ;i < resp.data.data ; i++)
+          {
+            $scope.count.push(i)
+          }
+      }
+      else {
+        toaster.pop("error","get count error",resp.data.info);
+      } 
+  });
 
   $http.get("/api/service/get").then(function (resp) {
         if (resp.data.status ){
+          angular.forEach($resp.data.data,function(service){
+            var serviceSplit = service.split("-")
+            if(serviceSplit.length != $scope.count.length){
+              console.log("invaild service:",service)
+              continue
+            }
+            angularjs.forEach(serviceSplit,function(item,index){
+            });
+          });
         $scope.services = resp.data.data;
         $scope.selectedservice = $filter('orderBy')($scope.services, 'first')[0];
         $scope.selectedservice.selected = true;
@@ -69,46 +90,18 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
         toaster.pop("error","get service error",resp.data.info);
       } 
   });
-  $http.get("/api/service/count").then(function (resp) {
-        if (resp.data.status ){
-        $scope.count = resp.data.data;
-      }
-      else {
-        toaster.pop("error","get count error",resp.data.info);
-      } 
-  });
 
-  $http.get('js/app/management/roles.json').then(function (resp) {
-    $scope.roles = resp.data.roles;
-    $scope.rolenames = resp.data.names;
-  });
+  $scope.isShow = function(idx) {
+    if(idx == 0 && ($scope.filter[idx].length == 0)) {
+      return true
+    } else if ($scope.filter[idx].length == 0 && $scope.filter[idx-1].length > 0) {
+      return true
+    } 
+    return false
+  };
 
-  $http.get('js/app/management/bussiness.json').then(function (resp) {
-    $scope.subbuses = resp.data.subbuses;
-    angular.forEach($scope.subbuses,function(item) {
-      newitem ={name: item["mainbus"]};
-      if(!$scope.mainbuses.contains(newitem)) {
-        $scope.mainbuses.push(newitem);
-      }
-    })
-    $scope.mainbus = $filter('orderBy')($scope.mainbuses, 'name')[0];
-    $scope.mainbus.selected = true;
-  });
-    $http.get('js/app/management/people.json').then(function(resp) {
-      angular.forEach(resp.data.people,function(item) {
-        if ($scope.roles.length == 0 ) {
-          return ;
-        }
-        item.docker = $scope.roles[item.role].docker;
-        item.releaseNew = $scope.roles[item.role].releaseNew;
-        item.releaseVerify = $scope.roles[item.role].releaseVerify;
-        item.releaseOperation = $scope.roles[item.role].releaseOperation;
-        $scope.people.push(item)
-      });
-       $scope.person = $filter('orderBy')($scope.people, 'name')[0];
-    })
-  $scope.selectMainBus = function(item){    
-    angular.forEach($scope.mainbuses, function(item) {
+  $scope.selectService = function(item){    
+    angular.forEach($scope.services, function(item) {
       item.selected = false;
     });
     $scope.mainbus = item;
@@ -116,15 +109,6 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
     $scope.mainfilter = item.name;
   };
 
-  $scope.selectSubBus = function(item){    
-    angular.forEach($scope.subbuses, function(item) {
-      item.selected = false;
-    });
-    $scope.subbus = item;
-    $scope.subbus.selected = true;
-    $scope.subfilter = item.name;
-
-  };
   $scope.deleteUser = function(selectPerson) {
     //$http()
     console.log(selectPerson);
@@ -155,9 +139,8 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
   $scope.attachUser = function() {
 
   };
-  $scope.returnMain = function() {
-    $scope.mainfilter = '';
-    $scope.subfilter = '';
+  $scope.returnUpper = function(idx) {
+    $scope.filter[idx-1] = ""
   }
 }]);
 

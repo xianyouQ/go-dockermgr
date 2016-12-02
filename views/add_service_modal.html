@@ -1,0 +1,20 @@
+<div class="modal-body wrapper-lg">
+  <div class="row">
+      <p>New User</p>
+      <form role="form">
+        <div class="form-group">
+          <label>UserName</label>
+          <input type="text" class="form-control" ng-model="newUser.name"  placeholder="Enter username">
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <select class="form-control" ng-model="newUser.role" ng-options="item.name for item in rolenames"></select>
+        </div>
+        <div class="checkbox m-t-lg">
+          <button type="submit" class="btn btn-sm btn-success pull-right text-uc m-t-n-xs" ng-click="ok()"><strong>Log in</strong></button>
+          <button class="btn btn-sm btn-success pull-right text-uc m-t-n-xs" ng-click="cancel()"><strong>cancel</strong></button>
+        </div>
+      </form>
+  
+  </div>
+</div>

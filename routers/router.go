@@ -17,4 +17,5 @@ func init() {
 	beego.Router("/api/service/Delete",&controllers.ServiceController{},"post:DelService")
 	beego.Router("/api/service/count",&controllers.ServiceController{},"get:GetSeparateCount")
 	beego.Router("/api/service/get",&controllers.ServiceController{},"get:GetService")
+	beego.Router("/api/docker/dashboard",&controllers.DockerController{},"get:DashBoard")
 }

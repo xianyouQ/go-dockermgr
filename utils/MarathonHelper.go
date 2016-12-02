@@ -2,7 +2,6 @@ package utils
 
 import (
     outMarathon "github.com/xianyouQ/go-marathon"
-    m "github.com/xianyouQ/go-dockermgr/models"
     "encoding/json"
     "net/http"
 	"fmt"
@@ -24,6 +23,10 @@ type MesosInfo struct {
     DiskUserd float32 `json:"master/disk_used"`
     DiskIdle float32 `json:"-"`
     DiskPercent float32 `json:"master/disk_percent"`
+    SlaveActive float32 `json:"master/slaves_active"`
+    SlaveInActive float32 `json:"master/slaves_inactive"`
+    TaskRunning float32 `json:"master/tasks_running"`
+    TaskLost float32 `json:"master/tasks_lost"`
 }
 
 
@@ -63,7 +66,7 @@ func  GetMesosInfo(marathonClient outMarathon.Marathon) (*MesosInfo,error) {
      mesosMetricsUrl := fmt.Sprintf("%s%s",marathonInfo.MarathonConfig.MesosLeaderUrl,api)
      resp,err := http.Get(mesosMetricsUrl)
      if err != nil {
-         return mesosInfo,nil
+         return mesosInfo,err
      }
      defer resp.Body.Close()
      body, err := ioutil.ReadAll(resp.Body)
@@ -80,11 +83,11 @@ func  GetMesosInfo(marathonClient outMarathon.Marathon) (*MesosInfo,error) {
     return mesosInfo,nil
 }
 
-func NewMarathonClient(idc *m.IdcConf) (outMarathon.Marathon,error){
+func NewMarathonClient(url string,user string,passwd string) (outMarathon.Marathon,error){
         config :=  outMarathon.NewDefaultConfig()
-        config.URL = idc.MarathonSerConf.Server
-        config.HTTPBasicAuthUser = idc.MarathonSerConf.HttpBasicAuthUser
-        config.HTTPBasicPassword = idc.MarathonSerConf.HttpBasicPassword
+        config.URL = url
+        config.HTTPBasicAuthUser = user
+        config.HTTPBasicPassword = passwd
         client,err := outMarathon.NewClient(config)
         return client,err
 }

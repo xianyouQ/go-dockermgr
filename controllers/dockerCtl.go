@@ -3,6 +3,7 @@ package controllers
 import (
 	m "github.com/xianyouQ/go-dockermgr/models"
     "github.com/xianyouQ/go-dockermgr/utils"
+    outMarathon "github.com/xianyouQ/go-marathon"
 )
 
 type DockerController struct {
@@ -20,7 +21,24 @@ func (c *DockerController) DashBoard() {
         return
     }
     for _,idc := range idcs {
-        utils.NewMarathonClient(idc)
+        var client outMarathon.Marathon
+        var mesosInfo *utils.MesosInfo
+        idc.OthsData = make(map[string]interface{})
+       client,err = utils.NewMarathonClient(idc.MarathonSerConf.Server,idc.MarathonSerConf.HttpBasicAuthUser,idc.MarathonSerConf.HttpBasicPassword)
+       if err != nil {
+           idc.OthsData["status"] = false
+           idc.OthsData["info"] = err.Error()
+           continue
+       }
+       mesosInfo,err = utils.GetMesosInfo(client)
+       if err != nil {
+           idc.OthsData["status"] = false
+           idc.OthsData["info"] = err.Error()
+           continue
+       }
+       idc.OthsData["status"] = true
+       idc.OthsData["mesos"] = mesosInfo
     }
+    c.Rsp(true,"success",idcs)
 }
 

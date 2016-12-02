@@ -20,6 +20,7 @@ type IdcConf struct {
     RegistryConf *RegistryConf `orm:"null;rel(one)"`
     MarathonSerConf *MarathonSerConf `orm:"null;rel(one)"`
     Cidrs []*Cidr `orm:"null;reverse(many)"`
+    OthsData map[string]interface{} `orm:"-"`
 }
 
 

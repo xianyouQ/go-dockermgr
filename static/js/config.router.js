@@ -571,7 +571,7 @@ angular.module('app')
                   resolve: {
                       deps: ['uiLoad',
                         function( uiLoad ){
-                          return uiLoad.load( ['js/app/management/users.js'] );
+                          return uiLoad.load( ['js/app/docker/dashboard.js'] );
                       }]
                   }
               })

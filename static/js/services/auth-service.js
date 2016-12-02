@@ -46,11 +46,12 @@ app.factory('authService', function ($sessionStorage) {
             $sessionStorage.user = loginuser;
         },
         logout: function() {
-            console.log("logout")
             delete $sessionStorage.user;
         },
         getLastState: function() {
             return lastState;
+        },
+        getServiceAuth: function() {
         }
     };
 });
