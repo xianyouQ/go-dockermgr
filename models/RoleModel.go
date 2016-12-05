@@ -15,7 +15,7 @@ type Role struct {
 	Name   string  `orm:"size(100)" form:"Name"  valid:"Required"`
 	Status int     `orm:"default(2)" form:"Status" valid:"Range(1,2)"`
 	Node   []*Node `orm:"rel(m2m)"`
-	//User   []*User `orm:"reverse(many)"`
+	NeedAddAuth bool `orm:"-" form:"NeedAddAuth" valid:"Required"`
 }
 
 func (r *Role) TableName() string {
@@ -49,7 +49,9 @@ func GetRoleListFromOrm() ([]*Role,error) {
 
 
 func AddRole(r *Role) (int64, error) {
-	if err := checkRole(r); err != nil {
+	var id int64
+	var err error
+	if err = checkRole(r); err != nil {
 		return 0, err
 	}
 	o := orm.NewOrm()
@@ -57,7 +59,24 @@ func AddRole(r *Role) (int64, error) {
 	role.Name = r.Name
 	role.Status = r.Status
 
-	id, err := o.Insert(role)
+	id, err = o.Insert(role)
+	if err != nil {
+		return 0,err
+	}
+	role.Id = id
+	if role.NeedAddAuth == true {
+		var services []*Service
+		services,err = QueryService()
+		if err != nil {
+			return 0,err
+		}
+		for _,service := range services {
+			_,err = NewServiceAuth(role,service)
+			if err != nil {
+				return 0,err
+			}
+		}
+	}
 	return id, err
 }
 

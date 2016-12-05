@@ -67,7 +67,8 @@
     "manager_nav" : {
       "Manager_TITLE": "管理",
       "USER" : "用户管理",
-      "IDCS" : "机房管理"
+      "IDCS" : "机房管理",
+      "SERVICES":"业务管理"
     },
     "docker_nav" : {
       "dockermgr_TITLE": "Docker管理",

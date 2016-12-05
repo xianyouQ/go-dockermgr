@@ -11,14 +11,10 @@
     <div ng-include="'tpl/add_user_modal.html'"></div>
   </script>
 
-  <script type="text/ng-template" id="addServiceModalContent.html">
-    <div ng-include="'tpl/add_service_modal.html'"></div>
-  </script>
-
   <!-- column -->
   <div class="col w b-r" ng-repeat="idx in count" ng-show="isShow(idx)">
     <div class="vbox">
-      <div class="wrapper-sm b-b ng-show="idx>0">
+      <div class="wrapper-sm b-b" ng-hide="isShow(0)">
         <div class="m-t-n-xxs m-b-n-xxs m-l-xs">
           <a class="btn btn-xs btn-default" ng-click="returnUpper()">返回</a>
         </div>
@@ -34,9 +30,6 @@
             <div class="text-center pos-abt w-full" style="top:50%;" ng-hide="(subbuses | filter:{mainbus:mainfilter}).length" translate="content.management.no_subbus">No Service found</div>
           </div>
         </div>
-      </div>
-      <div class="wrapper b-t">
-        <a href class="btn btn-sm btn-default" ng-click="createService()"><i class="fa fa-plus fa-fw m-r-xs"></i> New Service</a>
       </div>
     </div>
   </div>

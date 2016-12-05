@@ -1,0 +1,85 @@
+<!-- hbox layout -->
+<div class="hbox hbox-auto-xs hbox-auto-sm bg-light " ng-init="
+  app.settings.asideFixed = true;
+  app.settings.asideDock = false;
+  app.settings.container = false;
+  app.hideAside = false;
+  app.hideFooter = true;
+  " ng-controller="ManageMentServicesCtrl">
+  <script type="text/ng-template" id="addServiceModalContent.html">
+    <div ng-include="'tpl/add_service_modal.html'"></div>
+  </script>
+
+  <div class="col w b-r" ng-repeat="idx in count" ng-show="isShow(idx)">
+    <div class="vbox">
+      <div class="wrapper-sm b-b" ng-hide="isShow(0)">
+        <div class="m-t-n-xxs m-b-n-xxs m-l-xs">
+          <a class="btn btn-xs btn-default" ng-click="returnUpper()">返回</a>
+        </div>
+      </div>
+      <div class="row-row">
+        <div class="cell scrollable hover">
+          <div class="cell-inner">
+            <div class="list-group no-radius no-border no-bg m-b-none">
+              <a ng-repeat="item in services[idx]| filter:{Name:filter[idx]}| orderBy:'Name'" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectService(item)">
+                <span class="block m-l-n" ng-class="{'m-n': item.selected }">{{ item.name}}</span>
+              </a>
+            </div>
+            <div class="text-center pos-abt w-full" style="top:50%;" ng-hide="(services[idx] | filter:{Name:filter[idx]}).length" translate="content.management.no_subbus">No Service found</div>
+          </div>
+        </div>
+      </div>
+       <div class="wrapper b-t">
+         <a href class="btn btn-sm btn-default" ng-click="createService()"><i class="fa fa-plus fa-fw m-r-xs"></i> New Service</a>
+       </div>
+    </div>
+  </div>
+  <!-- /column -->
+
+
+
+  <!-- column -->
+  <div class="col bg-white-only">
+    <div class="vbox">
+      <div class="row-row">
+        <div class="cell">
+          <div class="cell-inner">
+            <div class="wrapper-lg">
+              <!-- fields -->
+                  <div class="panel panel-default" ng-show="isShow(count.length-1)">
+                    <div class=panel-heading>
+                      <strong>New Service</strong>
+                    </div>
+                    <div class="panel-body">                    
+                        <div class="form-group form-validation">
+                         <div class="text-danger wrapper text-center" ng-show="formError">
+                          {{formError}}
+                        </div>
+                            <label>Name</label>
+                            <input type="text" class="form-control"  placeholder="http://127.0.0.1:8080" ng-model="newService.Name" required >
+                        </div>
+                        <div class="form-group">
+                          <label>Code</label>
+                          <input type="text" class="form-control"   placeholder="Enter Marathon User" ng-model="newService.Code" required >
+                        </div>
+
+                        <div class="form-group">
+                          <label>MarathonConf</label>
+                          <textarea class="form-control" rows="20" placeholder="Type your message" ng-model="newService.MarathonConf"></textarea>
+                        </div>
+                    </div>
+                    <footer class="panel-footer text-right bg-light lter">
+                      <button type="submit" class="btn btn-success" ng-click="commitService()" ng-disabled='form.$invalid'>Submit</button>
+                    </footer>
+                  </div>
+              </div>
+              <!-- / fields -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /column -->
+</div>
+<!-- /hbox layout -->

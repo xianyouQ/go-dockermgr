@@ -1,56 +1,4 @@
-app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',function($scope, $http, $filter,$modal) {
-
-  function isObjectValueEqual(a, b) {
-    // Of course, we can do it use for in 
-    // Create arrays of property names
-    var aProps = Object.getOwnPropertyNames(a);
-    var bProps = Object.getOwnPropertyNames(b);
- 
-    // If number of properties is different,
-    // objects are not equivalent
-    if (aProps.length != bProps.length) {
-        return false;
-    }
- 
-    for (var i = 0; i < aProps.length; i++) {
-        var propName = aProps[i];
- 
-        // If values of same property are not equal,
-        // objects are not equivalent
-        if (a[propName] !== b[propName]) {
-            return false;
-        }
-    }
- 
-    // If we made it this far, objects
-    // are considered equivalent
-    return true;
-}
-
-  Array.prototype.contains = function(obj) {
-    var i = this.length;
-    while (i--) {
-        if (isObjectValueEqual(this[i],obj)) {
-            return true;
-        }
-    }
-    return false;
- }
-
- Array.prototype.remove=function(obj){ 
-  for(var i =0;i <this.length;i++){ 
-    var temp = this[i]; 
-    if(!isNaN(obj)){ 
-      temp=i; 
-    } 
-    if(isObjectValueEqual(temp,obj)){ 
-      for(var j = i;j <this.length;j++){ 
-        this[j]=this[j+1]; 
-        } 
-      this.length = this.length-1; 
-      } 
-  } 
-  } 
+app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',function($scope, $http, $filter,$modal) { 
   $scope.mainbuses = [] ;
   $scope.services = [];
   $scope.filter = new Map();
@@ -63,7 +11,8 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
         if (resp.data.status ){
           for(var i = 0 ;i < resp.data.data ; i++)
           {
-            $scope.count.push(i)
+            $scope.count.push(i);
+            $scope.filter[i]="";
           }
       }
       else {
@@ -73,18 +22,21 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
 
   $http.get("/api/service/get").then(function (resp) {
         if (resp.data.status ){
-          angular.forEach($resp.data.data,function(service){
+          angular.forEach(resp.data.data,function(service){
             var serviceSplit = service.split("-")
             if(serviceSplit.length != $scope.count.length){
               console.log("invaild service:",service)
-              continue
+              return true
             }
+            var tempService = $scope.services
             angularjs.forEach(serviceSplit,function(item,index){
+              if(!tempService.contains(item)) {
+                tempService.push(item)
+              }
+              tempService = tempService[item]
             });
           });
-        $scope.services = resp.data.data;
-        $scope.selectedservice = $filter('orderBy')($scope.services, 'first')[0];
-        $scope.selectedservice.selected = true;
+          console.log($scope.services)
       }
       else {
         toaster.pop("error","get service error",resp.data.info);

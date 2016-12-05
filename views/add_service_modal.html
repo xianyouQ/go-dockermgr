@@ -1,14 +1,17 @@
 <div class="modal-body wrapper-lg">
   <div class="row">
-      <p>New User</p>
+      <p>New Service</p>
       <form role="form">
-        <div class="form-group">
-          <label>UserName</label>
-          <input type="text" class="form-control" ng-model="newUser.name"  placeholder="Enter username">
+        <div class="form-group form-validation">
+        <div class="text-danger wrapper text-center" ng-show="formError">
+          {{formError}}
+        </div>
+          <label>Name</label>
+          <input type="text" class="form-control" ng-model="newService.Name"  placeholder="Enter Service Name" required>
         </div>
         <div class="form-group">
-          <label>Role</label>
-          <select class="form-control" ng-model="newUser.role" ng-options="item.name for item in rolenames"></select>
+          <label>Code</label>
+          <input type="text" class="form-control" ng-model="newService.Code" placeholder="Enter Service Code" required>
         </div>
         <div class="checkbox m-t-lg">
           <button type="submit" class="btn btn-sm btn-success pull-right text-uc m-t-n-xs" ng-click="ok()"><strong>Log in</strong></button>

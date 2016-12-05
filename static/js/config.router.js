@@ -560,6 +560,16 @@ angular.module('app')
                       }]
                   }
               })
+                .state('management.services', {
+                  url: '/services',
+                  templateUrl: 'tpl/management_services.html',
+                  resolve: {
+                      deps: ['uiLoad',
+                        function( uiLoad ){
+                          return uiLoad.load( ['js/app/management/services.js'] );
+                      }]
+                  }
+              })
                 .state('docker', {
                   url: '/docker',
                   abstract: true,

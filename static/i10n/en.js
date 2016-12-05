@@ -67,7 +67,8 @@
     "manager_nav" : {
       "Manager_TITLE": "ManageMent",
       "USER" : "USERS",
-      "IDCS" : "IDCS"
+      "IDCS" : "IDCS",
+      "SERVICES":"Services"
     },
     "docker_nav" : {
       "dockermgr_TITLE": "Docker ManageMent",
