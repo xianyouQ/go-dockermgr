@@ -21,11 +21,11 @@
         <div class="cell scrollable hover">
           <div class="cell-inner">
             <div class="list-group no-radius no-border no-bg m-b-none">
-              <a ng-repeat="item in services[idx]| filter:{Name:filter[idx]}| orderBy:'Name'" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectService(item)">
-                <span class="block m-l-n" ng-class="{'m-n': item.selected }">{{ item.name}}</span>
+              <a ng-repeat="item in services[idx] | filter:{Code:filter[idx]}" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectService(item)">
+                <span class="block m-l-n" ng-class="{'m-n': item.selected }">{{ item.Code}}</span>
               </a>
             </div>
-            <div class="text-center pos-abt w-full" style="top:50%;" ng-hide="(services[idx] | filter:{Name:filter[idx]}).length" translate="content.management.no_subbus">No Service found</div>
+            <div class="text-center pos-abt w-full" style="top:50%;" ng-hide="(services[idx] | filter:{Code:filter[idx]}).length" translate="content.management.no_subbus">No Service found</div>
           </div>
         </div>
       </div>

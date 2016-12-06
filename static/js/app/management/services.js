@@ -55,8 +55,7 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
   $scope.services = new Map();
   $scope.filter = new Map();
   $scope.count = [];
-
-
+ //$scope.$watch('services',null,true);
   $http.get("/api/service/count").then(function (resp) {
         if (resp.data.status ){
           for(var i = 0 ;i < resp.data.data ; i++)
@@ -79,16 +78,16 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
               console.log("invaild service:",service)
               return true
             }
-            var tempService = "";
+            var tempService = {Code:""};
             angularjs.forEach(codeSplit,function(item,index){
               
               if($scope.services[index] == undefined) {
                 $scope.services[index] = [];
               }
-              if(tempService == "") {
-                tempService = item
+              if(tempService.Code == "") {
+                tempService.Code = item
               } else {
-                tempService = tempService + "-" + item
+                tempService.Code = tempService.Code + "-" + item
               }
               if(!$scope.services[index].contains(tempService) && index < $scope.length - 1) {
                 $scope.services[index].push(tempService)
@@ -162,21 +161,26 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
       modalInstance.result.then(function (newService) {
         $scope.selectedService = newService;
          var codeSplit = newService.Code.split("-")
-         var tempService = "";
+         var tempService = {Code:""};
         angular.forEach(codeSplit,function(item,index){
+            console.log("foreach",item,index);
               if($scope.services[index] == undefined) {
                 $scope.services[index] = [];
               }
-              if(tempService == "") {
-                tempService = item
+              if(tempService.Code == "") {
+                tempService.Code = item
+                console.log("foreach1",item);
               } else {
-                tempService = tempService + "-" + item
+                tempService.Code = tempService.Code + "-" + item
+                console.log("foreach2",item);
               }
               if(!$scope.services[index].contains(tempService) && index < $scope.count.length - 1) {
-                $scope.services[index].push(tempService)
+                console.log("foreach3",tempService);
+                $scope.services[index].push(tempService);
               }
             });
-             $scope.services[$scope.count.length - 1].push(newService)
+             $scope.services[$scope.count.length - 1].push(newService);
+             
             console.log($scope.services)
       }, function () {
         //log error
