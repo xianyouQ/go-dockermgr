@@ -11,7 +11,7 @@ type ServiceController struct {
 	CommonController
 }
 
-func (c *ServiceController) AddService() {
+func (c *ServiceController) AddOrUpdateService() {
 	var err error
 	var id int64
 	newService := models.Service{}
@@ -20,7 +20,7 @@ func (c *ServiceController) AddService() {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
-	id,err = models.AddService(&newService)
+	id,err = models.AddOrUpdateService(&newService)
 	if err != nil {
 		c.Rsp(false, err.Error(),nil)
 		return

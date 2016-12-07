@@ -13,7 +13,7 @@ func init() {
 	beego.Router("/api/marathon/conf",&controllers.MarathonCfController{},"post:AddOrUpdateMarathonConf")
 	beego.Router("/api/registry/conf",&controllers.RegistryCfController{},"post:AddOrUpdateRegistryConf")
 	beego.Router("/api/Cidr/Add",&controllers.CidrController{},"post:AddCidr")
-	beego.Router("/api/service/Add",&controllers.ServiceController{},"post:AddService")
+	beego.Router("/api/service/Add",&controllers.ServiceController{},"post:AddOrUpdateService")
 	beego.Router("/api/service/Delete",&controllers.ServiceController{},"post:DelService")
 	beego.Router("/api/service/count",&controllers.ServiceController{},"get:GetSeparateCount")
 	beego.Router("/api/service/get",&controllers.ServiceController{},"get:GetService")

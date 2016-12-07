@@ -47,7 +47,7 @@ func checkService(newService *Service) error {
 	return nil
 
 }
-func AddService(newService *Service) (int64,error) {
+func AddOrUpdateService(newService *Service) (int64,error) {
     var err error
     var id int64
     err = checkService(newService)
@@ -55,11 +55,18 @@ func AddService(newService *Service) (int64,error) {
         return id,err
     }
     o := orm.NewOrm()
-    id,err = o.Insert(newService)
-    if err!=nil {
-        return id,err
+    if newService.Id == 0 {
+        id,err = o.Insert(newService)
+        if err!=nil {
+            return id,err
+        }
+    } else {
+        _,err = o.Update(newService)
+        if err != nil {
+            return int64(newService.Id),err
+        }
     }
-    return id,nil
+    return id,err
 }
 
 

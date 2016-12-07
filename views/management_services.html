@@ -9,23 +9,26 @@
   <script type="text/ng-template" id="addServiceModalContent.html">
     <div ng-include="'tpl/add_service_modal.html'"></div>
   </script>
-
+  <script type="text/ng-template" id="delConfirmModalContent.html">
+    <div ng-include="'tpl/confirm_modal.html'"></div>
+  </script>
   <div class="col w b-r" ng-repeat="idx in count" ng-show="isShow(idx)">
     <div class="vbox">
       <div class="wrapper-sm b-b" ng-hide="isShow(0)">
         <div class="m-t-n-xxs m-b-n-xxs m-l-xs">
-          <a class="btn btn-xs btn-default" ng-click="returnUpper()">返回</a>
+          <a class="btn btn-xs btn-default" ng-click="returnUpper(idx)">返回</a>
         </div>
       </div>
       <div class="row-row">
         <div class="cell scrollable hover">
           <div class="cell-inner">
             <div class="list-group no-radius no-border no-bg m-b-none">
-              <a ng-repeat="item in services[idx] | filter:{Code:filter[idx]}" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectService(item)">
+              <a ng-repeat="item in services[idx] | filter:{Code:filter[idx-1]}" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectService(item,idx)">
+                <span ng-click='deleteService(item)' class="pull-right text-muted hover-action" ng-show="isShow(count.length-1)"><i class="fa fa-times"></i></span>
                 <span class="block m-l-n" ng-class="{'m-n': item.selected }">{{ item.Code}}</span>
               </a>
             </div>
-            <div class="text-center pos-abt w-full" style="top:50%;" ng-hide="(services[idx] | filter:{Code:filter[idx]}).length" translate="content.management.no_subbus">No Service found</div>
+            <div class="text-center pos-abt w-full" style="top:50%;" ng-hide="(services[idx] | filter:{Code:filter[idx-1]}).length" translate="content.management.no_subbus">No Service found</div>
           </div>
         </div>
       </div>
@@ -46,9 +49,9 @@
           <div class="cell-inner">
             <div class="wrapper-lg">
               <!-- fields -->
-                  <div class="panel panel-default" ng-show="isShow(count.length-1)">
+                  <div class="panel panel-default" ng-show="ConfShow()">
                     <div class=panel-heading>
-                      <strong>New Service</strong>
+                      <strong>Service Conf</strong>
                     </div>
                     <div class="panel-body">                    
                         <div class="form-group form-validation">
@@ -56,16 +59,16 @@
                           {{formError}}
                         </div>
                             <label>Name</label>
-                            <input type="text" class="form-control"  placeholder="http://127.0.0.1:8080" ng-model="newService.Name" required >
+                            <input type="text" class="form-control"  placeholder="ad.delivery[...]" ng-model="selectedService.Name" required >
                         </div>
                         <div class="form-group">
                           <label>Code</label>
-                          <input type="text" class="form-control"   placeholder="Enter Marathon User" ng-model="newService.Code" required >
+                          <input type="text" class="form-control"   placeholder="ad-delv[...]" ng-model="selectedService.Code" required >
                         </div>
 
                         <div class="form-group">
                           <label>MarathonConf</label>
-                          <textarea class="form-control" rows="20" placeholder="Type your message" ng-model="newService.MarathonConf"></textarea>
+                          <textarea class="form-control" rows="20" placeholder="Type your Conf" ng-model="selectedService.MarathonConf"></textarea>
                         </div>
                     </div>
                     <footer class="panel-footer text-right bg-light lter">
