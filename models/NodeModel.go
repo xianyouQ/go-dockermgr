@@ -10,9 +10,9 @@ import (
 //节点表
 type Node struct {
 	Id     int64
-	Title  string  `orm:"size(100)" form:"Title"  valid:"Required"`
-	Name   string  `orm:"size(100)" form:"Name"  valid:"Required"`
-	
+	Desc  string  `orm:"size(100)" form:"Title"  valid:"Required"`
+	Url   string  `orm:"size(100)" form:"Name"  valid:"Required"`
+	Roles   []*Role `orm:"reverse(many)"`
 }
 
 func (n *Node) TableName() string {
@@ -36,63 +36,30 @@ func init() {
 }
 
 //get node list
-func GetNodelist(page int64, page_size int64, sort string) ([]*Node,int64) {
+func GetNodes() ([]*Node,error) {
 	o := orm.NewOrm()
-	var nodes []*Node
-	var count int64
-	qs := o.QueryTable(beego.AppConfig.String("rbac_node_table"))
-	var offset int64
-	if page <= 1 {
-		offset = 0
-	} else {
-		offset = (page - 1) * page_size
-	}
-	qs.Limit(page_size, offset).OrderBy(sort).All(&nodes)
-	count, _ = qs.Count()
-	return nodes, count
+	var Nodes []*Node
+	_,err := o.QueryTable(beego.AppConfig.String("rbac_node_table")).All(&Nodes)
+	return Nodes, err
 }
 
-func ReadNode(nid int64) (Node, error) {
-	o := orm.NewOrm()
-	node := Node{Id: nid}
-	err := o.Read(&node)
-	if err != nil {
-		return node, err
-	}
-	return node, nil
-}
 
-//添加用户
-func AddNode(n *Node) (int64, error) {
-	if err := checkNode(n); err != nil {
-		return 0, err
-	}
-	o := orm.NewOrm()
-	node := new(Node)
-	node.Title = n.Title
-	node.Name = n.Name
-	id, err := o.Insert(node)
-	return id, err
-}
+
 
 //更新用户
-func UpdateNode(n *Node) (int64, error) {
-	if err := checkNode(n); err != nil {
+func AddOrUpdateNode(node *Node) (int64, error) {
+	if err := checkNode(node); err != nil {
 		return 0, err
 	}
 	o := orm.NewOrm()
-	node := make(orm.Params)
-	if len(n.Title) > 0 {
-		node["Title"] = n.Title
+	if node.Id == 0 {
+		id, err := o.Insert(node)
+		return id,err
+	} else {
+		_, err := o.Update(node)
+		return 0,err
 	}
-	if len(n.Name) > 0 {
-		node["Name"] = n.Name
-	}
-	if len(node) == 0 {
-		return 0, errors.New("update field is empty")
-	}
-	num, err := o.QueryTable(beego.AppConfig.String("rbac_node_table")).Filter("Id", n.Id).Update(node)
-	return num, err
+
 }
 
 func DelNodeById(Id int64) (int64, error) {

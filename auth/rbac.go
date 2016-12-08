@@ -93,12 +93,12 @@ func AccessList(uid int64) ([]string,error){
 		for _,role := range roles {
 			if auth.Role.Id == role.Id {
 				if auth.Service == nil {
-					for _,node := range role.Node {
-						nodes = append(nodes,node.Name)
+					for _,node := range role.Nodes {
+						nodes = append(nodes,node.Url)
 					}
 				} else {
-					for _,node := range role.Node {
-						nodename := fmt.Sprintf("%s/%s",auth.Service.Name,node.Name)
+					for _,node := range role.Nodes {
+						nodename := fmt.Sprintf("%s/%s",auth.Service.Name,node.Url)
 						nodes = append(nodes,nodename)
 					}	
 					

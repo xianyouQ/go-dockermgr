@@ -570,6 +570,16 @@ angular.module('app')
                       }]
                   }
               })
+                .state('management.auth', {
+                  url: '/auth',
+                  templateUrl: 'tpl/management_auth.html',
+                  resolve: {
+                      deps: ['uiLoad',
+                        function( uiLoad ){
+                          return uiLoad.load( ['js/app/management/auth.js'] );
+                      }]
+                  }
+              })
                 .state('docker', {
                   url: '/docker',
                   abstract: true,

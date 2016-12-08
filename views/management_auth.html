@@ -1,0 +1,90 @@
+<!-- hbox layout -->
+<div class="hbox hbox-auto-xs hbox-auto-sm bg-light " ng-init="
+  app.settings.asideFixed = true;
+  app.settings.asideDock = false;
+  app.settings.container = false;
+  app.hideAside = false;
+  app.hideFooter = true;
+  " ng-controller="ManageMentAuthCtrl">
+  <script type="text/ng-template" id="addRoleModalContent.html">
+    <div ng-include="'tpl/add_role_modal.html'"></div>
+  </script>
+  <script type="text/ng-template" id="addNodeModalContent.html">
+    <div ng-include="'tpl/add_node_modal.html'"></div>
+  </script>
+
+  <!-- column -->
+  <div class="col w b-r">
+    <div class="vbox">
+      <div class="row-row">
+        <div class="cell scrollable hover">
+          <div class="cell-inner">
+            <div class="list-group no-radius no-border no-bg m-b-none">
+              <a ng-repeat="item in roles|orderBy:'Name'" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectRole(item)">
+                <span class="block m-l-n" ng-class="{'m-n': item.selected }">{{ item.Name}}</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="wrapper b-t">
+        <a href class="btn btn-sm btn-default" ng-click="createRole()"><i class="fa fa-plus fa-fw m-r-xs"></i> New Role</a>
+      </div>
+    </div>
+  </div>
+  <!-- /column --> 
+
+
+  <!-- column -->
+  <div class="col bg-white-only">
+    <div class="vbox">
+      <div class="row-row">
+        <div class="cell">
+          <div class="cell-inner">
+            <div class="wrapper-lg">
+              <!-- fields -->
+              <div class="panel panel-default">
+                  <div class="panel-heading">
+                    Responsive Table
+                  </div>
+                  <div class="row wrapper">
+                    <div class="col-sm-5 m-b-xs">
+                      <button class="btn btn-sm btn-default" ng-click="createNode()">Add</button>                
+                    </div>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-striped b-t b-light">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Desc</th>
+                          <th>Url</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr ng-repeat="node in nodes">
+                          <td><label class="i-checks m-b-none"><input type="checkbox" ng-model="node.Active"><i></i></label></td>
+                          <td>{{node.Desc}}</td>
+                          <td>{{node.Url}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <footer class="panel-footer">
+                    <div class="row">
+                      <div class="col-lg-offset-2 col-lg-10">
+                        <button type="submit" class="btn btn-sm btn-info pull-right">Commit</button>
+                      </div>
+                    </div>
+                  </footer>
+                </div>
+              <!-- / fields -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /column -->
+</div>
+<!-- /hbox layout -->

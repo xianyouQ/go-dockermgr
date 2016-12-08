@@ -13,8 +13,8 @@ import (
 type Role struct {
 	Id     int64
 	Name   string  `orm:"size(100)" form:"Name"  valid:"Required"`
-	Status int     `orm:"default(2)" form:"Status" valid:"Range(1,2)"`
-	Node   []*Node `orm:"rel(m2m)"`
+	Status bool     `orm:"default(true)" form:"Status"`
+	Nodes   []*Node `orm:"rel(m2m)"`
 	NeedAddAuth bool `orm:"-" form:"NeedAddAuth" valid:"Required"`
 }
 
@@ -42,75 +42,64 @@ func checkRole(g *Role) (err error) {
 func GetRoleListFromOrm() ([]*Role,error) {
 	o := orm.NewOrm()
 	var roles []*Role
-	_,err := o.QueryTable(beego.AppConfig.String("rbac_role_table")).RelatedSel("Node").All(&roles)
-	
+	_,err := o.QueryTable(beego.AppConfig.String("rbac_role_table")).All(&roles)
+	for _, role := range roles {
+		_,err = o.LoadRelated(role, "Nodes")
+		if err != nil {
+			return	roles, err
+		}
+	}
 	return roles, err
 }
 
 
-func AddRole(r *Role) (int64, error) {
+func AddOrUpdateRole(role *Role) (int64, error) {
 	var id int64
 	var err error
-	if err = checkRole(r); err != nil {
+	if err = checkRole(role); err != nil {
 		return 0, err
 	}
 	o := orm.NewOrm()
-	role := new(Role)
-	role.Name = r.Name
-	role.Status = r.Status
 
-	id, err = o.Insert(role)
-	if err != nil {
-		return 0,err
-	}
-	role.Id = id
-	if role.NeedAddAuth == true {
-		var services []*Service
-		services,err = QueryService()
+	if role.Id == 0 {
+		id, err = o.Insert(role)
 		if err != nil {
 			return 0,err
 		}
-		for _,service := range services {
-			_,err = NewServiceAuth(role,service)
+		role.Id = id
+		if role.NeedAddAuth == true {
+			var services []*Service
+			services,err = QueryService()
 			if err != nil {
 				return 0,err
 			}
+			for _,service := range services {
+				_,err = NewServiceAuth(role,service)
+				if err != nil {
+					return 0,err
+				}
+			}
+		}
+	} else {
+		_,err = o.Update(role)
+		if err != nil {
+			return 0,err
 		}
 	}
-	return id, err
+	return role.Id, err
 }
 
-func UpdateRole(r *Role) (int64, error) {
-	if err := checkRole(r); err != nil {
-		return 0, err
-	}
+
+func DelRole(role *Role)  error {
 	o := orm.NewOrm()
-	role := make(orm.Params)
-	if len(r.Name) > 0 {
-		role["Name"] = r.Name
-	}
-	if r.Status != 0 {
-		role["Status"] = r.Status
-	}
-	if len(role) == 0 {
-		return 0, errors.New("update field is empty")
-	}
-	var table Role
-	num, err := o.QueryTable(table).Filter("Id", r.Id).Update(role)
-	return num, err
+	_, err := o.Delete(role)
+	return err
 }
 
-func DelRoleById(Id int64) (int64, error) {
+func GetNodelistByRole(role *Role) (int64,error) {
 	o := orm.NewOrm()
-	status, err := o.Delete(&Role{Id: Id})
-	return status, err
-}
-
-func GetNodelistByRoleId(Id int64) (nodes []orm.Params, count int64) {
-	o := orm.NewOrm()
-	node := new(Node)
-	count, _ = o.QueryTable(node).Filter("Role__Role__Id", Id).Values(&nodes)
-	return nodes, count
+	count, err := o.QueryTable(beego.AppConfig.String("rbac_node_table")).Filter("Roles__Role__Id", role.Id).All(&role.Nodes)
+	return  count,err
 }
 
 func AddRoleNode(roleid int64, nodeid int64) (int64, error) {
