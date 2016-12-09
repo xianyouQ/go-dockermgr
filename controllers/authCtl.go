@@ -24,7 +24,6 @@ func (c *AuthController) AddOrUpdateRole() {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
-	//newRole.Id = int(id)
 	c.Rsp(true, "success",newRole)
 }
 
@@ -80,4 +79,33 @@ func (c *AuthController) AddOrUpdateNode() {
 	}
 	//newRole.Id = int(id)
 	c.Rsp(true, "success",newNode)
+}
+
+func (c *AuthController) UpdateRoleNode() {
+	var err error
+	oldRole := models.Role{}
+	activeNodes := make([]*models.Node,5,5)
+	inActiveNodes := make([]*models.Node,5,5)
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &oldRole); err !=nil {
+		c.Rsp(false, err.Error(),nil)
+		return
+	}
+	for _,node := range oldRole.Nodes {
+		if node.Active == true {
+			activeNodes = append(activeNodes,node)
+		} else {
+			inActiveNodes = append(inActiveNodes,node)
+		}
+	}
+	_,err = models.AddRoleNode(&oldRole,activeNodes)
+	if err != nil {
+		c.Rsp(false, err.Error(),nil)
+		return
+	}
+	_,err = models.DelRoleNode(&oldRole,inActiveNodes)
+	if err != nil {
+		c.Rsp(false, err.Error(),nil)
+		return
+	}
+	c.Rsp(true,"success",nil)
 }

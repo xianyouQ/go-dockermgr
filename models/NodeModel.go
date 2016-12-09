@@ -13,6 +13,7 @@ type Node struct {
 	Desc  string  `orm:"size(100)" form:"Title"  valid:"Required"`
 	Url   string  `orm:"size(100)" form:"Name"  valid:"Required"`
 	Roles   []*Role `orm:"reverse(many)"`
+	Active bool  `orm:"-"`
 }
 
 func (n *Node) TableName() string {

@@ -5,7 +5,6 @@ import (
     "github.com/astaxie/beego/orm"
     "github.com/astaxie/beego/validation"
     "errors"
-	"time"
 )
 
 const (
@@ -44,7 +43,7 @@ func checkIdc(idc *IdcConf) (err error) {
 func AddOrUpdateIdc(idc *IdcConf) error {
     var err error
     var pid int64
-    var idcs []*IdcConf
+
     
     err = checkIdc(idc)
     if err!=nil {
@@ -63,20 +62,11 @@ func AddOrUpdateIdc(idc *IdcConf) error {
             return err
         }
     }
-    idcs,err = GetIdcs()
-    if err != nil {
-        return err
-    }
     if pid != 0 {
-        idcs = append(idcs,idc)
+        UpdateIdcs(idc,true)
     } else {
-        for inx,IdcConfIter := range idcs{
-            if IdcConfIter.Id == idc.Id {
-                idcs[inx] = idc
-            }
-        }
+        UpdateIdcs(idc,false)
     }
-    bm.Put("idcs",idcs,3600*time.Second)
     return nil
 }
 func getIdcsfromOrm() ([]*IdcConf,error) {
@@ -105,24 +95,6 @@ func getIdcsfromOrm() ([]*IdcConf,error) {
 
 
 
-/*
-func toggleStatus(code string,status int) error {
-    idc := IdcConf{IdcCode:code,Status:status}
-    o := orm.NewOrm()
-    if _, err := o.Update(&idc,"Status"); err != nil {
-        return err
-    }
-    return nil
-}
-
-func EnableIdc (code string) error {
-    return toggleStatus(code,IdcEnable)
-}
-
-func DisableIdc (code string) error {
-    return toggleStatus(code,IdcDisable)
-}
-*/
 
 func init() {
     orm.RegisterModel(new(IdcConf))

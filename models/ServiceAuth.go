@@ -42,15 +42,26 @@ func NewServiceAuth(role *Role, service *Service) (int64,error){
 	if service == nil {
 		newServiceAuth.Name = role.Name
 	} else {
-    	newServiceAuth.Name = fmt.Sprintf("%s.%s",service.Name,role.Name)
+    	newServiceAuth.Name = fmt.Sprintf("%s.%s",service.Code,role.Name)
 	    newServiceAuth.Service = service
 	}
 
     newServiceAuth.Role = role
 
-    id, err := o.Insert(newServiceAuth)
+    id, err := o.Insert(&newServiceAuth)
 	return id, err
 }
+
+
+func NewServiceAuths(role *Role, services []*Service) (int64,error){
+    o := orm.NewOrm()
+    m2m := o.QueryM2M(role, "Services")
+	num, err := m2m.Add(services)
+	return num, err
+}
+
+
+
 
 func AddUserAuth(uid int64,role *Role, service *Service) error {
     o := orm.NewOrm()

@@ -16,6 +16,7 @@ type Service struct {
     Code string `orm:"size(20);unique"`
     Instances []*Ip `orm:"reverse(many)"`
     ReleaseTask []*ReleaseTask `orm:"reverse(many)"`
+    Roles []*Role  `orm:"reverse(many)"`
     MarathonConf string `orm:"type(text)"`
 }
 

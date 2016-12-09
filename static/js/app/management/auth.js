@@ -1,17 +1,8 @@
 app.controller('ManageMentAuthCtrl', ['$scope', '$http', '$filter','$modal','toaster',function($scope, $http, $filter,$modal,toaster) {
+
     $scope.roles = [];
     $scope.selectedrole = null;
     $scope.nodes = [];
-    $http.get('/api/auth/get').then(function (resp) {
-      if (resp.data.status ){
-        $scope.roles = resp.data.data;
-        $scope.selectedrole = $filter('orderBy')($scope.auths, 'first')[0];
-        $scope.selectedrole.selected = true;
-      }
-      else {
-        toaster.pop("error","get auth error",resp.data.info);
-      } 
-  });
     $http.get('/api/node/get').then(function (resp) {
       if (resp.data.status ){
         $scope.nodes = resp.data.data;
@@ -20,16 +11,32 @@ app.controller('ManageMentAuthCtrl', ['$scope', '$http', '$filter','$modal','toa
         toaster.pop("error","get node error",resp.data.info);
       } 
   });
+    $http.get('/api/auth/get').then(function (resp) {
+      if (resp.data.status ){
+        $scope.roles = resp.data.data;
+        $scope.selectedrole = $filter('orderBy')($scope.roles, 'Code')[0];
+        $scope.selectedrole.selected = true;
+      }
+      else {
+        toaster.pop("error","get auth error",resp.data.info);
+      } 
+  });
+
   $scope.selectRole = function (item) {
-    angular.forEach($scope.roles, function(item) {
-      item.selected = false;
+    angular.forEach($scope.roles, function(role) {
+      role.selected = false;
     });
-    angular.forEach(item.Nodes,function(node){
       angular.forEach($scope.nodes,function(innernode){
+        var skip = false;
+        angular.forEach(item.Nodes,function(node){
         if(innernode.Id == node.Id) {
           innernode.Active = true;
-        }
+          skip = true;
+        } 
       });
+      if(skip == false){
+        innernode.Active = false;
+      }
     });
     $scope.selectedrole = item;
     $scope.selectedrole.selected = true;
@@ -62,6 +69,35 @@ app.controller('ManageMentAuthCtrl', ['$scope', '$http', '$filter','$modal','toa
       });
   };
 
+  $scope.CommitAuth = function() {
+    var temprole = {};
+    $.extend(true,temprole,$scope.selectedrole);
+    if(temprole.Nodes === null) {
+      temprole.Nodes = [];
+    }
+    console.log(temprole)
+    angular.forEach($scope.nodes,function(innernode){
+      var skip = false;
+      angular.forEach(temprole.Nodes,function(node){
+      if(node.Id == innernode.Id){
+        node.Active = innernode.Active;
+        skip = true;
+      }
+
+      });
+      if (innernode.Active == true && skip == false){
+        temprole.Nodes.push(innernode);
+      }
+    });
+    $http.post('/api/authnode/post',temprole).then(function(resp){
+          if (resp.data.status ){
+            $scope.selectedrole = temprole;
+          }
+          else {
+            console.log(resp.data.info)
+          }
+    });
+  };
 
 
 }]);

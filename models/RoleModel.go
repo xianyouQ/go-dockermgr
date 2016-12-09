@@ -16,6 +16,7 @@ type Role struct {
 	Status bool     `orm:"default(true)" form:"Status"`
 	Nodes   []*Node `orm:"rel(m2m)"`
 	NeedAddAuth bool `orm:"-" form:"NeedAddAuth" valid:"Required"`
+	Services []*Service `orm:"rel(m2m);rel_through(github.com/xianyouQ/go-dockermgr/models.ServiceAuth)"`
 }
 
 func (r *Role) TableName() string {
@@ -66,18 +67,20 @@ func AddOrUpdateRole(role *Role) (int64, error) {
 		if err != nil {
 			return 0,err
 		}
-		role.Id = id
 		if role.NeedAddAuth == true {
 			var services []*Service
 			services,err = QueryService()
 			if err != nil {
 				return 0,err
 			}
-			for _,service := range services {
-				_,err = NewServiceAuth(role,service)
-				if err != nil {
+			_,err = NewServiceAuths(role,services)
+			if err != nil {
 					return 0,err
-				}
+			}
+		} else {
+			_,err = NewServiceAuth(role,nil)
+			if err != nil {
+					return 0,err
 			}
 		}
 	} else {
@@ -85,6 +88,12 @@ func AddOrUpdateRole(role *Role) (int64, error) {
 		if err != nil {
 			return 0,err
 		}
+	}
+
+	if id != 0 {
+		UpdateRoleNodes(role,true)
+	} else {
+		UpdateRoleNodes(role,false)
 	}
 	return role.Id, err
 }
@@ -102,56 +111,16 @@ func GetNodelistByRole(role *Role) (int64,error) {
 	return  count,err
 }
 
-func AddRoleNode(roleid int64, nodeid int64) (int64, error) {
+func AddRoleNode(role *Role, nodes []*Node) (int64, error) {
 	o := orm.NewOrm()
-	role := Role{Id: roleid}
-	node := Node{Id: nodeid}
-	m2m := o.QueryM2M(&node, "Role")
-	num, err := m2m.Add(&role)
+	m2m := o.QueryM2M(role, "Nodes")
+	num, err := m2m.Add(nodes)
 	return num, err
 }
 
-/*
-func DelUserRole(roleid int64) error {
+func DelRoleNode(role *Role, nodes []*Node) (int64, error) {
 	o := orm.NewOrm()
-	_, err := o.QueryTable("user_roles").Filter("role_id", roleid).Delete()
-	return err
-}
-func AddRoleUser(roleid int64, userid int64) (int64, error) {
-	o := orm.NewOrm()
-	role := Role{Id: roleid}
-	user := User{Id: userid}
-	m2m := o.QueryM2M(&user, "Role")
-	num, err := m2m.Add(&role)
+	m2m := o.QueryM2M(role, "Nodes")
+	num, err := m2m.Remove(nodes)
 	return num, err
 }
-
-func GetUserByRoleId(roleid int64) (users []orm.Params, count int64) {
-	o := orm.NewOrm()
-	user := new(User)
-	count, _ = o.QueryTable(user).Filter("Role__Role__Id", roleid).Values(&users)
-	return users, count
-}
-
-func AccessList(uid int64) (list []orm.Params, err error) {
-	var roles []orm.Params
-	o := orm.NewOrm()
-	role := new(Role)
-	_, err = o.QueryTable(role).Filter("User__User__Id", uid).Values(&roles)
-	if err != nil {
-		return nil, err
-	}
-	var nodes []orm.Params
-	node := new(Node)
-	for _, r := range roles {
-		_, err := o.QueryTable(node).Filter("Role__Role__Id", r["Id"]).Values(&nodes)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range nodes {
-			list = append(list, n)
-		}
-	}
-	return list, nil
-}
-*/

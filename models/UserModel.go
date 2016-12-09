@@ -21,7 +21,7 @@ type User struct {
 	Email         string    `orm:"size(32)" form:"Email" valid:"Email"`
 	Lastlogintime time.Time `orm:"null;type(datetime)" form:"-"`
 	Createtime    time.Time `orm:"type(datetime);auto_now_add" `
-	ServiceAuths          []*ServiceAuth   `orm:"rel(m2m)"`
+	ServiceAuths    []*ServiceAuth   `orm:"rel(m2m)"`
 }
 
 func (u *User) TableName() string {

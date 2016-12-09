@@ -42,6 +42,7 @@ func GetIdcs() ([]*IdcConf,error) {
     return idcs,nil
 }
 
+
 func GetRoleNodes() ([]*Role,error){
     var err error
     var roles []*Role
@@ -55,4 +56,37 @@ func GetRoleNodes() ([]*Role,error){
         err = bm.Put("roles",roles,600*time.Second)
     }
     return roles,err
+}
+func UpdateRoleNodes(Updaterole *Role,isnew bool) {
+    if !bm.IsExist("roles") {
+        return
+    }
+    roles := bm.Get("roles").([]*Role)
+    if isnew {
+        roles = append(roles,Updaterole)
+    } else {
+        for inx,role := range roles{
+            if role.Id == Updaterole.Id {
+                roles[inx] = Updaterole
+            }
+        }
+    }
+    bm.Put("roles",roles,3600*time.Second)
+}
+
+func UpdateIdcs(UpdateIdc *IdcConf,isnew bool) {
+    if !bm.IsExist("idcs") {
+        return
+    }
+    idcs := bm.Get("idcs").([]*IdcConf)
+    if isnew {
+        idcs = append(idcs,UpdateIdc)
+    } else {
+        for inx,idc := range idcs{
+            if idc.Id == UpdateIdc.Id {
+                idcs[inx] = UpdateIdc
+            }
+        }
+    }
+    bm.Put("idcs",idcs,3600*time.Second)
 }
