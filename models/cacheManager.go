@@ -51,7 +51,7 @@ func GetRoleNodes() ([]*Role,error){
     } else {
         roles,err = GetRoleListFromOrm()
         if err != nil {
-            return roles,nil
+            return roles,err
         }
         err = bm.Put("roles",roles,600*time.Second)
     }

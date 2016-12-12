@@ -4,6 +4,7 @@ import (
 	"github.com/xianyouQ/go-dockermgr/models"
 
 	"encoding/json"
+	//"github.com/astaxie/beego/logs"
 )
 
 type AuthController struct {
@@ -84,8 +85,8 @@ func (c *AuthController) AddOrUpdateNode() {
 func (c *AuthController) UpdateRoleNode() {
 	var err error
 	oldRole := models.Role{}
-	activeNodes := make([]*models.Node,5,5)
-	inActiveNodes := make([]*models.Node,5,5)
+	activeNodes := make([]*models.Node,0,5)
+	inActiveNodes := make([]*models.Node,0,5)
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &oldRole); err !=nil {
 		c.Rsp(false, err.Error(),nil)
 		return
@@ -102,6 +103,7 @@ func (c *AuthController) UpdateRoleNode() {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
+
 	_,err = models.DelRoleNode(&oldRole,inActiveNodes)
 	if err != nil {
 		c.Rsp(false, err.Error(),nil)

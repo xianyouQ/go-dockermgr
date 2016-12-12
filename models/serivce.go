@@ -51,6 +51,7 @@ func checkService(newService *Service) error {
 func AddOrUpdateService(newService *Service) (int64,error) {
     var err error
     var id int64
+    var roles []*Role
     err = checkService(newService)
     if err != nil {
         return id,err
@@ -60,6 +61,16 @@ func AddOrUpdateService(newService *Service) (int64,error) {
         id,err = o.Insert(newService)
         if err!=nil {
             return id,err
+        }
+        roles,err = GetRoleNodes()
+        if err != nil {
+            return 0,err
+        }
+        for _,role := range roles {
+			_,err = NewServiceAuth(role,newService)
+			if err != nil {
+				return 0,err
+			}
         }
     } else {
         _,err = o.Update(newService)

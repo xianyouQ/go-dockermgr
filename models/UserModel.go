@@ -127,3 +127,10 @@ func GetUserByUsername(username string) (user User) {
 	o.Read(&user, "Username")
 	return user
 }
+/*
+func QueryServiceAuthList(service *Service) {
+	o := orm.NewOrm()
+	var 
+	count, err := o.QueryTable(beego.AppConfig.String("rbac_node_table")).Filter("ServiceAuths__Service__Id", service.Id).All(&role.Nodes)
+	return  count,err
+}*/

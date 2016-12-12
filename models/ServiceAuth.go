@@ -10,7 +10,7 @@ import (
 
 type ServiceAuth struct {
 	Id     int64
-	Name   string  `orm:"size(100)" valid:"Required"`
+	Name   string  `orm:"null;size(100)"`
     Role  *Role  `orm:"rel(fk)"`
     Service *Service `orm:"null;rel(fk)"`
     Users   []*User `orm:"reverse(many)"`
@@ -53,14 +53,6 @@ func NewServiceAuth(role *Role, service *Service) (int64,error){
 }
 
 
-func NewServiceAuths(role *Role, services []*Service) (int64,error){
-    o := orm.NewOrm()
-    m2m := o.QueryM2M(role, "Services")
-	num, err := m2m.Add(services)
-	return num, err
-}
-
-
 
 
 func AddUserAuth(uid int64,role *Role, service *Service) error {
@@ -90,3 +82,4 @@ func GetAuthList(uid int64) ([]*ServiceAuth,error) {
 	_, err := o.QueryTable(beego.AppConfig.String("rbac_serviceauth_table")).Filter("Users__User__Id", uid).All(&mServiceAuth)
     return mServiceAuth,err
 }
+

@@ -16,7 +16,7 @@ type Role struct {
 	Status bool     `orm:"default(true)" form:"Status"`
 	Nodes   []*Node `orm:"rel(m2m)"`
 	NeedAddAuth bool `orm:"-" form:"NeedAddAuth" valid:"Required"`
-	Services []*Service `orm:"rel(m2m);rel_through(github.com/xianyouQ/go-dockermgr/models.ServiceAuth)"`
+	Services []*Service `orm:"rel(m2m)"`
 }
 
 func (r *Role) TableName() string {
@@ -73,9 +73,11 @@ func AddOrUpdateRole(role *Role) (int64, error) {
 			if err != nil {
 				return 0,err
 			}
-			_,err = NewServiceAuths(role,services)
-			if err != nil {
-					return 0,err
+			for _,service := range services {
+				_,err = NewServiceAuth(role,service)
+				if err != nil {
+						return 0,err
+				}
 			}
 		} else {
 			_,err = NewServiceAuth(role,nil)
@@ -112,6 +114,9 @@ func GetNodelistByRole(role *Role) (int64,error) {
 }
 
 func AddRoleNode(role *Role, nodes []*Node) (int64, error) {
+	if len(nodes) <= 0 {
+		return 0,nil
+	}
 	o := orm.NewOrm()
 	m2m := o.QueryM2M(role, "Nodes")
 	num, err := m2m.Add(nodes)
@@ -119,6 +124,9 @@ func AddRoleNode(role *Role, nodes []*Node) (int64, error) {
 }
 
 func DelRoleNode(role *Role, nodes []*Node) (int64, error) {
+	if len(nodes) <=  0 {
+		return 0,nil
+	}
 	o := orm.NewOrm()
 	m2m := o.QueryM2M(role, "Nodes")
 	num, err := m2m.Remove(nodes)
