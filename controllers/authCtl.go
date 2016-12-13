@@ -111,3 +111,12 @@ func (c *AuthController) UpdateRoleNode() {
 	}
 	c.Rsp(true,"success",nil)
 }
+func (c *AuthController) GetUserAuthList() {
+	auths,err := models.QueryUserAuthList()
+	if err != nil {
+		c.Rsp(false,err.Error(),nil)
+		return
+	}
+	c.Rsp(true,"success",auths)
+
+}

@@ -84,6 +84,9 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
         toaster.pop("error","get service error",resp.data.info);
       } 
   });
+  $http.get("/api/auth/auths").then(function(resp){
+    console.log(resp)
+  });
 
   $scope.isShow = function(idx) {
     if (idx < 0 ){
@@ -138,12 +141,7 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
       var modalInstance = $modal.open({
         templateUrl: 'addUserModalContent.html',
         controller: 'addUserModalInstanceCtrl',
-        size: 'lg',
-        resolve: {
-          rolenames: function () {
-            return $scope.rolenames;
-          }
-        }
+        size: 'lg'
       });
  
       modalInstance.result.then(function (newUser) {
@@ -164,15 +162,22 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
   }
 }]);
 
-  app.controller('addUserModalInstanceCtrl', ['$scope', '$modalInstance','rolenames',function($scope, $modalInstance,$rolenames) {
-    $scope.rolenames = $rolenames
-    $scope.newUser = {"name":"","role":""};
+  app.controller('addUserModalInstanceCtrl', ['$scope', '$modalInstance','$http',function($scope, $modalInstance,$http) {
+    $scope.newUser={};
     $scope.ok = function () {
-      if ($scope.newUser.name == "" || $scope.newUser.role == ""){
+      if ($scope.newUser.Username == ""){
         
       }
       else {
-      $modalInstance.close($scope.newUser);
+        $http.post('api/auth/user',$scope.newUser).then(function(resp){
+          if ( !resp.data.status ) {
+            $scope.formError = resp.data.info;
+          }else{
+            $modalInstance.close($scope.newUser);
+          }
+        }, function(x) {
+          $scope.formError = 'Server Error';
+        });
       }
     };
 

@@ -3,7 +3,7 @@ package controllers
 import (
 	m "github.com/xianyouQ/go-dockermgr/models"
 	"github.com/xianyouQ/go-dockermgr/auth"
-	//"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego"
 	"encoding/json"
 )
 
@@ -22,8 +22,9 @@ func (this *UserController) AddUser() {
 		this.Rsp(false, err.Error(),nil)
 		return
 	}
+	u.Password = beego.AppConfig.String("rbac_auth_defaultpasswd")
+	u.Repassword = beego.AppConfig.String("rbac_auth_defaultpasswd")
 	id, err := m.AddUser(&u)
-	
 	if err == nil && id > 0 {
 		this.Rsp(true, "Success",nil)
 		return
@@ -131,3 +132,4 @@ func (this *UserController) Changepwd() {
 	this.Rsp(false, "密码有误",nil)
 
 }
+

@@ -17,11 +17,10 @@ type User struct {
 	Username      string    `orm:"unique;size(32)" form:"Username"  valid:"Required;MaxSize(20);MinSize(6)"`
 	Password      string    `orm:"size(32)" form:"Password" valid:"Required;MaxSize(20);MinSize(6)"`
 	Repassword    string    `orm:"-" form:"Repassword" valid:"Required"`
-	Nickname      string    `orm:"size(32)" form:"Nickname" valid:"MaxSize(20);MinSize(2)"`
 	Email         string    `orm:"size(32)" form:"Email" valid:"Email"`
 	Lastlogintime time.Time `orm:"null;type(datetime)" form:"-"`
 	Createtime    time.Time `orm:"type(datetime);auto_now_add" `
-	ServiceAuths    []*ServiceAuth   `orm:"rel(m2m)"`
+	ServiceAuths    []*ServiceAuth   `orm:"rel(m2m);rel_through(github.com/xianyouQ/go-dockermgr/models.ServiceAuthUser)"`
 }
 
 func (u *User) TableName() string {
@@ -76,13 +75,8 @@ func AddUser(u *User) (int64, error) {
 		return 0, err
 	}
 	o := orm.NewOrm()
-	user := new(User)
-	user.Username = u.Username
-	user.Password = utils.Strtomd5(u.Password)
-	user.Nickname = u.Nickname
-	user.Email = u.Email
-
-	id, err := o.Insert(user)
+	u.Password = utils.Strtomd5(u.Password)
+	id, err := o.Insert(u)
 	return id, err
 }
 
@@ -95,9 +89,6 @@ func UpdateUser(u *User) (int64, error) {
 	user := make(orm.Params)
 	if len(u.Username) > 0 {
 		user["Username"] = u.Username
-	}
-	if len(u.Nickname) > 0 {
-		user["Nickname"] = u.Nickname
 	}
 	if len(u.Email) > 0 {
 		user["Email"] = u.Email
@@ -127,10 +118,4 @@ func GetUserByUsername(username string) (user User) {
 	o.Read(&user, "Username")
 	return user
 }
-/*
-func QueryServiceAuthList(service *Service) {
-	o := orm.NewOrm()
-	var 
-	count, err := o.QueryTable(beego.AppConfig.String("rbac_node_table")).Filter("ServiceAuths__Service__Id", service.Id).All(&role.Nodes)
-	return  count,err
-}*/
+

@@ -67,18 +67,6 @@
                           Role
                       </th>
                       <th>
-                          Container Manager
-                      </th>
-                      <th>
-                          Release New
-                      </th>
-                      <th>
-                          Release verify
-                      </th>
-                      <th>
-                          Release Operation
-                      </th>
-                      <th>
                         delete
                       </th>
                   </tr>
@@ -87,10 +75,6 @@
                   <tr ng-repeat="person in people">
                       <td>{{person.name}}</td>
                       <td>{{person.role}}</td>
-                      <td><i class="glyphicon" ng-class="{true:'glyphicon-ok',false:'glyphicon-remove'}[person.docker]"></i></td>
-                      <td><i class="glyphicon" ng-class="{true:'glyphicon-ok',false:'glyphicon-remove'}[person.releaseNew]"></i></td>
-                      <td><i class="glyphicon" ng-class="{true:'glyphicon-ok',false:'glyphicon-remove'}[person.releaseVerify]"></i></td>
-                      <td><i class="glyphicon" ng-class="{true:'glyphicon-ok',false:'glyphicon-remove'}[person.releaseOperation]"></i></td>
                       <td><button class="btn m-b-xs btn-sm btn-danger" ng-click="deleteUser(person)"><i class="fa fa-trash-o"></i></button></td>
                   </tr>
                 </tbody>
