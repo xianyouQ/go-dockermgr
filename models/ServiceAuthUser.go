@@ -22,9 +22,17 @@ func (s *ServiceAuthUser) TableName() string {
 
 
 
-func QueryUserAuthList() ([]*ServiceAuthUser,error) {
+func QueryUserAuthList(service *Service) ([]*ServiceAuthUser,error) {
     o := orm.NewOrm()
 	var auths []*ServiceAuthUser
-	_, err := o.QueryTable(beego.AppConfig.String("rbac_serviceauthuser_table")).RelatedSel().All(&auths)
+	_, err := o.QueryTable(beego.AppConfig.String("rbac_serviceauthuser_table")).Filter("ServiceAuth__Service__Id",service.Id).RelatedSel().All(&auths)
+	return  auths,err
+}
+
+
+func QueryUserList(username string) ([]*ServiceAuthUser,error) {
+    o := orm.NewOrm()
+	var auths []*ServiceAuthUser
+	_, err := o.QueryTable(beego.AppConfig.String("rbac_serviceauthuser_table")).Filter("ServiceAuth__Service__Id__isnull",true).Filter("User__Username__istartswith",username).RelatedSel("User").All(&auths)
 	return  auths,err
 }

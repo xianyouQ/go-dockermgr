@@ -12,27 +12,28 @@
   </script>
 
   <!-- column -->
-  <div class="col w b-r" ng-repeat="idx in count" ng-show="isShow(idx)">
+  <div class="col w b-r">
     <div class="vbox">
-      <div class="wrapper-sm b-b" ng-hide="isShow(0)">
-        <div class="m-t-n-xxs m-b-n-xxs m-l-xs">
-          <a class="btn btn-xs btn-default" ng-click="returnUpper(idx)">返回</a>
+      <div class="wrapper-sm b-b">
+        <div class="input-group m-b-xxs">
+          <span class="input-group-addon input-sm no-border no-bg"><i class="icon-magnifier text-md m-t-xxs"></i></span>
+          <input type="text" class="form-control input-sm no-border no-bg text-md" placeholder="Search {{group.name ? group.name : 'All Contacts'}}" ng-model="query">
         </div>
       </div>
       <div class="row-row">
         <div class="cell scrollable hover">
           <div class="cell-inner">
             <div class="list-group no-radius no-border no-bg m-b-none">
-              <a ng-repeat="item in services[idx] | filter:{Code:filter[idx-1]}" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectService(item,idx)"
+              <a ng-repeat="item in users| filter:{UserName:userfilter}" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectUser(item)"
                 <span class="block m-l-n" ng-class="{'m-n': item.selected }">{{ item.Code}}</span>
               </a>
             </div>
-            <div class="text-center pos-abt w-full" style="top:50%;" ng-hide="(services[idx] | filter:{Code:filter[idx-1]}).length" translate="content.management.no_subbus">No Service found</div>
+            <div class="text-center pos-abt w-full" style="top:50%;" ng-hide="(users | filter:{UserName:userfilter}).length" translate="content.management.no_subbus">No Service found</div>
           </div>
         </div>
       </div>
        <div class="wrapper b-t">
-         <a href class="btn btn-sm btn-default" ng-click="createService()"><i class="fa fa-plus fa-fw m-r-xs"></i> New Service</a>
+         <a href class="btn btn-sm btn-default" ng-click="addUser()"><i class="fa fa-plus fa-fw m-r-xs"></i> New User</a>
        </div>
     </div>
   </div>
@@ -44,48 +45,90 @@
   <!-- column -->
   <div class="col bg-white-only">
     <div class="vbox">
-      <div class="wrapper-sm b-b"  ng-show="ConfShow()">
-            <div class="m-t-n-xxs m-b-n-xxs m-l-xs">
-              <a class="btn btn-xs btn-default" ng-click="addUser()">Add</a>
-              <a class="btn btn-xs btn-default" ng-click="attachUser()">Attach</a>
-            </div>
-      </div>
       <div class="row-row">
         <div class="cell">
           <div class="cell-inner">
-            <div class="wrapper-lg"  ng-show="ConfShow()">
-              <div class="panel-body b-b b-light">
-                 Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r"/>
+            <div class="wrapper-lg">
+              <div class="panel panel-default">
+                <div class=panel-heading>
+                    <strong>信息</strong>
+                </div>
+                <div class="panel-body">
+                  <div class="hbox h-auto m-b-lg">
+                  <div class="col text-center w-sm">
+                      <div class="thumb-lg avatar inline">
+                        <img ng-src="{{item.avatar}}" ng-show="item.avatar">
+                      </div>
+                    </div>
+                    <div class="col v-middle h1 font-thin">
+                      <div>youxianqin</div>
+                    </div>
+                  </div>
+                  <!-- fields -->
+                  <div class="form-horizontal">
+                    <div class="form-group m-b-sm">
+                      <label class="col-sm-3 control-label">Email</label>
+                      <div class="col-sm-9">
+                        <p class="form-control-static" >youxianqin@pptv.com</p>
+                      </div>
+                    </div>
+                    <div class="form-group m-b-sm">
+                      <label class="col-sm-3 control-label">注册时间</label>
+                      <div class="col-sm-9">
+                        <p class="form-control-static" >youxianqin@pptv.com</p>
+                      </div>
+                    </div>
+                    <div class="form-group m-b-sm">
+                      <label class="col-sm-3 control-label">最后登陆时间</label>
+                      <div class="col-sm-9">
+                        <p class="form-control-static" >youxianqin@pptv.com</p>
+                      </div>
+                    </div>
+                  </div>
+                  </div>
               </div>
-              <table class="table m-b-none" ui-jq="footable" ui-refresh="people" data-filter="#filter" data-page-size="5">
-                <thead>
-                  <tr>
-                      <th>
-                          User Name
-                      </th>
-                      <th>
-                          Role
-                      </th>
-                      <th>
-                        delete
-                      </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr ng-repeat="person in people">
-                      <td>{{person.name}}</td>
-                      <td>{{person.role}}</td>
-                      <td><button class="btn m-b-xs btn-sm btn-danger" ng-click="deleteUser(person)"><i class="fa fa-trash-o"></i></button></td>
-                  </tr>
-                </tbody>
-                <tfoot class="hide-if-no-paging">
-                  <tr>
-                      <td colspan="5" class="text-center">
-                          <ul class="pagination"></ul>
-                      </td>
-                  </tr>
-                </tfoot>
-              </table>
+                  <div class="panel panel-default">
+                    <div class=panel-heading>
+                      <strong>操作</strong>
+                    </div>
+                    <div class="panel-body">
+                         <div class="text-danger wrapper text-center" ng-show="formError">
+                          {{formError}}
+                        </div>                    
+                        <div class="form-group">
+                          <div class="col-sm-9 checkbox">
+                            <label class="i-checks">
+                              <input type="checkbox" value="">
+                              <i></i>
+                              Option one
+                            </label>
+                          </div>
+                        </div>
+
+                        <div class="form-group m-b-sm">
+                          <div class="col-sm-9 checkbox">
+                            <label class="i-checks">
+                              <input type="checkbox" checked value="">
+                              <i></i>
+                              Option two checked
+                            </label>
+                          </div>
+                       </div>
+                        <div class="form-group">
+                          <div class="col-sm-9 checkbox">
+                            <label class="i-checks">
+                              <input type="checkbox" value="">
+                              <i></i>
+                              Reset PassWord
+                            </label>
+                          </div>
+                        </div>
+                    </div>
+                    <footer class="panel-footer text-right bg-light lter">
+                      <button type="submit" class="btn btn-success" ng-click="commitService()" ng-disabled='form.$invalid'>Submit</button>
+                    </footer>
+                  </div>
+              <!-- / fields -->
             </div>
           </div>
         </div>

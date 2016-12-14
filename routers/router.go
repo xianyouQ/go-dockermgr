@@ -7,7 +7,7 @@ import (
 
 func init() {
 	beego.Router("/", &controllers.MainController{})
-	beego.Router("/api/auth/user",&controllers.UserController{},"post:AddUser;put:UpdateUser;delete:DelUser")
+	beego.Router("/api/auth/user",&controllers.UserController{},"post:AddUser;put:UpdateUser;delete:DelUser;get:GetUserList")
 	beego.Router("/api/auth/sign",&controllers.UserController{},"post:Login;get:Logout")
 	beego.Router("/api/auth/get",&controllers.AuthController{},"get:GetRole")
 	beego.Router("/api/auth/post",&controllers.AuthController{},"post:AddOrUpdateRole")

@@ -53,10 +53,10 @@ func init() {
 /************************************************************/
 
 //get user list
-func Getuserlist(page int64, page_size int64, sort string) ([]*User, int64) {
+func Getuserlist(username string,page int64, page_size int64, sort string) ([]*User, error) {
 	o := orm.NewOrm()
 	var users []*User
-	var count int64
+	var err error
 	qs := o.QueryTable(beego.AppConfig.String("rbac_user_table"))
 	var offset int64
 	if page <= 1 {
@@ -64,9 +64,12 @@ func Getuserlist(page int64, page_size int64, sort string) ([]*User, int64) {
 	} else {
 		offset = (page - 1) * page_size
 	}
-	qs.Limit(page_size, offset).OrderBy(sort).All(&users)
-	count, _ = qs.Count()
-	return users, count
+	if username != "" {
+		_,err = qs.Filter("Username__istartswith",username).Limit(page_size, offset).OrderBy(sort).All(&users)
+	} else {
+	_,err = qs.Limit(page_size, offset).OrderBy(sort).All(&users)
+	}
+	return users, err
 }
 
 //添加用户
