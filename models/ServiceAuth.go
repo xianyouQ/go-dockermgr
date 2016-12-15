@@ -55,22 +55,20 @@ func NewServiceAuth(role *Role, service *Service) (int64,error){
 
 
 
-func AddUserAuth(uid int64,role *Role, service *Service) error {
+func AddUserAuth(user *User,role *Role, service *Service) error {
     o := orm.NewOrm()
     mServiceAuth := ServiceAuth{Role:role,Service: service}
     m2m := o.QueryM2M(&mServiceAuth,"Users")
-    addUser := User{Id:uid}
-    _,err := m2m.Add(&addUser)
+    _,err := m2m.Add(&user)
     return err
 }
 
 
-func DelUserAuth(uid int64,role *Role, service *Service) error {
+func DelUserAuth(user *User,role *Role, service *Service) error {
     o := orm.NewOrm()
     mServiceAuth := ServiceAuth{Role:role,Service: service}
     m2m := o.QueryM2M(&mServiceAuth,"Users")
-    addUser := User{Id:uid}
-    _,err := m2m.Remove(&addUser)
+    _,err := m2m.Remove(&user)
     return err
 }
 

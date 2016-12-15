@@ -148,10 +148,10 @@ func (this *UserController) GetUserList() {
 func (this *UserController) GetUserList() {
 	//pageId,err := this.GetInt("pageId")
 	UserName := this.GetString("username")
-	users,err := m.QueryUserList(UserName)
+	auths,err := m.QueryUserAuthListByUser(UserName)
 	if err != nil {
 		this.Rsp(false,err.Error(),nil)
 		return
 	}
-	this.Rsp(true,"success",users)
+	this.Rsp(true,"success",auths)
 }

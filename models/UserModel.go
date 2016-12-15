@@ -74,12 +74,19 @@ func Getuserlist(username string,page int64, page_size int64, sort string) ([]*U
 
 //添加用户
 func AddUser(u *User) (int64, error) {
-	if err := checkUser(u); err != nil {
+	var err error
+	var id int64
+	if err = checkUser(u); err != nil {
 		return 0, err
 	}
 	o := orm.NewOrm()
 	u.Password = utils.Strtomd5(u.Password)
-	id, err := o.Insert(u)
+	id, err = o.Insert(u)
+	if err != nil && u.Username == beego.AppConfig.String("rbac_admin_user"){
+		return id, err
+	}
+	baseRole := &Role{Name:"BASE",Status:true}
+	err = AddUserAuth(u,baseRole,nil)
 	return id, err
 }
 

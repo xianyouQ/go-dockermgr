@@ -30,7 +30,7 @@ func QueryUserAuthList(service *Service) ([]*ServiceAuthUser,error) {
 }
 
 
-func QueryUserList(username string) ([]*ServiceAuthUser,error) {
+func QueryUserAuthListByUser(username string) ([]*ServiceAuthUser,error) {
     o := orm.NewOrm()
 	var auths []*ServiceAuthUser
 	_, err := o.QueryTable(beego.AppConfig.String("rbac_serviceauthuser_table")).Filter("ServiceAuth__Service__Id__isnull",true).Filter("User__Username__istartswith",username).RelatedSel("User").All(&auths)

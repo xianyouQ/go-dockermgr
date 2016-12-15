@@ -16,7 +16,7 @@ type Role struct {
 	Status bool     `orm:"default(true)" form:"Status"`
 	Nodes   []*Node `orm:"rel(m2m)"`
 	NeedAddAuth bool `orm:"-" form:"NeedAddAuth" valid:"Required"`
-	Services []*Service `orm:"rel(m2m)"`
+	Services []*Service `orm:"rel(m2m);rel_through(github.com/xianyouQ/go-dockermgr/models.ServiceAuth)"`
 }
 
 func (r *Role) TableName() string {
