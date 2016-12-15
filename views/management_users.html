@@ -24,7 +24,7 @@
         <div class="cell scrollable hover">
           <div class="cell-inner">
             <div class="list-group no-radius no-border no-bg m-b-none">
-              <a ng-repeat="item in users| filter:{UserName:userfilter}" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectUser(item)"
+              <a ng-repeat="item in users| filter:{UserName:userfilter}" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectUser(item)">
                 <span class="block m-l-n" ng-class="{'m-n': item.selected }">{{ item.Code}}</span>
               </a>
             </div>
@@ -32,9 +32,15 @@
           </div>
         </div>
       </div>
-       <div class="wrapper b-t">
-         <a href class="btn btn-sm btn-default" ng-click="addUser()"><i class="fa fa-plus fa-fw m-r-xs"></i> New User</a>
-       </div>
+          <ul class="pagination pagination-sm m-t-none m-b-none">
+            <li><a href><i class="fa fa-chevron-left"></i></a></li>
+            <li><a href>1</a></li>
+            <li><a href>2</a></li>
+            <li><a href>3</a></li>
+            <li><a href>4</a></li>
+            <li><a href>5</a></li>
+            <li><a href><i class="fa fa-chevron-right"></i></a></li>
+          </ul>
     </div>
   </div>
   <!-- /column -->
@@ -45,6 +51,11 @@
   <!-- column -->
   <div class="col bg-white-only">
     <div class="vbox">
+      <div class="wrapper-sm b-b">
+        <div class="m-t-n-xxs m-b-n-xxs m-l-xs">
+          <a class="btn btn-xs btn-default" ng-click="addUser()">Add</a>
+        </div>
+      </div>
       <div class="row-row">
         <div class="cell">
           <div class="cell-inner">

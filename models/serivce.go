@@ -3,7 +3,7 @@ package models
 import (
     "github.com/astaxie/beego"
     "github.com/astaxie/beego/orm"
-    "github.com/xianyouQ/go-dockermgr/utils"
+    //"github.com/xianyouQ/go-dockermgr/utils"
 	"github.com/astaxie/beego/validation"
     "strings"
     "errors"
@@ -48,7 +48,7 @@ func checkService(newService *Service) error {
 	return nil
 
 }
-func AddOrUpdateService(newService *Service) (int64,error) {
+func AddOrUpdateService(o orm.Ormer,newService *Service) (int64,error) {
     var err error
     var id int64
     var roles []*Role
@@ -56,7 +56,6 @@ func AddOrUpdateService(newService *Service) (int64,error) {
     if err != nil {
         return id,err
     }
-    o := orm.NewOrm()
     if newService.Id == 0 {
         id,err = o.Insert(newService)
         if err!=nil {
@@ -67,7 +66,7 @@ func AddOrUpdateService(newService *Service) (int64,error) {
             return 0,err
         }
         for _,role := range roles {
-			_,err = NewServiceAuth(role,newService)
+			_,err = NewServiceAuth(o,role,newService)
 			if err != nil {
 				return 0,err
 			}
@@ -93,10 +92,9 @@ func QueryService() ([]*Service,error) {
     return  Services,nil
 }
 
-func DelService(oldService *Service) error {
+func DelService(o orm.Ormer,oldService *Service) error {
     var err error
     var count int64
-    o := orm.NewOrm()
     count,err = o.QueryTable(beego.AppConfig.String("dockermgr_ip_table")).Filter("BelongService",oldService.Id).Count()
     if err != nil {
         return err
@@ -111,7 +109,7 @@ func DelService(oldService *Service) error {
     return nil
 }
 
-
+/*
 func (self *Service) SetMarathonConf(conf string) error {
     if conf == self.MarathonConf {
         return nil
@@ -131,7 +129,7 @@ func (self *Service) SetMarathonConf(conf string) error {
 } 
 
 
-/*
+
 
 func (self Service) GetInstancesWithIdc(idc IdcConf) ([]*Ip,error) {
     o := orm.NewOrm()

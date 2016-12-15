@@ -30,6 +30,7 @@ func main() {
 		if err != nil {
 			logs.Critical(err.Error())
 		}
+		o := orm.NewOrm()
 		adminUserName := beego.AppConfig.String("rbac_admin_user")
 		if adminUserName == "" {
 			logs.Critical("adminUser not Set in App.conf")
@@ -39,17 +40,17 @@ func main() {
 			logs.Critical("defaultPasswd not Set in App.conf")
 		}		
 		adminUser := &models.User{Username:adminUserName,Password:defaultPasswd,Repassword:defaultPasswd}
-		_,err = models.AddUser(adminUser)
+		_,err = models.AddUser(o,adminUser)
 		if err !=nil {
 			logs.Critical(err.Error())
 		}
 		adminRole := &models.Role{Name:"SYSTEM",Status:true}
 		baseRole := &models.Role{Name:"BASE",Status:true}
-		_,err = models.AddOrUpdateRole(adminRole)
+		_,err = models.AddOrUpdateRole(o,adminRole)
 		if err !=nil {
 			logs.Critical(err.Error())
 		}
-		_,err =models.AddOrUpdateRole(baseRole)
+		_,err =models.AddOrUpdateRole(o,baseRole)
 		if err !=nil {
 			logs.Critical(err.Error())
 		}

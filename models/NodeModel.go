@@ -48,11 +48,10 @@ func GetNodes() ([]*Node,error) {
 
 
 //更新用户
-func AddOrUpdateNode(node *Node) (int64, error) {
+func AddOrUpdateNode(o orm.Ormer,node *Node) (int64, error) {
 	if err := checkNode(node); err != nil {
 		return 0, err
 	}
-	o := orm.NewOrm()
 	if node.Id == 0 {
 		id, err := o.Insert(node)
 		return id,err
@@ -63,8 +62,7 @@ func AddOrUpdateNode(node *Node) (int64, error) {
 
 }
 
-func DelNodeById(Id int64) (int64, error) {
-	o := orm.NewOrm()
+func DelNodeById(o orm.Ormer,Id int64) (int64, error) {
 	status, err := o.Delete(&Node{Id: Id})
 	return status, err
 }

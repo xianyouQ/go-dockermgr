@@ -5,6 +5,7 @@ import (
 	"github.com/xianyouQ/go-dockermgr/auth"
 	"github.com/astaxie/beego"
 	"encoding/json"
+	"github.com/astaxie/beego/orm"
 )
 
 
@@ -24,8 +25,9 @@ func (this *UserController) AddUser() {
 	}
 	u.Password = beego.AppConfig.String("rbac_auth_defaultpasswd")
 	u.Repassword = beego.AppConfig.String("rbac_auth_defaultpasswd")
-	id, err := m.AddUser(&u)
-	if err == nil && id > 0 {
+	o := orm.NewOrm()
+	_, err := m.AddUser(o,&u)
+	if err == nil {
 		this.Rsp(true, "Success",nil)
 		return
 	} else {
@@ -42,7 +44,8 @@ func (this *UserController) UpdateUser() {
 		this.Rsp(false, err.Error(),nil)
 		return
 	}
-	id, err := m.UpdateUser(&u)
+	o := orm.NewOrm()
+	id, err := m.UpdateUser(o,&u)
 	if err == nil && id > 0 {
 		this.Rsp(true, "Success",nil)
 		return
@@ -55,7 +58,8 @@ func (this *UserController) UpdateUser() {
 
 func (this *UserController) DelUser() {
 	Id, _ := this.GetInt64("Id")
-	status, err := m.DelUserById(Id)
+	o := orm.NewOrm()
+	status, err := m.DelUserById(o,Id)
 	if err == nil && status > 0 {
 		this.Rsp(true, "Success",nil)
 		return
@@ -120,7 +124,8 @@ func (this *UserController) Changepwd() {
 		var u m.User
 		u.Id = user.Id
 		u.Password = newpassword
-		id, err := m.UpdateUser(&u)
+		o := orm.NewOrm()
+		id, err := m.UpdateUser(o,&u)
 		if err == nil && id > 0 {
 			this.Rsp(true, "密码修改成功",nil)
 			return

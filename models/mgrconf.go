@@ -61,7 +61,7 @@ func checkRegistryConf(conf *RegistryConf) error {
     return nil
 }
 
-func AddOrUpdateMarathonSerConf(newConf *MarathonSerConf) (int64,error) {
+func AddOrUpdateMarathonSerConf(o orm.Ormer,newConf *MarathonSerConf) (int64,error) {
     var err error
     var id int64
     err = checkMarathonSerConf(newConf)
@@ -72,7 +72,6 @@ func AddOrUpdateMarathonSerConf(newConf *MarathonSerConf) (int64,error) {
     if err != nil {
         return id,err
     }
-     o := orm.NewOrm()
     if(newConf.Id == 0) {
         id,err = o.Insert(newConf)
         if err != nil {
@@ -88,14 +87,13 @@ func AddOrUpdateMarathonSerConf(newConf *MarathonSerConf) (int64,error) {
 }
 
 
-func AddOrUpdateRegistryConf(newConf *RegistryConf) (int64,error) {
+func AddOrUpdateRegistryConf(o orm.Ormer,newConf *RegistryConf) (int64,error) {
     var err error
     var id int64
     err = checkRegistryConf(newConf)
     if err != nil {
         return id,err
     }
-     o := orm.NewOrm()
     if(newConf.Id == 0) {
         id,err = o.Insert(newConf)
         if err != nil {

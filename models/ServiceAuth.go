@@ -36,8 +36,7 @@ func checkAuth(s *ServiceAuth) error {
 }
 
 
-func NewServiceAuth(role *Role, service *Service) (int64,error){
-    o := orm.NewOrm()
+func NewServiceAuth(o orm.Ormer,role *Role, service *Service) (int64,error){
     newServiceAuth := ServiceAuth{}
 	if service == nil {
 		newServiceAuth.Name = role.Name
@@ -55,8 +54,7 @@ func NewServiceAuth(role *Role, service *Service) (int64,error){
 
 
 
-func AddUserAuth(user *User,role *Role, service *Service) error {
-    o := orm.NewOrm()
+func AddUserAuth(o orm.Ormer,user *User,role *Role, service *Service) error {
     mServiceAuth := ServiceAuth{Role:role,Service: service}
     m2m := o.QueryM2M(&mServiceAuth,"Users")
     _,err := m2m.Add(&user)
@@ -64,8 +62,7 @@ func AddUserAuth(user *User,role *Role, service *Service) error {
 }
 
 
-func DelUserAuth(user *User,role *Role, service *Service) error {
-    o := orm.NewOrm()
+func DelUserAuth(o orm.Ormer,user *User,role *Role, service *Service) error {
     mServiceAuth := ServiceAuth{Role:role,Service: service}
     m2m := o.QueryM2M(&mServiceAuth,"Users")
     _,err := m2m.Remove(&user)

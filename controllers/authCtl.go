@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"github.com/xianyouQ/go-dockermgr/models"
-
+	"github.com/astaxie/beego/orm"
 	"encoding/json"
-	//"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/logs"
 )
 
 type AuthController struct {
@@ -20,10 +20,24 @@ func (c *AuthController) AddOrUpdateRole() {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
-	_,err = models.AddOrUpdateRole(&newRole)
+	o := orm.NewOrm()
+	err = o.Begin()
 	if err != nil {
 		c.Rsp(false, err.Error(),nil)
 		return
+	}
+	_,err = models.AddOrUpdateRole(o,&newRole)
+	if err != nil {
+		c.Rsp(false, err.Error(),nil)
+		err = o.Rollback()
+		if err != nil {
+			logs.GetLogger("AuthCtl").Printf("rollback error:%s",err.Error())
+		}
+		return
+	}
+	err = o.Commit()
+	if err != nil {
+		logs.GetLogger("AuthCtl").Printf("commit error:%s",err.Error())
 	}
 	c.Rsp(true, "success",newRole)
 }
@@ -36,10 +50,24 @@ func (c *AuthController) DelRole() {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
-	err = models.DelRole(&oldRole)
+	o := orm.NewOrm()
+	err = o.Begin()
 	if err != nil {
 		c.Rsp(false, err.Error(),nil)
+		return
+	}
+	err = models.DelRole(o,&oldRole)
+	if err != nil {
+		c.Rsp(false, err.Error(),nil)
+		err = o.Rollback()
+		if err != nil {
+			logs.GetLogger("AuthCtl").Printf("rollback error:%s",err.Error())
+		}
 		return		
+	}
+	err = o.Commit()
+	if err != nil {
+		logs.GetLogger("AuthCtl").Printf("commit error:%s",err.Error())
 	}
 	c.Rsp(true,"success",nil)
 }
@@ -73,12 +101,25 @@ func (c *AuthController) AddOrUpdateNode() {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
-	_,err = models.AddOrUpdateNode(&newNode)
+	o := orm.NewOrm()
+	err = o.Begin()
 	if err != nil {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
-	//newRole.Id = int(id)
+	_,err = models.AddOrUpdateNode(o,&newNode)
+	if err != nil {
+		c.Rsp(false, err.Error(),nil)
+		err = o.Rollback()
+		if err != nil {
+			logs.GetLogger("AuthCtl").Printf("rollback error:%s",err.Error())
+		}
+		return
+	}
+	err = o.Commit()
+	if err != nil {
+		logs.GetLogger("AuthCtl").Printf("commit error:%s",err.Error())
+	}
 	c.Rsp(true, "success",newNode)
 }
 
@@ -91,6 +132,12 @@ func (c *AuthController) UpdateRoleNode() {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
+	o := orm.NewOrm()
+	err = o.Begin()
+	if err != nil {
+		c.Rsp(false, err.Error(),nil)
+		return
+	}
 	for _,node := range oldRole.Nodes {
 		if node.Active == true {
 			activeNodes = append(activeNodes,node)
@@ -98,16 +145,28 @@ func (c *AuthController) UpdateRoleNode() {
 			inActiveNodes = append(inActiveNodes,node)
 		}
 	}
-	_,err = models.AddRoleNode(&oldRole,activeNodes)
+	_,err = models.AddRoleNode(o,&oldRole,activeNodes)
 	if err != nil {
 		c.Rsp(false, err.Error(),nil)
+		err = o.Rollback()
+		if err != nil {
+			logs.GetLogger("AuthCtl").Printf("rollback error:%s",err.Error())
+		}
 		return
 	}
 
-	_,err = models.DelRoleNode(&oldRole,inActiveNodes)
+	_,err = models.DelRoleNode(o,&oldRole,inActiveNodes)
 	if err != nil {
 		c.Rsp(false, err.Error(),nil)
+		err = o.Rollback()
+		if err != nil {
+			logs.GetLogger("AuthCtl").Printf("rollback error:%s",err.Error())
+		}
 		return
+	}
+	err = o.Commit()
+	if err != nil {
+		logs.GetLogger("AuthCtl").Printf("commit error:%s",err.Error())
 	}
 	c.Rsp(true,"success",nil)
 }

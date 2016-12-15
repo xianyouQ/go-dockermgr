@@ -24,6 +24,11 @@ func (c *DockerController) DashBoard() {
         var client outMarathon.Marathon
         var mesosInfo *utils.MesosInfo
         idc.OthsData = make(map[string]interface{})
+        if idc.MarathonSerConf == nil {
+            idc.OthsData["status"] = false
+            idc.OthsData["info"] = "Marathon Conf Not Set"
+            continue
+        }
        client,err = utils.NewMarathonClient(idc.MarathonSerConf.Server,idc.MarathonSerConf.HttpBasicAuthUser,idc.MarathonSerConf.HttpBasicPassword)
        if err != nil {
            idc.OthsData["status"] = false

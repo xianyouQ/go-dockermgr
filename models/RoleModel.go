@@ -54,14 +54,12 @@ func GetRoleListFromOrm() ([]*Role,error) {
 }
 
 
-func AddOrUpdateRole(role *Role) (int64, error) {
+func AddOrUpdateRole(o orm.Ormer,role *Role) (int64, error) {
 	var id int64
 	var err error
 	if err = checkRole(role); err != nil {
 		return 0, err
 	}
-	o := orm.NewOrm()
-
 	if role.Id == 0 {
 		id, err = o.Insert(role)
 		if err != nil {
@@ -74,13 +72,13 @@ func AddOrUpdateRole(role *Role) (int64, error) {
 				return 0,err
 			}
 			for _,service := range services {
-				_,err = NewServiceAuth(role,service)
+				_,err = NewServiceAuth(o,role,service)
 				if err != nil {
 						return 0,err
 				}
 			}
 		} else {
-			_,err = NewServiceAuth(role,nil)
+			_,err = NewServiceAuth(o,role,nil)
 			if err != nil {
 					return 0,err
 			}
@@ -101,8 +99,7 @@ func AddOrUpdateRole(role *Role) (int64, error) {
 }
 
 
-func DelRole(role *Role)  error {
-	o := orm.NewOrm()
+func DelRole(o orm.Ormer,role *Role)  error {
 	_, err := o.Delete(role)
 	return err
 }
@@ -113,21 +110,19 @@ func GetNodelistByRole(role *Role) (int64,error) {
 	return  count,err
 }
 
-func AddRoleNode(role *Role, nodes []*Node) (int64, error) {
+func AddRoleNode(o orm.Ormer,role *Role, nodes []*Node) (int64, error) {
 	if len(nodes) <= 0 {
 		return 0,nil
 	}
-	o := orm.NewOrm()
 	m2m := o.QueryM2M(role, "Nodes")
 	num, err := m2m.Add(nodes)
 	return num, err
 }
 
-func DelRoleNode(role *Role, nodes []*Node) (int64, error) {
+func DelRoleNode(o orm.Ormer,role *Role, nodes []*Node) (int64, error) {
 	if len(nodes) <=  0 {
 		return 0,nil
 	}
-	o := orm.NewOrm()
 	m2m := o.QueryM2M(role, "Nodes")
 	num, err := m2m.Remove(nodes)
 	return num, err

@@ -40,7 +40,7 @@ func checkIdc(idc *IdcConf) (err error) {
 	return nil
 }
 
-func AddOrUpdateIdc(idc *IdcConf) error {
+func AddOrUpdateIdc(o orm.Ormer,idc *IdcConf) error {
     var err error
     var pid int64
 
@@ -49,7 +49,6 @@ func AddOrUpdateIdc(idc *IdcConf) error {
     if err!=nil {
         return err
     }
-    o := orm.NewOrm()
     if(idc.Id == 0) {
         idc.Status = IdcEnable
         pid,err = o.Insert(idc)

@@ -58,7 +58,7 @@ func GetCidrFromOrm() ([]*Cidr,error) {
 
 
 
-func AddCidr(cidr *Cidr) error {
+func AddCidr(o orm.Ormer,cidr *Cidr) error {
     var err error
     var newCidr utils.CidrHelper
     var idcs []*IdcConf
@@ -80,7 +80,6 @@ func AddCidr(cidr *Cidr) error {
         }
     }
     
-    o := orm.NewOrm()
     _,err = o.Insert(cidr)
     if err != nil {
         return err
@@ -108,22 +107,17 @@ func AddCidr(cidr *Cidr) error {
 }
 
 
-func RequestIp(service Service,cidr Cidr,num int) ([]Ip,error){
+func RequestIp(o orm.Ormer,service Service,cidr Cidr,num int) ([]Ip,error){
     var IpList []Ip
     ip := Ip{}
-    o := orm.NewOrm()
-    o.Begin()
     qnum,err := o.QueryTable(ip).Filter("BelongNet__id",cidr.Id).Filter("Status",IpUnUsed).Limit(num).Update(orm.Params{
         "Status":IpAllocated })
     if err != nil {
-        o.Rollback()
         return IpList,err
     }
     if qnum < int64(num) {
-        o.Rollback()
         return IpList,errors.New("No enough ip")
     }
-    o.Commit()
     return IpList,nil
 }
 

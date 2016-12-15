@@ -2,7 +2,8 @@ package controllers
 
 import (
 	"github.com/xianyouQ/go-dockermgr/models"
-
+	"github.com/astaxie/beego/orm"
+	"github.com/astaxie/beego/logs"
 	"encoding/json"
 )
 
@@ -14,24 +15,36 @@ type MarathonCfController struct {
 
 func (c *MarathonCfController) AddOrUpdateMarathonConf() {
 	var err error
-	var id int64
 	belongIdc := models.IdcConf{}
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &belongIdc);err != nil {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
-	id,err = models.AddOrUpdateMarathonSerConf(belongIdc.MarathonSerConf)
+	o := orm.NewOrm()
+	err = o.Begin()
+	if err != nil {
+		c.Rsp(false, err.Error(),nil)
+	}
+	_,err = models.AddOrUpdateMarathonSerConf(o,belongIdc.MarathonSerConf)
 	if err !=nil {
 		c.Rsp(false,err.Error(),nil)
-    return
+		err = o.Rollback()
+		if err != nil {
+			logs.GetLogger("AuthCtl").Printf("rollback error:%s",err.Error())
+		}
+		return
 	}
-	if id != 0  {
-		belongIdc.MarathonSerConf.Id = int(id)
-	}
-	err = models.AddOrUpdateIdc(&belongIdc)
+	err = models.AddOrUpdateIdc(o,&belongIdc)
 	if err !=nil {
 		c.Rsp(false,err.Error(),nil)
-    return
+		if err != nil {
+			logs.GetLogger("AuthCtl").Printf("rollback error:%s",err.Error())
+		}
+    	return
+	}
+	err = o.Commit()
+	if err != nil {
+		logs.GetLogger("AuthCtl").Printf("commit error:%s",err.Error())
 	}
 	c.Rsp(true,"success",belongIdc.MarathonSerConf)
 }

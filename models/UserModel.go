@@ -73,29 +73,27 @@ func Getuserlist(username string,page int64, page_size int64, sort string) ([]*U
 }
 
 //添加用户
-func AddUser(u *User) (int64, error) {
+func AddUser(o orm.Ormer,u *User) (int64, error) {
 	var err error
 	var id int64
 	if err = checkUser(u); err != nil {
 		return 0, err
 	}
-	o := orm.NewOrm()
 	u.Password = utils.Strtomd5(u.Password)
 	id, err = o.Insert(u)
 	if err != nil && u.Username == beego.AppConfig.String("rbac_admin_user"){
 		return id, err
 	}
 	baseRole := &Role{Name:"BASE",Status:true}
-	err = AddUserAuth(u,baseRole,nil)
+	err = AddUserAuth(o,u,baseRole,nil)
 	return id, err
 }
 
 //更新用户
-func UpdateUser(u *User) (int64, error) {
+func UpdateUser(o orm.Ormer,u *User) (int64, error) {
 	if err := checkUser(u); err != nil {
 		return 0, err
 	}
-	o := orm.NewOrm()
 	user := make(orm.Params)
 	if len(u.Username) > 0 {
 		user["Username"] = u.Username
@@ -116,8 +114,7 @@ func UpdateUser(u *User) (int64, error) {
 	return num, err
 }
 
-func DelUserById(Id int64) (int64, error) {
-	o := orm.NewOrm()
+func DelUserById(o orm.Ormer,Id int64) (int64, error) {
 	status, err := o.Delete(&User{Id: Id})
 	return status, err
 }

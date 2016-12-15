@@ -3,7 +3,8 @@ package controllers
 import (
 	"github.com/astaxie/beego"
 	"github.com/xianyouQ/go-dockermgr/models"
-
+	"github.com/astaxie/beego/orm"
+	"github.com/astaxie/beego/logs"
 	"encoding/json"
 )
 
@@ -13,19 +14,31 @@ type ServiceController struct {
 
 func (c *ServiceController) AddOrUpdateService() {
 	var err error
-	var id int64
 	newService := models.Service{}
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &newService); err != nil {
 		//handle error
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
-	id,err = models.AddOrUpdateService(&newService)
+	o := orm.NewOrm()
+	err = o.Begin()
 	if err != nil {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
-	newService.Id = int(id)
+	_,err = models.AddOrUpdateService(o,&newService)
+	if err != nil {
+		c.Rsp(false, err.Error(),nil)
+		err = o.Rollback()
+		if err != nil {
+			logs.GetLogger("serviceCtl").Printf("rollback error:%s",err.Error())
+		}
+		return
+	}
+	err = o.Commit()
+	if err != nil {
+		logs.GetLogger("serviceCtl").Printf("commit error:%s",err.Error())
+	}
 	c.Rsp(true, "success",newService)
 }
 
@@ -37,9 +50,19 @@ func (c *ServiceController) DelService() {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
-	err = models.DelService(&oldService)
+	o := orm.NewOrm()
+	err = o.Begin()
 	if err != nil {
 		c.Rsp(false, err.Error(),nil)
+		return
+	}
+	err = models.DelService(o,&oldService)
+	if err != nil {
+		c.Rsp(false, err.Error(),nil)
+		err = o.Rollback()
+		if err != nil {
+			logs.GetLogger("serviceCtl").Printf("rollback error:%s",err.Error())
+		}
 		return		
 	}
 	c.Rsp(true,"success",nil)
