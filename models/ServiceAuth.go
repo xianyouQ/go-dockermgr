@@ -55,9 +55,19 @@ func NewServiceAuth(o orm.Ormer,role *Role, service *Service) (int64,error){
 
 
 func AddUserAuth(o orm.Ormer,user *User,role *Role, service *Service) error {
-    mServiceAuth := ServiceAuth{Role:role,Service: service}
-    m2m := o.QueryM2M(&mServiceAuth,"Users")
-    _,err := m2m.Add(&user)
+	var err error
+	mServiceAuth := &ServiceAuth{}
+    if service == nil {
+		err = o.QueryTable(beego.AppConfig.String("rbac_serviceauth_table")).Filter("Role__Id",role.Id).One(mServiceAuth)
+	} else {
+		err = o.QueryTable(beego.AppConfig.String("rbac_serviceauth_table")).Filter("Role__Id",role.Id).Filter("Service__Id",service.Id).One(mServiceAuth)
+	}
+	if err != nil {
+		return err
+	}
+    m2m := o.QueryM2M(mServiceAuth,"Users")
+    _,err = m2m.Add(user)
+	user.ServiceAuths = append(user.ServiceAuths,mServiceAuth)
     return err
 }
 

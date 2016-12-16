@@ -65,6 +65,10 @@ func (c *ServiceController) DelService() {
 		}
 		return		
 	}
+	err = o.Commit()
+	if err != nil {
+		logs.GetLogger("serviceCtl").Printf("commit error:%s",err.Error())
+	}
 	c.Rsp(true,"success",nil)
 }
 

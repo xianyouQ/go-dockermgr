@@ -17,18 +17,18 @@
       <div class="wrapper-sm b-b">
         <div class="input-group m-b-xxs">
           <span class="input-group-addon input-sm no-border no-bg"><i class="icon-magnifier text-md m-t-xxs"></i></span>
-          <input type="text" class="form-control input-sm no-border no-bg text-md" placeholder="Search {{group.name ? group.name : 'All Contacts'}}" ng-model="query">
+          <input type="text" class="form-control input-sm no-border no-bg text-md" placeholder="Search" ng-model="userfilter">
         </div>
       </div>
       <div class="row-row">
         <div class="cell scrollable hover">
           <div class="cell-inner">
             <div class="list-group no-radius no-border no-bg m-b-none">
-              <a ng-repeat="item in users| filter:{UserName:userfilter}" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectUser(item)">
-                <span class="block m-l-n" ng-class="{'m-n': item.selected }">{{ item.Code}}</span>
+              <a ng-repeat="item in users| filter:{Username:userfilter}" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectUser(item)">
+                <span class="block m-l-n" ng-class="{'m-n': item.selected }">{{ item.Username}}</span>
               </a>
             </div>
-            <div class="text-center pos-abt w-full" style="top:50%;" ng-hide="(users | filter:{UserName:userfilter}).length" translate="content.management.no_subbus">No Service found</div>
+            <div class="text-center pos-abt w-full" style="top:50%;" ng-hide="(users | filter:{Username:userfilter}).length" translate="content.management.no_subbus">No Service found</div>
           </div>
         </div>
       </div>
@@ -59,20 +59,20 @@
       <div class="row-row">
         <div class="cell">
           <div class="cell-inner">
-            <div class="wrapper-lg">
+            <div class="wrapper-lg" ng-show="selectedUser">
               <div class="panel panel-default">
                 <div class=panel-heading>
                     <strong>信息</strong>
                 </div>
                 <div class="panel-body">
                   <div class="hbox h-auto m-b-lg">
-                  <div class="col text-center w-sm">
+                    <div class="col text-center w-sm">
                       <div class="thumb-lg avatar inline">
-                        <img ng-src="{{item.avatar}}" ng-show="item.avatar">
+                        <!-- <img ng-src="{{item.avatar}}" ng-show="item.avatar"> -->
                       </div>
                     </div>
                     <div class="col v-middle h1 font-thin">
-                      <div>youxianqin</div>
+                      <div>{{selectedUser.Username}}</div>
                     </div>
                   </div>
                   <!-- fields -->
@@ -80,19 +80,19 @@
                     <div class="form-group m-b-sm">
                       <label class="col-sm-3 control-label">Email</label>
                       <div class="col-sm-9">
-                        <p class="form-control-static" >youxianqin@pptv.com</p>
+                        <p class="form-control-static" >{{selectedUser.Email}}</p>
                       </div>
                     </div>
                     <div class="form-group m-b-sm">
                       <label class="col-sm-3 control-label">注册时间</label>
                       <div class="col-sm-9">
-                        <p class="form-control-static" >youxianqin@pptv.com</p>
+                        <p class="form-control-static" >{{selectedUser.Createtime}}</p>
                       </div>
                     </div>
                     <div class="form-group m-b-sm">
                       <label class="col-sm-3 control-label">最后登陆时间</label>
                       <div class="col-sm-9">
-                        <p class="form-control-static" >youxianqin@pptv.com</p>
+                        <p class="form-control-static" >{{selectedUser.Lastlogintime}}</p>
                       </div>
                     </div>
                   </div>

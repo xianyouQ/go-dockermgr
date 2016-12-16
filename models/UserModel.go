@@ -84,7 +84,11 @@ func AddUser(o orm.Ormer,u *User) (int64, error) {
 	if err != nil && u.Username == beego.AppConfig.String("rbac_admin_user"){
 		return id, err
 	}
-	baseRole := &Role{Name:"BASE",Status:true}
+	var baseRole *Role
+	baseRole,err = QueryRole("BASE")
+	if err != nil {
+		return id,err
+	}
 	err = AddUserAuth(o,u,baseRole,nil)
 	return id, err
 }

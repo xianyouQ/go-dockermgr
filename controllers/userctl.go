@@ -6,6 +6,7 @@ import (
 	"github.com/astaxie/beego"
 	"encoding/json"
 	"github.com/astaxie/beego/orm"
+	"github.com/astaxie/beego/logs"
 )
 
 
@@ -17,8 +18,8 @@ type UserController struct {
 
 func (this *UserController) AddUser() {
 	u := m.User{}
-	
-	if err := json.Unmarshal(this.Ctx.Input.RequestBody, &u); err != nil {
+	var err error
+	if err = json.Unmarshal(this.Ctx.Input.RequestBody, &u); err != nil {
 		//handle error
 		this.Rsp(false, err.Error(),nil)
 		return
@@ -26,12 +27,25 @@ func (this *UserController) AddUser() {
 	u.Password = beego.AppConfig.String("rbac_auth_defaultpasswd")
 	u.Repassword = beego.AppConfig.String("rbac_auth_defaultpasswd")
 	o := orm.NewOrm()
-	_, err := m.AddUser(o,&u)
+	err = o.Begin()
+	if err != nil {
+		this.Rsp(false, err.Error(),nil)
+		return
+	}
+	_, err = m.AddUser(o,&u)
 	if err == nil {
-		this.Rsp(true, "Success",nil)
+		this.Rsp(true, "Success",u)
+		err = o.Commit()
+		if err != nil {
+			logs.GetLogger("userCtl").Printf("commit error:%s",err.Error())
+		}
 		return
 	} else {
 		this.Rsp(false, err.Error(),nil)
+		err = o.Rollback()
+		if err != nil {
+			logs.GetLogger("userCtl").Printf("rollback error:%s",err.Error())
+		}
 		return
 	}
 
@@ -153,10 +167,10 @@ func (this *UserController) GetUserList() {
 func (this *UserController) GetUserList() {
 	//pageId,err := this.GetInt("pageId")
 	UserName := this.GetString("username")
-	auths,err := m.QueryUserAuthListByUser(UserName)
+	users,err := m.QueryUserAuthListByUser(UserName)
 	if err != nil {
 		this.Rsp(false,err.Error(),nil)
 		return
 	}
-	this.Rsp(true,"success",auths)
+	this.Rsp(true,"success",users)
 }

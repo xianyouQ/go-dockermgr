@@ -1,4 +1,18 @@
 app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',function($scope, $http, $filter,$modal) { 
+
+
+  $scope.users = [];
+  $scope.userFilter = "";
+  $scope.selectedUser = undefined;
+  $http.get("/api/auth/user").then(function(resp){
+    if (resp.data.status )
+    {
+      $scope.users = resp.data.data;
+    }
+    else {
+        toaster.pop("error","get user error",resp.data.info);
+    }
+  });
   $scope.addUser = function() {
       var modalInstance = $modal.open({
         templateUrl: 'addUserModalContent.html',
@@ -7,11 +21,7 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
       });
  
       modalInstance.result.then(function (newUser) {
-        newUser.docker = $scope.roles[newUser.role].docker;
-        newUser.releaseNew = $scope.roles[newUser.role].releaseNew;
-        newUser.releaseVerify = $scope.roles[newUser.role].releaseVerify;
-        newUser.releaseOperation = $scope.roles[newUser.role].releaseOperation;
-        $scope.people.push(newUser);
+        $scope.users.push(newUser);
       }, function () {
         //log error
       });
@@ -19,8 +29,8 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
   $scope.attachUser = function() {
 
   };
-  $scope.returnUpper = function(idx) {
-    $scope.filter[idx-1] = ""
+  $scope.selectUser = function(item) {
+    $scope.selectedUser = item;
   }
 }]);
 
@@ -35,7 +45,7 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
           if ( !resp.data.status ) {
             $scope.formError = resp.data.info;
           }else{
-            $modalInstance.close($scope.newUser);
+            $modalInstance.close(resp.data.data);
           }
         }, function(x) {
           $scope.formError = 'Server Error';

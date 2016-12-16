@@ -127,3 +127,17 @@ func DelRoleNode(o orm.Ormer,role *Role, nodes []*Node) (int64, error) {
 	num, err := m2m.Remove(nodes)
 	return num, err
 }
+
+func QueryRole(name string) (*Role,error) {
+	roles,err := GetRoleNodes()
+	if err != nil {
+		return nil, err
+	}
+	for _,role := range roles {
+		if role.Name == name {
+			return role,nil
+		}
+	}
+	err = errors.New("role not found")
+	return nil,err
+}
