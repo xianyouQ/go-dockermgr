@@ -152,18 +152,25 @@ func (this *UserController) Changepwd() {
 
 }
 
-/*
-func (this *UserController) GetUserList() {
-	pageId,err := this.GetInt("pageId")
-	UserName := this.GetString("username")
-	users,err := m.Getuserlist(UserName,int64(pageId),10, "username")
-	if err != nil {
-		this.Rsp(false,err.Error(),nil)
+func (this *UserController) ResetPwd() {
+	u := m.User{}
+	if err := json.Unmarshal(this.Ctx.Input.RequestBody, &u); err != nil {
+		//handle error
+		this.Rsp(false, err.Error(),nil)
 		return
 	}
-	this.Rsp(true,"success",users)
+	u.Password = beego.AppConfig.String("rbac_auth_defaultpasswd")
+	o := orm.NewOrm()
+	id, err := m.UpdateUser(o,&u)
+	if err == nil && id > 0 {
+		this.Rsp(true, "密码修改成功",nil)
+		return
+	} else {
+		this.Rsp(false, err.Error(),nil)
+		return
+	}
 }
-*/
+
 func (this *UserController) GetUserList() {
 	//pageId,err := this.GetInt("pageId")
 	UserName := this.GetString("username")

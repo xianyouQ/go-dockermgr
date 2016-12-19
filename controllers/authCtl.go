@@ -185,3 +185,27 @@ func (c *AuthController) GetUserAuthList() {
 	c.Rsp(true,"success",auths)
 
 }
+
+
+type UserAuthForm struct {
+	mUser *models.User
+	mService *models.Service
+	mRole *models.Role
+}
+
+func (c *AuthController) AddUserAuth() {
+	var err error
+	mUserAuthForm := UserAuthForm{}
+	if err = json.Unmarshal(this.Ctx.Input.RequestBody, &mUserAuthForm); err != nil {
+		//handle error
+		this.Rsp(false, err.Error(),nil)
+		return
+	}
+	o := orm.NewOrm()
+	err = models.AddUserAuth(o,mUserAuthForm.mUser,mUserAuthForm.mRole,mUserAuthForm.mService)
+	if err != nil {
+		c.Rsp(false, err.Error(),nil)
+		return
+	}
+	
+}

@@ -2,6 +2,7 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
 
 
   $scope.users = [];
+  $scope.roles = [];
   $scope.userFilter = "";
   $scope.selectedUser = undefined;
   $http.get("/api/auth/user").then(function(resp){
@@ -12,6 +13,14 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
     else {
         toaster.pop("error","get user error",resp.data.info);
     }
+  });
+    $http.get('/api/auth/get').then(function (resp) {
+      if (resp.data.status ){
+        $scope.roles = resp.data.data;
+      }
+      else {
+        toaster.pop("error","get auth error",resp.data.info);
+      } 
   });
   $scope.addUser = function() {
       var modalInstance = $modal.open({
@@ -31,6 +40,32 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
   };
   $scope.selectUser = function(item) {
     $scope.selectedUser = item;
+  };
+  $scope.isSystem = function() {
+    if ($scope.selectedUser == undefined) {
+      return false;
+    }
+    angular.forEach($scope.selectedUser.ServiceAuths,function(item){
+      if (item.Name == "SYSTEM") {
+        return true;
+      }
+    });
+    return false;
+  };
+  $scope.commitSystem = function($event) {
+    var checkbox = $event.target;  
+    var checked = checkbox.checked;
+    if(checked != isSystem()) {
+      
+    }
+      
+  };
+  $scope.commitPassWdReset = function($event){
+    var checkbox = $event.target;  
+    var checked = checkbox.checked;
+    if(checked == true) {
+
+    }
   }
 }]);
 
