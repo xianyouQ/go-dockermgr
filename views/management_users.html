@@ -10,7 +10,9 @@
   <script type="text/ng-template" id="addUserModalContent.html">
     <div ng-include="'tpl/add_user_modal.html'"></div>
   </script>
-
+  <script type="text/ng-template" id="delUserConfirmModalContent.html">
+    <div ng-include="'tpl/confirm_modal.html'"></div>
+  </script>
   <!-- column -->
   <div class="col w b-r">
     <div class="vbox">
@@ -25,6 +27,7 @@
           <div class="cell-inner">
             <div class="list-group no-radius no-border no-bg m-b-none">
               <a ng-repeat="item in users| filter:{Username:userfilter}" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectUser(item)">
+                <span ng-click='deleteUser(item)' class="pull-right text-muted hover-action"><i class="fa fa-times"></i></span>
                 <span class="block m-l-n" ng-class="{'m-n': item.selected }">{{ item.Username}}</span>
               </a>
             </div>

@@ -88,6 +88,23 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
         }
       });
     }
+  };
+  $scope.deleteUser = function(delUser) {
+      var modalInstance = $modal.open({
+        templateUrl: 'delUserConfirmModalContent.html',
+        controller: 'delUserConfirmModalInstanceCtrl',
+        size: 'lg',
+        resolve: {
+          deluser: function () {
+            return delUser;
+          }
+        }
+      });
+       modalInstance.result.then(function (delService) {
+      $scope.services[$scope.count.length -1].remove(delService);
+       }, function () {
+        //log error
+      });
   }
 }]);
 
@@ -115,3 +132,26 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
     };
   }])
   ; 
+
+    app.controller('delUserConfirmModalInstanceCtrl', ['$scope', '$modalInstance','$http','delUser',function($scope, $modalInstance,$http,$delUser) {
+   
+    $scope.formError = null;
+    $scope.confirm="delete user?";
+    $scope.ok = function () {
+      $scope.formError = null;
+     $http.delete('/api/auth/user',$delUser).then(function(response) {
+          if (response.data.status){
+            $modalInstance.close($selectedService);
+          }
+          if  (!response.data.status ) {
+            $scope.formError = response.data.info;
+          }
+        }, function(x) {
+        console.log('Server Error')
+      });
+    };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }]); 

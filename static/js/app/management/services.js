@@ -43,7 +43,11 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
 
     $http.get('/api/auth/get').then(function (resp) {
       if (resp.data.status ){
-        $scope.roles = resp.data.data;
+        angular.forEach(resp.data.data,function(role){
+          if(role.NeedAddAuth == true) {
+            $scope.roles.push(role);
+          }
+        });
       }
       else {
         toaster.pop("error","get auth error",resp.data.info);
@@ -292,11 +296,12 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
     app.controller('addAuthModalInstanceCtrl', ['$scope', '$modalInstance','$http','roles','service','othsusers',function($scope, $modalInstance,$http,$roles,$service,$othsusers) {
     $scope.formError = null;
     $scope.Users = [];
-    $scope.addUsers = [];
-    $scope.selectedRoleName;
-    $scope.loadUsers = function() {
-      $scope.formError = null;
-      $http.get("/api/auth/user").then(function(resp){
+    $scope.roles = $roles;
+    $scope.selected = {
+      Users:[],
+      Role: {}
+    };
+    $http.get("/api/auth/user").then(function(resp){
         if(resp.data.status) {
           angular.forEach(resp.data.data,function(item){
             var isSkip = false;
@@ -314,18 +319,11 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
         else {
           $scope.formError = resp.data.info;
         }
+        console.log($scope.Users);
       });
-      return $scope.Users;
-    };
     $scope.ok = function () {
       $scope.formError = null;
-      var selectedRole ;
-      angular.forEach($roles ,function(role){
-        if(role.Name == $scope.selectedRoleName){
-          selectedRole = role;
-        }
-      });
-      $http.post('/api/auth/new',{Users:$scope.addUsers,Service:$service,Role:selectedRole}).then(function(response) {
+      $http.post('/api/auth/new',{Users:$scope.selected.Users,Service:$service,Role:$scope.selected.Role}).then(function(response) {
           if (response.data.status){
           }
           if  (!response.data.status ) {
@@ -337,6 +335,8 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
     };
 
     $scope.cancel = function () {
+      console.log($scope.selected);
+      console.log($scope.roles);
       $modalInstance.dismiss('cancel');
     };
   }]); 

@@ -6,14 +6,19 @@
           {{formError}}
         </div>
         <div class="form-group">
-          <label>UserName</label>
-            <tags-input ng-model="addUsers" display-property="UserName" placeholder="search" >
-              <auto-complete source="loadUsers()"></auto-complete>
-            </tags-input>
+          <label class="col-sm-2 control-label">UserName</label>
+          <div class="col-sm-10">
+            <select ui-jq="chosen" multiple class="w-md" ng-model="selected.Users" ng-options="User.Username for User in Users">
+               <!-- <option ng-repeat="User in Users">{{User.Username}}</option> -->
+            </select>
+          </div>
         </div>
         <div class="form-group">
-            <label>Role</label>
-            <select  ng-model="selectedRoleName" ng-options="role.Name for role in roles"> </select>
+          <label class="col-sm-2 control-label">Role</label>
+          <div class="col-sm-10">
+            <select ui-jq="chosen" class="w-md" ng-model="selected.Role" ng-options="role.Name for role in roles">
+            </select>
+          </div>
         </div>
         <div class="checkbox m-t-lg">
           <button type="submit" class="btn btn-sm btn-success pull-right text-uc m-t-n-xs" ng-click="ok()"><strong>Log in</strong></button>
