@@ -35,28 +35,42 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
         //log error
       });
   };
-  $scope.attachUser = function() {
-
-  };
   $scope.selectUser = function(item) {
     $scope.selectedUser = item;
   };
   $scope.isSystem = function() {
+    var result = false;
     if ($scope.selectedUser == undefined) {
       return false;
     }
     angular.forEach($scope.selectedUser.ServiceAuths,function(item){
       if (item.Name == "SYSTEM") {
-        return true;
+        result = true;
+        return;
       }
     });
-    return false;
+    return result;
   };
   $scope.commitSystem = function($event) {
     var checkbox = $event.target;  
     var checked = checkbox.checked;
-    if(checked != isSystem()) {
-      
+    var systemRole = undefined;
+    if(checked != $scope.isSystem() && checked == true) {
+      angular.forEach($scope.roles,function(item){
+        if(item.Name == "SYSTEM"){
+          systemRole = item;
+        }
+      });
+      var selectedUsers =[];
+      selectedUsers.push($scope.selectedUser);
+      $http.post("/api/auth/new",{Users:selectedUsers,Role:systemRole}).then(function(resp){
+        if(resp.data.status) {
+          console.log("success")
+        }
+        else {
+          $scope.formError = resp.data.info
+        }
+      });     
     }
       
   };
@@ -64,7 +78,15 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
     var checkbox = $event.target;  
     var checked = checkbox.checked;
     if(checked == true) {
-
+      $http.post("/api/auth/passwd",$scope.selectedUser).then(function(resp){
+        if(resp.data.status) {
+          console.log("success")
+          $scope.selectedUser.resetdisabled = true;
+        }
+        else {
+          $scope.formError = resp.data.info
+        }
+      });
     }
   }
 }]);

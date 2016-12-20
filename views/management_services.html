@@ -12,6 +12,9 @@
   <script type="text/ng-template" id="delConfirmModalContent.html">
     <div ng-include="'tpl/confirm_modal.html'"></div>
   </script>
+  <script type="text/ng-template" id="addAuthModalContent.html">
+    <div ng-include="'tpl/add_auth_modal.html'"></div>
+  </script>
   <div class="col w b-r" ng-repeat="idx in count" ng-show="isShow(idx)">
     <div class="vbox">
       <div class="wrapper-sm b-b" ng-hide="isShow(0)">
@@ -104,10 +107,10 @@
                           </tr>
                         </thead>
                         <tbody>
-                          <tr ng-repeat="person in people">
-                              <td>{{person.name}}</td>
-                              <td>{{person.role}}</td>
-                              <td><button class="btn m-b-xs btn-sm btn-danger" ng-click="deleteUser(person)"><i class="fa fa-trash-o"></i></button></td>
+                          <tr ng-repeat="User in Users">
+                              <td>{{User.name}}</td>
+                              <td>{{User.ServiceAuths[0].Role.Name}}</td>
+                              <td><button class="btn m-b-xs btn-sm btn-danger" ng-click="deleteUser(User)"><i class="fa fa-trash-o"></i></button></td>
                           </tr>
                         </tbody>
                         <tfoot class="hide-if-no-paging">

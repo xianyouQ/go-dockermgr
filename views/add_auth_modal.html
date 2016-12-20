@@ -1,0 +1,25 @@
+<div class="modal-body wrapper-lg">
+  <div class="row">
+      <p>New User</p>
+      <form role="form form-validation">
+        <div class="text-danger wrapper text-center" ng-show="formError">
+          {{formError}}
+        </div>
+        <div class="form-group">
+          <label>UserName</label>
+            <tags-input ng-model="addUsers" display-property="UserName" placeholder="search" >
+              <auto-complete source="loadUsers()"></auto-complete>
+            </tags-input>
+        </div>
+        <div class="form-group">
+            <label>Role</label>
+            <select  ng-model="selectedRoleName" ng-options="role.Name for role in roles"> </select>
+        </div>
+        <div class="checkbox m-t-lg">
+          <button type="submit" class="btn btn-sm btn-success pull-right text-uc m-t-n-xs" ng-click="ok()"><strong>Log in</strong></button>
+          <button class="btn btn-sm btn-success pull-right text-uc m-t-n-xs" ng-click="cancel()"><strong>cancel</strong></button>
+        </div>
+      </form>
+  
+  </div>
+</div>

@@ -8,8 +8,10 @@ import (
 func init() {
 	beego.Router("/", &controllers.MainController{})
 	beego.Router("/api/auth/user",&controllers.UserController{},"post:AddUser;put:UpdateUser;delete:DelUser;get:GetUserList")
+	beego.Router("/api/auth/passwd",&controllers.UserController{},"post:ResetPwd")
 	beego.Router("/api/auth/sign",&controllers.UserController{},"post:Login;get:Logout")
 	beego.Router("/api/auth/get",&controllers.AuthController{},"get:GetRole")
+	beego.Router("/api/auth/new",&controllers.AuthController{},"post:AddUserAuth")
 	beego.Router("/api/auth/post",&controllers.AuthController{},"post:AddOrUpdateRole")
 	beego.Router("/api/auth/auths",&controllers.AuthController{},"get:GetUserAuthList")
 	beego.Router("/api/authnode/post",&controllers.AuthController{},"post:UpdateRoleNode")

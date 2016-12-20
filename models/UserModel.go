@@ -89,7 +89,9 @@ func AddUser(o orm.Ormer,u *User) (int64, error) {
 	if err != nil {
 		return id,err
 	}
-	err = AddUserAuth(o,u,baseRole,nil)
+	users := make([]*User,0,1)
+	users = append(users,u)
+	err = AddUserAuth(o,users,baseRole,nil)
 	return id, err
 }
 

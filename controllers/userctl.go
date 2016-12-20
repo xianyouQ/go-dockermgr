@@ -153,17 +153,21 @@ func (this *UserController) Changepwd() {
 }
 
 func (this *UserController) ResetPwd() {
+	var err error
 	u := m.User{}
-	if err := json.Unmarshal(this.Ctx.Input.RequestBody, &u); err != nil {
+	if err = json.Unmarshal(this.Ctx.Input.RequestBody, &u); err != nil {
 		//handle error
 		this.Rsp(false, err.Error(),nil)
 		return
 	}
 	u.Password = beego.AppConfig.String("rbac_auth_defaultpasswd")
 	o := orm.NewOrm()
-	id, err := m.UpdateUser(o,&u)
-	if err == nil && id > 0 {
-		this.Rsp(true, "密码修改成功",nil)
+	newU := m.User{}
+	newU.Id = u.Id
+	newU.Password = u.Password
+	_, err = m.UpdateUser(o,&newU)
+	if err == nil {
+		this.Rsp(true, "密码重置成功",nil)
 		return
 	} else {
 		this.Rsp(false, err.Error(),nil)

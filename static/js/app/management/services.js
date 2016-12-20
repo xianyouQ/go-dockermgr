@@ -35,9 +35,21 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
   
   $scope.mainbuses = [] ;
   $scope.services = new Map();
+  $scope.roles = [] ;
   $scope.filter = new Map();
   $scope.count = [];
+  $scope.Users = [];
  //$scope.$watch('services',null,true);
+
+    $http.get('/api/auth/get').then(function (resp) {
+      if (resp.data.status ){
+        $scope.roles = resp.data.data;
+      }
+      else {
+        toaster.pop("error","get auth error",resp.data.info);
+      } 
+  });
+
   $http.get("/api/service/count").then(function (resp) {
         if (resp.data.status ){
           for(var i = 0 ;i < resp.data.data ; i++)
@@ -116,6 +128,9 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
   $scope.selectService = function(item,idx){
     if (idx == $scope.count.length - 1) {
       $scope.selectedService = item;
+      $http.get("/api/auth/auths?serviceId="+$scope.selectedService.Id).then(function(resp){
+        $scope.Users = resp.data.data;
+      });
       return
     } 
     angular.forEach($scope.services, function(item) {
@@ -194,6 +209,30 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
         //log error
       });
   }
+
+  $scope.addUser = function() {
+      var modalInstance = $modal.open({
+        templateUrl: 'addAuthModalContent.html',
+        controller: 'addAuthModalInstanceCtrl',
+        size: 'lg',
+        resolve: {
+          roles: function () {
+            return $scope.roles;
+          },
+          service: function() {
+            return $scope.selectedService;
+          },
+          othsusers: function() {
+            return $scope.Users;
+          }
+        }
+      });
+       modalInstance.result.then(function () {
+         
+       }, function () {
+        //log error
+      });
+  };
 }]);
   app.controller('addServiceModalInstanceCtrl', ['$scope', '$modalInstance','$http','count',function($scope, $modalInstance,$http,$count) {
    
@@ -236,6 +275,58 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
      $http.post('/api/service/Delete',$selectedService).then(function(response) {
           if (response.data.status){
             $modalInstance.close($selectedService);
+          }
+          if  (!response.data.status ) {
+            $scope.formError = response.data.info;
+          }
+        }, function(x) {
+        console.log('Server Error')
+      });
+    };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }]); 
+
+    app.controller('addAuthModalInstanceCtrl', ['$scope', '$modalInstance','$http','roles','service','othsusers',function($scope, $modalInstance,$http,$roles,$service,$othsusers) {
+    $scope.formError = null;
+    $scope.Users = [];
+    $scope.addUsers = [];
+    $scope.selectedRoleName;
+    $scope.loadUsers = function() {
+      $scope.formError = null;
+      $http.get("/api/auth/user").then(function(resp){
+        if(resp.data.status) {
+          angular.forEach(resp.data.data,function(item){
+            var isSkip = false;
+            angular.forEach($othsusers,function(inner){
+              if (item.Id == inner.Id) {
+                isSkip = true;
+                return;
+              }
+            });
+            if (isSkip == false) {
+              $scope.Users.push(item);
+            }
+          })
+        } 
+        else {
+          $scope.formError = resp.data.info;
+        }
+      });
+      return $scope.Users;
+    };
+    $scope.ok = function () {
+      $scope.formError = null;
+      var selectedRole ;
+      angular.forEach($roles ,function(role){
+        if(role.Name == $scope.selectedRoleName){
+          selectedRole = role;
+        }
+      });
+      $http.post('/api/auth/new',{Users:$scope.addUsers,Service:$service,Role:selectedRole}).then(function(response) {
+          if (response.data.status){
           }
           if  (!response.data.status ) {
             $scope.formError = response.data.info;
