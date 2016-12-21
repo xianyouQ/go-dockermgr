@@ -73,7 +73,8 @@
     },
     "docker_nav" : {
       "dockermgr_TITLE": "Docker管理",
-      "dashboard" : "Dashboard"
+      "DASHBOARD" : "Dashboard",
+      "CONTAINERS" : "容器管理"
     }
   },
   "MILESTONE" : "Milestone",

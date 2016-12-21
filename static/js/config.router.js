@@ -119,6 +119,16 @@ angular.module('app')
                       }]
                   }
               })
+                .state('docker.containers', {
+                  url: '/services',
+                  templateUrl: 'tpl/docker_containers.html',
+                  resolve: {
+                      deps: ['uiLoad',
+                        function( uiLoad ){
+                          return uiLoad.load( ['js/app/docker/containers.js'] );
+                      }]
+                  }
+              })
       }
     ]
   );

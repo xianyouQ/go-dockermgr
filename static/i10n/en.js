@@ -73,7 +73,8 @@
     },
     "docker_nav" : {
       "dockermgr_TITLE": "Docker ManageMent",
-      "dashboard" : "Dashboard"
+      "DASHBOARD" : "Dashboard",
+      "CONTAINERS" : "Containers"
     }
   },
   "MILESTONE" : "Milestone",
