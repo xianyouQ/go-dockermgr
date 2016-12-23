@@ -32,20 +32,62 @@
 
 
   <!-- column -->
-  <div class="col bg-white-only">
-    <div class="vbox">
-      <div class="row-row">
-        <div class="cell">
-          <div class="cell-inner">
-            <div class="wrapper-lg">
-              <!-- fields -->
-
+  <div class="col bg-white-only" ng-hide="selectedIdc">
+    <div class="row-row" ng-show="ConfShow()">
+      <div class="panel panel-default"ng-repeat="idc in idcs">
+        <div class="panel-heading">
+          {{selectedService.Name}} {{idc.IdcName}}机房容器状态
+        </div>
+        <div class="panel-body text-center">
+          <div class="col-md-4">
+            <h4><small>last </small>12<small> hrs</small></h4>
+            <small class="text-muted block">yesterday: 20%</small>
+              <div class="btn-group btn-group-justified">
+                <a href class="btn btn-primary" ng-click="detail(idc)">detail</a>
+              </div>
+          </div>
           
-              <!-- / fields -->
+          <div class="col-md-8">
+            <div class="table-responsive">
+              <table class="table table-striped b-t b-light">
+                <thead>
+                  <tr>
+                    <th>Project</th>
+                    <th>Task</th>
+                    <th>Date</th>
+                    <th style="width:30px;"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+
+                    <td>Idrawfast</td>
+                    <td>4c</td>
+                    <td>Jul 25, 2013</td>
+                    <td>
+                      <a href class="active" ui-toggle-class><i class="fa fa-check text-success text-active"></i><i class="fa fa-times text-danger text"></i></a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
+
+
           </div>
         </div>
-      </div>  
+      </div>
+    </div>
+
+  </div>
+
+  <div class="col bg-white-only" ng-show="selectedIdc">
+    <div class="vbox">
+      <div class="wrapper-sm b-b">
+        <div class="m-t-n-xxs m-b-n-xxs m-l-xs">
+          <a class="btn btn-xs btn-default" ng-click="returnIdc()">返回</a>
+        </div>
+      </div>
+      <!--  -->
     </div>
   </div>
   <!-- /column -->
