@@ -87,7 +87,58 @@
           <a class="btn btn-xs btn-default" ng-click="returnIdc()">返回</a>
         </div>
       </div>
-      <!--  -->
+
+    
+    <!-- display weather forecast -->
+    <div class="list-group no-border no-radius">
+      <div class="list-group-item" ng-show="data.query.results.channel.item.forecast.length" ng-repeat="forecast in data.query.results.channel.item.forecast">
+        <div class="hbox">
+          <div class="col v-middle w-xxs">
+            <span class="h4">{{forecast.day}}</span>           
+          </div>
+          <div class="col v-middle w-xxs">
+            <skycon icon="forecast.icon" color="app.color.dark" size="32"></skycon>
+          </div>
+          <div class="col v-middle">
+            {{forecast.text}} <span class="text-white">{{forecast.code}}</span>
+          </div>
+          <div class="col v-middle">
+            {{forecast.high}}&deg; -  {{forecast.low}}&deg;
+          </div>
+          <div class="col v-middle text-right hidden-xs">                
+            <small class="text-muted">{{forecast.date}}</small>
+          </div>           
+        </div>
+      <h4 class="m-t-none m-b-lg"><span class="text-xs text-muted m-l pull-right">{{ data.query.results.channel.item.condition.date }}</span>{{place.city}}, {{place.country}}</h4>
+      <div class="hbox">
+        <div class="col v-middle w-sm">
+          <skycon icon="data.query.results.channel.item.condition.icon" color="#fff" size="128" id=""></skycon>
+        </div>
+        <div class="col v-middle">
+          <div class="h1">
+            <span class="text-2x text-white">{{ data.query.results.channel.item.condition.temp }}&deg;</span>            
+          </div>
+          <span class="text-muted">{{ data.query.results.channel.item.condition.text }} - Feels like {{ data.query.results.channel.item.condition.temp }}&deg;</span>
+        </div>
+      </div>
+      </div>
+<!--
+    <div class="wrapper-lg clearfix bg-info dker" ng-show="data.query.results">
+      <h4 class="m-t-none m-b-lg"><span class="text-xs text-muted m-l pull-right">{{ data.query.results.channel.item.condition.date }}</span>{{place.city}}, {{place.country}}</h4>
+      <div class="hbox">
+        <div class="col v-middle w-sm">
+          <skycon icon="data.query.results.channel.item.condition.icon" color="#fff" size="128" id=""></skycon>
+        </div>
+        <div class="col v-middle">
+          <div class="h1">
+            <span class="text-2x text-white">{{ data.query.results.channel.item.condition.temp }}&deg;</span>            
+          </div>
+          <span class="text-muted">{{ data.query.results.channel.item.condition.text }} - Feels like {{ data.query.results.channel.item.condition.temp }}&deg;</span>
+        </div>
+      </div>
+    </div>
+    -->
+    </div>
     </div>
   </div>
   <!-- /column -->

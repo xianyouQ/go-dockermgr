@@ -4,6 +4,7 @@ import (
     "github.com/astaxie/beego"
     "github.com/astaxie/beego/orm"
     "github.com/xianyouQ/go-dockermgr/utils"
+    outMarathon "github.com/xianyouQ/go-marathon"
     "errors"
     "fmt"
 )
@@ -30,6 +31,7 @@ type Ip struct {
     MacAddr string `orm:"unique;size(20)"`
     Status int 
     BelongService *Service `orm:"null;rel(fk)"`
+    MarathonData *outMarathon.Application `orm:"-"`
 }
 
 var (

@@ -109,6 +109,17 @@ func DelService(o orm.Ormer,oldService *Service) error {
     return nil
 }
 
+
+func GetInstances(o orm.Ormer,service *Service,idc *IdcConf) ([]*Ip,error) {
+    var Ips []*Ip
+    _,err := o.QueryTable(beego.AppConfig.String("dockermgr_ip_table")).Filter("BelongService",service.Id).Filter("BelongNet__in",idc.Cidrs).All(&Ips)
+    if err != nil {
+        return Ips,err
+    }
+    return Ips,nil
+}
+
+
 /*
 func (self *Service) SetMarathonConf(conf string) error {
     if conf == self.MarathonConf {
@@ -129,15 +140,6 @@ func (self *Service) SetMarathonConf(conf string) error {
 } 
 
 
-
-
-func (self Service) GetInstancesWithIdc(idc IdcConf) ([]*Ip,error) {
-    o := orm.NewOrm()
-    var Ips []*Ip
-    _,err := o.QueryTable(beego.AppConfig.String("dockermgr_ip_table")).Filter("BelongService",self.Id).Filter("BelongNet__in",IdcConf.Cidr).RelatedSel().All(&Ips)
-    if err != nil {
-        return Ips,err
-    }
-    return Ips,nil
-}
 */
+
+
