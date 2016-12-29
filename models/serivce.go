@@ -113,10 +113,12 @@ func DelService(o orm.Ormer,oldService *Service) error {
 func GetInstances(o orm.Ormer,service *Service,idc *IdcConf) ([]*Ip,error) {
     var Ips []*Ip
     _,err := o.QueryTable(beego.AppConfig.String("dockermgr_ip_table")).Filter("BelongService",service.Id).Filter("BelongNet__in",idc.Cidrs).All(&Ips)
-    if err != nil {
-        return Ips,err
-    }
-    return Ips,nil
+    return Ips,err
+}
+
+func GetInstancesCount(o orm.Ormer,service *Service,idc *IdcConf) (int64,error) {
+    count,err := o.QueryTable(beego.AppConfig.String("dockermgr_ip_table")).Filter("BelongService",service.Id).Filter("BelongNet__in",idc.Cidrs).Count()
+    return count,err
 }
 
 

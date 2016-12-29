@@ -84,10 +84,17 @@ func  GetMesosInfo(marathonClient outMarathon.Marathon) (*MesosInfo,error) {
 }
 
 func NewMarathonClient(url string,user string,passwd string) (outMarathon.Marathon,error){
-        config :=  outMarathon.NewDefaultConfig()
-        config.URL = url
-        config.HTTPBasicAuthUser = user
-        config.HTTPBasicPassword = passwd
-        client,err := outMarathon.NewClient(config)
-        return client,err
+    config :=  outMarathon.NewDefaultConfig()
+    config.URL = url
+    config.HTTPBasicAuthUser = user
+    config.HTTPBasicPassword = passwd
+    client,err := outMarathon.NewClient(config)
+    return client,err
+}
+
+
+func NewApplications(marathonClient outMarathon.Marathon,application *outMarathon.Application) (*outMarathon.Application,error){
+    newApplication, err := marathonClient.CreateApplication(application); 
+    return newApplication,err
+    
 }

@@ -7,6 +7,8 @@ import (
     "encoding/json"
 	"github.com/astaxie/beego/orm"
 	"strings"
+	"github.com/astaxie/beego/logs"
+	"fmt"
 )
 
 type DockerController struct {
@@ -54,6 +56,7 @@ func (c *DockerController) DashBoard() {
 type ServiceContainerForm struct {
     Service *m.Service
     Idc *m.IdcConf
+    Scale int64
 }
 
 func (c *DockerController) GetContainers() {
@@ -98,4 +101,82 @@ func (c *DockerController) GetContainers() {
 
 func (c *DockerController) ScaleContainers() {
     var err error
+    var containerCount int64
+	mServiceContainerForm := ServiceContainerForm{}
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &mServiceContainerForm); err != nil {
+		//handle error
+		c.Rsp(false, err.Error(),nil)
+		return
+	}
+    o := orm.NewOrm()
+    
+	if err != nil {
+		c.Rsp(false, err.Error(),nil)
+        return
+	}
+    containerCount,err = m.GetInstancesCount(o,mServiceContainerForm.Service,mServiceContainerForm.Idc)
+    if err != nil {
+        c.Rsp(false, err.Error(),nil)
+        return
+    }
+    diff := mServiceContainerForm.Scale - containerCount
+    var requestIp []*m.Ip
+    var application *outMarathon.Application
+    var client outMarathon.Marathon
+    client,err = utils.NewMarathonClient(mServiceContainerForm.Idc.MarathonSerConf.Server,
+    mServiceContainerForm.Idc.MarathonSerConf.HttpBasicAuthUser,mServiceContainerForm.Idc.MarathonSerConf.HttpBasicPassword)
+    if err != nil {
+        c.Rsp(false, err.Error(),nil)
+        return
+    }    
+    application,err = utils.CreateMarathonAppFromJson(mServiceContainerForm.Service.MarathonConf)
+    if err != nil {
+        c.Rsp(false, err.Error(),nil)
+        return
+    }
+    err = o.Begin()
+    if diff > 0 {
+        requestIp,err = m.RequestIp(o,mServiceContainerForm.Service,mServiceContainerForm.Idc,int(diff))
+        if err != nil {
+            c.Rsp(false, err.Error(),nil)
+            err = o.Rollback()
+            if err != nil {
+                logs.GetLogger("AuthCtl").Printf("rollback error:%s",err.Error())
+            }
+            return
+        }
+        for _,ip := range requestIp {
+            application.ID = fmt.Sprintf("/%s/%s",mServiceContainerForm.Service.Code,ip.IpAddr)
+            application.Container.Docker.AddParameter("ip",ip.IpAddr)
+            application.Container.Docker.AddParameter("mac-address",ip.MacAddr)
+            //application.Container.Docker.AddParameter("hostname",XXXXX)
+            _,err = utils.NewApplication(client,application)
+            if err != nil {
+                // 退回已经成功创建的容器
+                c.Rsp(false, err.Error(),nil)
+                err = o.Rollback()
+                if err != nil {
+                    logs.GetLogger("AuthCtl").Printf("rollback error:%s",err.Error())
+                }
+                return
+            }
+        }
+
+
+    } else {
+        requestIp,err = m.RecycleIp(o,mServiceContainerForm.Service,mServiceContainerForm.Idc,int(-diff))
+        if err != nil {
+            c.Rsp(false, err.Error(),nil)
+            err = o.Rollback()
+            if err != nil {
+                logs.GetLogger("AuthCtl").Printf("rollback error:%s",err.Error())
+            }
+            return
+        }
+
+
+    }
+    c.Rsp(true,"success",requestIp)
+
 }
+
