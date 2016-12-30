@@ -149,6 +149,52 @@ app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal',fu
   $scope.returnIdc = function() {
     $scope.selectedIdc = undefined;
   }
-
-}]);
+  $scope.scaleContainer = function() {
+      var modalInstance = $modal.open({
+        templateUrl: 'scaleContianerModalContent.html',
+        controller: 'scaleContianerModalInstanceCtrl',
+        size: 'lg',
+        resolve: {
+          selectedIdc: function () {
+            return $scope.selectedIdc;
+          },
+          selectedService: function () {
+            return $scope.selectedService;
+          }
+        }
+      });
  
+      modalInstance.result.then(function (newAuth) {
+      }, function () {
+        //log error
+      });
+  }
+}]);
+
+   app.controller('scaleContianerModalInstanceCtrl', ['$scope', '$modalInstance','$http','selectedIdc','selectedService',function($scope, $modalInstance,$http,$selectedIdc,$selectedService) {
+    $scope.formError = null;
+    $scope.ContainerCount = undefined;
+    $scope.ok = function () {
+      $scope.formError = null;
+      if (isNaN($scope.ContainerCount) == false){
+        $scope.formError = "ContainerCount must be a number";
+        return
+      }
+        $http.post('/api/docker/scale',{"Service":$selectedService,"Idc":$selectedIdc,"Scale":$scope.ContainerCount}).then(function(response) {
+          if (response.data.status ){
+            console.log(response.data.data);
+            $modalInstance.close(response.data.data);
+          }
+          if  (!response.data.status ) {
+            $scope.formError = response.data.info;
+          }
+        }, function(x) {
+        $scope.formError = 'Server Error';
+      });
+      
+    };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }]); 

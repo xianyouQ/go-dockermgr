@@ -6,6 +6,9 @@
   app.hideAside = false;
   app.hideFooter = true;
   " ng-controller="DockerContainersCtrl">
+  <script type="text/ng-template" id="scaleContianerModalContent.html">
+    <div ng-include="'tpl/scale_container_modal.html'"></div>
+  </script>
   <div class="col w b-r" ng-repeat="idx in count" ng-show="isShow(idx)">
     <div class="vbox">
       <div class="wrapper-sm b-b" ng-hide="isShow(0)">
@@ -48,31 +51,6 @@
           </div>
           
           <div class="col-md-8">
-            <div class="table-responsive">
-              <table class="table table-striped b-t b-light">
-                <thead>
-                  <tr>
-                    <th>Project</th>
-                    <th>Task</th>
-                    <th>Date</th>
-                    <th style="width:30px;"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-
-                    <td>Idrawfast</td>
-                    <td>4c</td>
-                    <td>Jul 25, 2013</td>
-                    <td>
-                      <a href class="active" ui-toggle-class><i class="fa fa-check text-success text-active"></i><i class="fa fa-times text-danger text"></i></a>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-
           </div>
         </div>
       </div>
@@ -85,6 +63,7 @@
       <div class="wrapper-sm b-b">
         <div class="m-t-n-xxs m-b-n-xxs m-l-xs">
           <a class="btn btn-xs btn-default" ng-click="returnIdc()">返回</a>
+          <a class="btn btn-xs btn-default" ng-click="scaleContainer()">扩容</a>
         </div>
       </div>
 

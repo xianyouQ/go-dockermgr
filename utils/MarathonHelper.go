@@ -93,7 +93,7 @@ func NewMarathonClient(url string,user string,passwd string) (outMarathon.Marath
 }
 
 
-func NewApplications(marathonClient outMarathon.Marathon,application *outMarathon.Application) (*outMarathon.Application,error){
+func NewApplication(marathonClient outMarathon.Marathon,application *outMarathon.Application) (*outMarathon.Application,error){
     newApplication, err := marathonClient.CreateApplication(application); 
     return newApplication,err
     
