@@ -129,6 +129,21 @@ angular.module('app')
                       }]
                   }
               })
+                .state('release', {
+                  url: '/release',
+                  abstract: true,
+                  templateUrl: 'tpl/layout.html'
+              })
+                .state('release.service', {
+                  url: '/services',
+                  templateUrl: 'tpl/release_service.html',
+                  resolve: {
+                      deps: ['uiLoad',
+                        function( uiLoad ){
+                          return uiLoad.load( ['js/app/release/service.js'] );
+                      }]
+                  }
+              })
       }
     ]
   );

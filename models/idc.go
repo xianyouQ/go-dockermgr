@@ -83,7 +83,6 @@ func getIdcsfromOrm() ([]*IdcConf,error) {
     for _,IdcConfIter := range idcs{
         for _,Cidriter := range tempCidrs {
             if Cidriter.BelongIdc.Id == IdcConfIter.Id {
-                Cidriter.BelongIdc = nil
                 IdcConfIter.Cidrs = append(IdcConfIter.Cidrs,Cidriter)
             }
         }

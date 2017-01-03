@@ -111,14 +111,14 @@ func AddCidr(o orm.Ormer,cidr *Cidr) error {
 
 func RequestIp(o orm.Ormer,service *Service,idc *IdcConf,num int) ([]*Ip,error){
     var IpList []*Ip
-    qnum,err := o.QueryTable(beego.AppConfig.String("dockermgr_ip_table")).Filter("BelongNet__id__in",idc.Cidrs).Filter("Status",IpUnUsed).Limit(num).Update(orm.Params{
-        "Status":IpAllocated,"BelongService":service})
+    qnum,err := o.QueryTable(beego.AppConfig.String("dockermgr_ip_table")).Filter("BelongNet__id__in",idc.Cidrs).Filter("Status",IpUnUsed).Limit(num).All(&IpList)
     if err != nil {
         return IpList,err
     }
     if qnum < int64(num) {
         return IpList,errors.New("No enough ip")
     }
+    qnum,err = o.QueryTable(beego.AppConfig.String("dockermgr_ip_table")).Filter("Id__in",IpList).Update(orm.Params{"Status":IpUsed,"BelongService":service.Id})
     return IpList,nil
 }
 

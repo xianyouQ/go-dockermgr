@@ -1,4 +1,4 @@
-app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal',function($scope, $http, $filter,$modal) {
+app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal',function($scope, $http, $filter,$modal) {
   function isObjectValueEqual(a, b) {
    if(a.Code === b.Code){
      return true;
@@ -144,6 +144,7 @@ app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal',fu
   $scope.returnUpper = function(idx) {
     $scope.filter[idx-1] = "";
   }
+  /*
   $scope.detail = function(idc) {
     $scope.selectedIdc = idc;
     $http.post("/api/docker/list",{"Service":$scope.selectedService,"Idc":$scope.selectedIdc,"Scale":0}).then(function(resp){
@@ -160,6 +161,7 @@ app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal',fu
   $scope.returnIdc = function() {
     $scope.selectedIdc = undefined;
   }
+  
   $scope.scaleContainer = function() {
       var modalInstance = $modal.open({
         templateUrl: 'scaleContianerModalContent.html',
@@ -179,9 +181,10 @@ app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal',fu
       }, function () {
         //log error
       });
-  }
+  } */
 }]);
 
+/*
    app.controller('scaleContianerModalInstanceCtrl', ['$scope', '$modalInstance','$http','selectedIdc','selectedService',function($scope, $modalInstance,$http,$selectedIdc,$selectedService) {
     $scope.formError = null;
     $scope.ContainerScaleForm = {"Service":$selectedService,"Idc":$selectedIdc,"Scale":0};
@@ -209,4 +212,4 @@ app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal',fu
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
     };
-  }]); 
+  }]); */

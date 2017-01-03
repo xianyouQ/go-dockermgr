@@ -75,6 +75,10 @@
       "dockermgr_TITLE": "Docker管理",
       "DASHBOARD" : "Dashboard",
       "CONTAINERS" : "容器管理"
+    },
+    "release_nav" : {
+      "Release_TITLE": "发布",
+      "SERVICE":"业务"
     }
   },
   "MILESTONE" : "Milestone",

@@ -82,14 +82,14 @@ func (c *DockerController) GetContainers() {
         return
     }
     var marathonApps []*outMarathon.Application
-    marathonApps,err = utils.ListApplicationsFromGroup(mServiceContainerForm.Service.Name,client)
+    marathonApps,err = utils.ListApplicationsFromGroup(mServiceContainerForm.Service.Code,client)
     if err != nil {
         c.Rsp(false,err.Error(),nil)
         return
     }
     for _,marathonApp := range marathonApps {
         for _,instance := range instances {
-            marathonAppIpaddr := strings.Split(marathonApp.ID,"/")[1]
+            marathonAppIpaddr := strings.Split(marathonApp.ID,"/")[2]
             if marathonAppIpaddr == instance.IpAddr {
                 instance.MarathonData = marathonApp
             }
@@ -120,6 +120,9 @@ func (c *DockerController) ScaleContainers() {
         return
     }
     diff := mServiceContainerForm.Scale - containerCount
+    if diff == 0 {
+        c.Rsp(true,"success",nil)
+    }
     var requestIp []*m.Ip
     var application *outMarathon.Application
     var client outMarathon.Marathon
@@ -134,6 +137,7 @@ func (c *DockerController) ScaleContainers() {
         c.Rsp(false, err.Error(),nil)
         return
     }
+    
     err = o.Begin()
     if diff > 0 {
         requestIp,err = m.RequestIp(o,mServiceContainerForm.Service,mServiceContainerForm.Idc,int(diff))
@@ -145,14 +149,20 @@ func (c *DockerController) ScaleContainers() {
             }
             return
         }
-        for _,ip := range requestIp {
+        for idx,ip := range requestIp {
             application.ID = fmt.Sprintf("/%s/%s",mServiceContainerForm.Service.Code,ip.IpAddr)
             application.Container.Docker.AddParameter("ip",ip.IpAddr)
             application.Container.Docker.AddParameter("mac-address",ip.MacAddr)
             //application.Container.Docker.AddParameter("hostname",XXXXX)
             _,err = utils.NewApplication(client,application)
             if err != nil {
-                // 退回已经成功创建的容器
+                for iner:= 0 ; iner <= idx; iner++ {
+                    applicationID := fmt.Sprintf("/%s/%s",mServiceContainerForm.Service.Code,requestIp[iner].IpAddr)
+                    _,err := utils.DelApplication(client,applicationID)
+                    if err != nil {
+                        logs.GetLogger("dockerCtl").Printf("Stop Container failure:%s",applicationID)
+                    }
+                }
                 c.Rsp(false, err.Error(),nil)
                 err = o.Rollback()
                 if err != nil {
@@ -163,7 +173,7 @@ func (c *DockerController) ScaleContainers() {
         }
 
 
-    } else {
+    } else if(diff < 0) {
         requestIp,err = m.RecycleIp(o,mServiceContainerForm.Service,mServiceContainerForm.Idc,int(-diff))
         if err != nil {
             c.Rsp(false, err.Error(),nil)
@@ -173,9 +183,19 @@ func (c *DockerController) ScaleContainers() {
             }
             return
         }
-
+        for _,ip := range requestIp {
+            applicationID := fmt.Sprintf("/%s/%s",mServiceContainerForm.Service.Code,ip.IpAddr)
+             _,err := utils.DelApplication(client,applicationID)
+            if err != nil {
+                logs.GetLogger("dockerCtl").Printf("Stop Container failure:%s",applicationID)
+           }
+        }
 
     }
+    err = o.Commit()
+	if err != nil {
+		logs.GetLogger("AuthCtl").Printf("commit error:%s",err.Error())
+	}
     c.Rsp(true,"success",requestIp)
 
 }

@@ -75,6 +75,10 @@
       "dockermgr_TITLE": "Docker ManageMent",
       "DASHBOARD" : "Dashboard",
       "CONTAINERS" : "Containers"
+    },
+    "release_nav" : {
+      "Release_TITLE": "Release",
+      "SERVICE":"Service"
     }
   },
   "MILESTONE" : "Milestone",

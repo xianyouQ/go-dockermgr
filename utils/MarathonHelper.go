@@ -95,6 +95,10 @@ func NewMarathonClient(url string,user string,passwd string) (outMarathon.Marath
 
 func NewApplication(marathonClient outMarathon.Marathon,application *outMarathon.Application) (*outMarathon.Application,error){
     newApplication, err := marathonClient.CreateApplication(application); 
-    return newApplication,err
-    
+    return newApplication,err   
+}
+
+func DelApplication(marathonClient outMarathon.Marathon,applicationId string) (*outMarathon.DeploymentID,error) {
+    deployId,err := marathonClient.DeleteApplication(applicationId,true)
+    return deployId,err
 }

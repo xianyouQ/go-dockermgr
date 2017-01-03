@@ -24,6 +24,7 @@ func init() {
 func main() {
 	var err error
 	init := flag.Bool("init", false, "init db and data")
+	
 	flag.Parse()
 	if *init == true {
 		err = orm.RunSyncdb("default", true, true)
@@ -54,6 +55,7 @@ func main() {
 		if err !=nil {
 			logs.Critical(err.Error())
 		}
+		return
 	}
 	dbDebug,_ := beego.AppConfig.Bool("db_debug")
 	orm.Debug = dbDebug

@@ -15,6 +15,7 @@ type Service struct {
     Name string `orm:"size(20);unique"`
     Code string `orm:"size(20);unique"`
     Instances []*Ip `orm:"reverse(many)"`
+    ReleaseVer *ReleaseTask `orm:"null;rel(fk)"`
     ReleaseTask []*ReleaseTask `orm:"reverse(many)"`
     Roles []*Role  `orm:"reverse(many)"`
     MarathonConf string `orm:"type(text)"`
