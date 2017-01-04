@@ -1,5 +1,5 @@
 <!-- hbox layout -->
-<div class="hbox hbox-auto-xs hbox-auto-sm bg-light " ng-init="
+<div class="hbox hbox-auto-xs hbox-auto-sm" ng-init="
   app.settings.asideFixed = true;
   app.settings.asideDock = false;
   app.settings.container = false;
@@ -31,14 +31,83 @@
 
 
 
-  <!-- column -->
-  <div class="col bg-white-only">
-    <div class="row-row" ng-show="ConfShow()">
+
+<div class="col bg-white-only">
+ <div ng-show="ConfShow()">
+    <div class="wrapper bg-white b-b">
+      <ul class="nav nav-pills nav-sm">
+        <li class="active"><a href>任务列表</a></li>
+        <li><a href>创建发布单</a></li>
+        <li><a href>发布单配置</a></li>
+      </ul>
     </div>
-
+    <div class="padder">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          任务列表
+        </div>
+        <div class="panel-body b-b b-light">
+          Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r"/>
+        </div>
+        <div>
+          <table class="table m-b-none" ui-jq="footable" data-filter="#filter" data-page-size="5">
+            <thead>
+              <tr>
+                  <th>
+                      任务ID
+                  </th>
+                  <th>
+                      创建人
+                  </th>
+                  <th>
+                      创建时间
+                  </th>
+                  <th>
+                      版本/Tag
+                  </th>
+                  <th>
+                      审批状态
+                  </th>
+                  <th>
+                    部署人
+                  </th>
+                  <th>
+                    部署时间
+                  </th>
+                  <th>
+                    部署状态
+                  </th>
+                  <th>
+                    操作
+                  </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                  <td>123</td>
+                  <td>Isidra</td>
+                  <td>22 Jun 1972</td>
+                  <td>12306</td>
+                  <td><span class="label label-lg label-primary arrowed-in">审核通过</span></td>
+                  <td>Isidra</td>
+                  <td>22 Jun 1972</td>
+                  <td><span class="label label-lg label-success">部署成功</span></td>
+                  <td><a class="blue" title="详情"><i class="glyphicon-zoom-in glyphicon"></i></a></td>
+              </tr>
+              </tbody>
+              <tfoot class="hide-if-no-paging">
+                <tr>
+                    <td colspan="5" class="text-center">
+                        <ul class="pagination"></ul>
+                    </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div> 
+        </div>
+    </div>
+    </div>
   </div>
-
-
   <!-- /column -->
 </div>
 <!-- /hbox layout -->

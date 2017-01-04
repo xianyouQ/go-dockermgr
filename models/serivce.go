@@ -3,7 +3,6 @@ package models
 import (
     "github.com/astaxie/beego"
     "github.com/astaxie/beego/orm"
-    //"github.com/xianyouQ/go-dockermgr/utils"
 	"github.com/astaxie/beego/validation"
     "strings"
     "errors"
@@ -113,11 +112,17 @@ func DelService(o orm.Ormer,oldService *Service) error {
 
 func GetInstances(o orm.Ormer,service *Service,idc *IdcConf) ([]*Ip,error) {
     var Ips []*Ip
+    if len(idc.Cidrs) == 0 {
+        return Ips,errors.New("no Cidr in this idc")
+    }
     _,err := o.QueryTable(beego.AppConfig.String("dockermgr_ip_table")).Filter("BelongService",service.Id).Filter("BelongNet__in",idc.Cidrs).All(&Ips)
     return Ips,err
 }
 
 func GetInstancesCount(o orm.Ormer,service *Service,idc *IdcConf) (int64,error) {
+    if len(idc.Cidrs) == 0 {
+        return 0,errors.New("no Cidr in this idc")
+    }
     count,err := o.QueryTable(beego.AppConfig.String("dockermgr_ip_table")).Filter("BelongService",service.Id).Filter("BelongNet__in",idc.Cidrs).Count()
     return count,err
 }

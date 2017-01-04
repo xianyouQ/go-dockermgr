@@ -78,7 +78,7 @@
     },
     "release_nav" : {
       "Release_TITLE": "Release",
-      "SERVICE":"Service"
+      "SERVICE": "Service"
     }
   },
   "MILESTONE" : "Milestone",

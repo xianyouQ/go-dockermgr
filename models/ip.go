@@ -111,6 +111,9 @@ func AddCidr(o orm.Ormer,cidr *Cidr) error {
 
 func RequestIp(o orm.Ormer,service *Service,idc *IdcConf,num int) ([]*Ip,error){
     var IpList []*Ip
+    if len(idc.Cidrs) == 0 {
+        return IpList,errors.New("no Cidr in this idc")
+    }
     qnum,err := o.QueryTable(beego.AppConfig.String("dockermgr_ip_table")).Filter("BelongNet__id__in",idc.Cidrs).Filter("Status",IpUnUsed).Limit(num).All(&IpList)
     if err != nil {
         return IpList,err
@@ -124,6 +127,9 @@ func RequestIp(o orm.Ormer,service *Service,idc *IdcConf,num int) ([]*Ip,error){
 
 func RecycleIp (o orm.Ormer,service *Service,idc *IdcConf,num int) ([]*Ip,error) {
     var IpList []*Ip
+    if len(idc.Cidrs) == 0 {
+        return IpList,errors.New("no Cidr in this idc")
+    }
     qnum,err := o.QueryTable(beego.AppConfig.String("dockermgr_ip_table")).Filter("BelongNet__id__in",idc.Cidrs).Filter("Status",IpUsed).Filter("BelongService",service).Limit(num).All(&IpList)
     if qnum < int64(num) {
         return IpList,errors.New("No enough ip to recycle")

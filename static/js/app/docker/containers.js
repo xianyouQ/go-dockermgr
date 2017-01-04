@@ -143,9 +143,11 @@ app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal',fu
 
   $scope.returnUpper = function(idx) {
     $scope.filter[idx-1] = "";
+    $scope.selectedService = undefined;
   }
   $scope.detail = function(idc) {
     $scope.selectedIdc = idc;
+    $scope.instances = [];
     $http.post("/api/docker/list",{"Service":$scope.selectedService,"Idc":$scope.selectedIdc,"Scale":0}).then(function(resp){
       if(resp.data.status){
         $scope.instances = resp.data.data;

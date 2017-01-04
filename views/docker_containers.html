@@ -6,7 +6,7 @@
   app.hideAside = false;
   app.hideFooter = true;
   " ng-controller="DockerContainersCtrl">
-  <script type="text/ng-template" id="0.html">
+  <script type="text/ng-template" id="scaleContianerModalContent.html">
     <div ng-include="'tpl/scale_container_modal.html'"></div>
   </script>
   <div class="col w b-r" ng-repeat="idx in count" ng-show="isShow(idx)">
@@ -42,15 +42,42 @@
           {{selectedService.Name}} {{idc.IdcName}}机房容器状态
         </div>
         <div class="panel-body text-center">
-          <div class="col-md-4">
-            <h4><small>last </small>12<small> hrs</small></h4>
-            <small class="text-muted block">yesterday: 20%</small>
+          <div class="col-md-6">
+            <div class="text-center wrapper m-b-sm">              
+              <div ng-init="data = [55, 30, 15] " ui-refresh="data" ui-jq="sparkline" ui-options="
+              {{data}}, 
+              {
+                type:'pie', 
+                height:126, 
+                sliceColors:['{{app.color.primary}}','{{app.color.info}}','{{app.color.warning}}']
+              }
+              " class="sparkline inline"></div>
+            </div>
+            <ul class="list-group no-radius">
+              <li class="list-group-item">
+                <span class="pull-right">45,000</span>
+                <span class="label bg-primary">1</span>
+                .inc company
+              </li>
+              <li class="list-group-item">
+                <span class="pull-right">23,200</span>
+                <span class="label bg-info">2</span>
+                Gamecorp
+              </li>
+              <li class="list-group-item">
+                <span class="pull-right">21,000</span>
+                <span class="label bg-warning">3</span>
+                Starup
+              </li>
+            </ul>
+        
               <div class="btn-group btn-group-justified">
                 <a href class="btn btn-primary" ng-click="detail(idc)">detail</a>
               </div>
           </div>
           
-          <div class="col-md-8">
+          <div class="col-md-6">
+            
           </div>
         </div>
       </div>
@@ -67,57 +94,73 @@
         </div>
       </div>
 
-    
-    <!-- display weather forecast -->
-    <div class="list-group no-border no-radius">
-      <div class="list-group-item" ng-show="data.query.results.channel.item.forecast.length" ng-repeat="forecast in data.query.results.channel.item.forecast">
-        <div class="hbox">
-          <div class="col v-middle w-xxs">
-            <span class="h4">{{forecast.day}}</span>           
-          </div>
-          <div class="col v-middle w-xxs">
-            <skycon icon="forecast.icon" color="app.color.dark" size="32"></skycon>
-          </div>
-          <div class="col v-middle">
-            {{forecast.text}} <span class="text-white">{{forecast.code}}</span>
-          </div>
-          <div class="col v-middle">
-            {{forecast.high}}&deg; -  {{forecast.low}}&deg;
-          </div>
-          <div class="col v-middle text-right hidden-xs">                
-            <small class="text-muted">{{forecast.date}}</small>
-          </div>           
+     <div class="panel panel-default">
+        <div class="panel-heading">
+          容器列表
         </div>
-      <h4 class="m-t-none m-b-lg"><span class="text-xs text-muted m-l pull-right">{{ data.query.results.channel.item.condition.date }}</span>{{place.city}}, {{place.country}}</h4>
-      <div class="hbox">
-        <div class="col v-middle w-sm">
-          <skycon icon="data.query.results.channel.item.condition.icon" color="#fff" size="128" id=""></skycon>
+        <div class="panel-body b-b b-light">
+          Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r"/>
         </div>
-        <div class="col v-middle">
-          <div class="h1">
-            <span class="text-2x text-white">{{ data.query.results.channel.item.condition.temp }}&deg;</span>            
-          </div>
-          <span class="text-muted">{{ data.query.results.channel.item.condition.text }} - Feels like {{ data.query.results.channel.item.condition.temp }}&deg;</span>
+        <div>
+          <table class="table m-b-none" ui-jq="footable" data-filter="#filter" data-page-size="5">
+            <thead>
+              <tr>
+                  <th>
+                      IP
+                  </th>
+                  <th>
+                    Mac
+                  </th>
+                  <th>
+                      Cpu
+                  </th>
+                  <th>
+                      Mem
+                  </th>
+                  <th>
+                      Disk
+                  </th>
+                  <th>
+                      状态
+                  </th>
+                  <th>
+                    操作
+                  </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="instance in instances">
+                  <td>{{instance.IpAddr}}</td>
+                  <td>{{instance.MacAddr}}</td>
+                  <td>{{instance.MarathonData.cpus}}</td>
+                  <td>{{instance.MarathonData.mem}}</td>
+                  <td>{{instance.MarathonData.disk}}</td>
+                  <td><span class="label label-lg label-primary arrowed-in">运行中</span></td>
+                  <td>        
+                    <li class="dropdown" dropdown>
+                        <a href class="dropdown-toggle" dropdown-toggle>
+                          <i class="fa-chevron-down fa"></i>
+                        </a>
+                        <ul class="dropdown-menu fadeInRight">
+                          <li>
+                            <a href>重启</a>
+                          </li>
+                        </ul>
+                  </li>
+             </td>
+                  <!-- <td><a class="blue" title="操作"><i class="fa-chevron-down fa"></i></a></td> -->
+              </tr>
+              </tbody>
+              <tfoot class="hide-if-no-paging">
+                <tr>
+                    <td colspan="5" class="text-center">
+                        <ul class="pagination"></ul>
+                    </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div> 
         </div>
-      </div>
-      </div>
-<!--
-    <div class="wrapper-lg clearfix bg-info dker" ng-show="data.query.results">
-      <h4 class="m-t-none m-b-lg"><span class="text-xs text-muted m-l pull-right">{{ data.query.results.channel.item.condition.date }}</span>{{place.city}}, {{place.country}}</h4>
-      <div class="hbox">
-        <div class="col v-middle w-sm">
-          <skycon icon="data.query.results.channel.item.condition.icon" color="#fff" size="128" id=""></skycon>
-        </div>
-        <div class="col v-middle">
-          <div class="h1">
-            <span class="text-2x text-white">{{ data.query.results.channel.item.condition.temp }}&deg;</span>            
-          </div>
-          <span class="text-muted">{{ data.query.results.channel.item.condition.text }} - Feels like {{ data.query.results.channel.item.condition.temp }}&deg;</span>
-        </div>
-      </div>
-    </div>
-    -->
-    </div>
     </div>
   </div>
   <!-- /column -->

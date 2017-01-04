@@ -28,4 +28,5 @@ func init() {
 	beego.Router("/api/docker/dashboard",&controllers.DockerController{},"get:DashBoard")
 	beego.Router("/api/docker/scale",&controllers.DockerController{},"post:ScaleContainers")
 	beego.Router("/api/docker/list",&controllers.DockerController{},"post:GetContainers")
+	
 }

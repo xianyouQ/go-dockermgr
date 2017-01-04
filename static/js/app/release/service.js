@@ -143,6 +143,7 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal',func
 
   $scope.returnUpper = function(idx) {
     $scope.filter[idx-1] = "";
+    $scope.selectedService = undefined;
   }
   /*
   $scope.detail = function(idc) {
