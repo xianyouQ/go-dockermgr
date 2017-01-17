@@ -47,11 +47,11 @@ func main() {
 		}
 		adminRole := &models.Role{Name:"SYSTEM",Status:true}
 		baseRole := &models.Role{Name:"BASE",Status:true}
-		_,err = models.AddOrUpdateRole(o,adminRole)
+		err = models.AddOrUpdateRole(o,adminRole)
 		if err !=nil {
 			logs.Critical(err.Error())
 		}
-		_,err =models.AddOrUpdateRole(o,baseRole)
+		err =models.AddOrUpdateRole(o,baseRole)
 		if err !=nil {
 			logs.Critical(err.Error())
 		}

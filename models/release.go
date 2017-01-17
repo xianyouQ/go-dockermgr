@@ -24,6 +24,7 @@ type ReleaseTask struct {
     OperationUser *User `orm:"rel(fk)"`
     ReviewUser *User `orm:"rel(fk)"`
     TaskStatus int
+    ReleaseDetail string `orm:"type(text)"`
 }
 
 func ( this *ReleaseTask) TableName() string {
@@ -49,28 +50,25 @@ func QueryRelease(o orm.Ormer,service *Service) ([]*ReleaseTask,error) {
     return ReleaseTaskList,err
 }
 
-func NewRelease(o orm.Ormer,service *Service,releaseUser *User,imageTag string) (*ReleaseTask,error) {
-    mReleaseTask := new(ReleaseTask)
-    if imageTag == "" {
-        return mReleaseTask,errors.New("not supported null imageTag")
-    }
-    mReleaseTask.Service = service
-    mReleaseTask.ReleaseUser = releaseUser
-    mReleaseTask.ImageTag = imageTag
-    mReleaseTask.TaskStatus = NotReady
-    _, err := o.Insert(mReleaseTask)
-    return mReleaseTask,err
+
+
+
+func CreateOrUpdateRelease(o orm.Ormer,releaseTask *ReleaseTask,updatecols ...string) error {
+    var err error
+    if err = checkReleaseTask(releaseTask); err != nil {
+		return err
+	}
+	if releaseTask.Id == 0 {
+		_,err = o.Insert(releaseTask)
+		return err
+	} else {
+		if len(updatecols) == 0 {
+			_, err = o.Update(releaseTask)
+		} else {
+			_, err = o.Update(releaseTask,updatecols...)
+		}
+		return err
+	}
 }
 
-/*
-func ReviewRelease(releaseTask *ReleaseTask,reviewUser *User) (*ReleaseTask,error) {
 
-}
-
-func OperationRelease(releaseTask *ReleaseTask,operationUser *User) (*ReleaseTask,error) {
-
-}
-func CancelRelease(releaseTask *ReleaseTask,cancelUser *User) (*ReleaseTask,error){
-
-}
-*/

@@ -26,7 +26,7 @@ func (c *AuthController) AddOrUpdateRole() {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
-	_,err = models.AddOrUpdateRole(o,&newRole)
+	err = models.AddOrUpdateRole(o,&newRole)
 	if err != nil {
 		c.Rsp(false, err.Error(),nil)
 		err = o.Rollback()
@@ -107,7 +107,7 @@ func (c *AuthController) AddOrUpdateNode() {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
-	_,err = models.AddOrUpdateNode(o,&newNode)
+	err = models.AddOrUpdateNode(o,&newNode)
 	if err != nil {
 		c.Rsp(false, err.Error(),nil)
 		err = o.Rollback()

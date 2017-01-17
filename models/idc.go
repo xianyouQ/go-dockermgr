@@ -40,7 +40,7 @@ func checkIdc(idc *IdcConf) (err error) {
 	return nil
 }
 
-func AddOrUpdateIdc(o orm.Ormer,idc *IdcConf) error {
+func AddOrUpdateIdc(o orm.Ormer,idc *IdcConf,updatecols ...string) error {
     var err error
     var pid int64
 
@@ -56,7 +56,11 @@ func AddOrUpdateIdc(o orm.Ormer,idc *IdcConf) error {
             return err
         }
     } else {
-        _,err = o.Update(idc)
+        if len(updatecols) == 0 {
+            _,err = o.Update(idc)
+        } else {
+            _,err = o.Update(idc,updatecols...)
+        }
         if err != nil {
             return err
         }

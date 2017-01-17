@@ -61,49 +61,55 @@ func checkRegistryConf(conf *RegistryConf) error {
     return nil
 }
 
-func AddOrUpdateMarathonSerConf(o orm.Ormer,newConf *MarathonSerConf) (int64,error) {
+func AddOrUpdateMarathonSerConf(o orm.Ormer,newConf *MarathonSerConf,updatecols ...string) error {
     var err error
-    var id int64
     err = checkMarathonSerConf(newConf)
     if err != nil {
-        return id,err
+        return err
     }
     _,err = utils.CreateMarathonAppFromJson(newConf.MarathonConfTemplate)
     if err != nil {
-        return id,err
+        return err
     }
     if(newConf.Id == 0) {
-        id,err = o.Insert(newConf)
+        _,err = o.Insert(newConf)
         if err != nil {
-            return id,err
+            return err
         }
     } else {
-        _,err = o.Update(newConf)
+        if len(updatecols) == 0 {
+            _,err = o.Update(newConf)
+        } else {
+            _,err = o.Update(newConf,updatecols...)
+        }
         if err != nil {
-            return id,err
+            return err
         }
     }
-    return id,nil
+    return nil
 }
 
 
-func AddOrUpdateRegistryConf(o orm.Ormer,newConf *RegistryConf) (int64,error) {
+func AddOrUpdateRegistryConf(o orm.Ormer,newConf *RegistryConf,updatecols ...string) error {
     var err error
-    var id int64
     err = checkRegistryConf(newConf)
     if err != nil {
-        return id,err
+        return err
     }
     if(newConf.Id == 0) {
-        id,err = o.Insert(newConf)
+        _,err = o.Insert(newConf)
         if err != nil {
-            return id,err
+            return err
         }
     } else {
-        _,err = o.Update(newConf)
+        if len(updatecols) == 0 {
+            _,err = o.Update(newConf)
+        } else {
+            _,err = o.Update(newConf,updatecols...)
+        }
         if err != nil {
-            return id,err
+            return err
         }
     }
-    return id,nil
+    return nil
 }

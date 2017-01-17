@@ -26,7 +26,7 @@ func (c *RegistryCfController) AddOrUpdateRegistryConf() {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
-	_,err = models.AddOrUpdateRegistryConf(o,belongIdc.RegistryConf)
+	err = models.AddOrUpdateRegistryConf(o,belongIdc.RegistryConf)
 	if err !=nil {
 		c.Rsp(false,err.Error(),nil)
 		err = o.Rollback()

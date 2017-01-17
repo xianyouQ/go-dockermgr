@@ -92,7 +92,7 @@
                   <td>Isidra</td>
                   <td>22 Jun 1972</td>
                   <td><span class="label label-lg label-success">部署成功</span></td>
-                  <td><a class="blue" title="详情"><i class="glyphicon-zoom-in glyphicon"></i></a></td>
+                  <td><a class="blue" title="详情" ng-click="padderSelect='operation'"><i class="glyphicon-zoom-in glyphicon"></i></a></td>
               </tr>
               </tbody>
               <tfoot class="hide-if-no-paging">
@@ -298,13 +298,9 @@
                       id="form-field-9" maxlength="200" placeholder="请填写发布的原因或者目的..."></textarea>
                   </div>
                 </div>
-
-
                 <div id="depforErr"></div>
-
                 <div class="clearfix form-actions">
                   <div class="col-md-offset-5 col-md-9">
-
                     &nbsp; &nbsp; &nbsp;
                     <button class="btn" type="reset">
                       <i class="icon-undo bigger-110">重置</i>
@@ -323,404 +319,531 @@
         <div class="panel-heading">
           业务发布配置
         </div>
-<div class="tab-pane in active" id="deploysetting">
-	<div class="form-horizontal">
-		<div class="form-group">
+				<div class="tab-pane in active" id="deploysetting">
+					<div class="form-horizontal">
+						<div class="form-group">
+							<form>
+								<div class="form-group">
+									<label class="col-sm-5 control-label no-padding-right">设置发布模式</label>
+									<div class="controls col-xs-12 col-sm-2">
+										<div class="form-inline">
+												<div class="radio">
+													<label> <input name="models" type="radio" class="ace"
+														id="A/B" value="1"
+														/>
+														<span class="lbl">A/B</span>
+													</label>
+												</div>
+												<div class="radio">
+													<label> <input name="models" type="radio" class="ace"
+														id="Gated Launch" value="2"
+														checked="true" />
+														<span class="lbl">Gated Launch</span>
+													</label>
+												</div>
+										</div>
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-5 control-label no-padding-right">设置发布模式是否需要暂停(灰度)</label>
+									<div class="controls col-xs-12 col-sm-4">
+										<label> <input name="switch-field-1"
+											class="ace ace-switch" type="checkbox" id="pc_tag_pause"
+											checked="true" />
+											<span class="lbl"></span>
+										</label>
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-5 control-label no-padding-right">设置容错阀值</label>
+									<div class="controls col-xs-12 col-sm-3">
+										<div class="col-xs-6 center">
+											<div class="knob-container inline">
+												<input type="text" class="input-small knob"
+													value="5" data-min="0"
+													data-max="10" data-step="1" data-width="50" data-height="50"
+													data-thickness=".2" id="pc_fail_allow_count" />
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label class="col-sm-5 control-label no-padding-right">机房并发度</label>
+									<div class="controls col-xs-12 col-sm-3">
+										<div class="col-xs-6 center">
+											<div class="knob-container inline">
+												<input type="text" class="input-small knob"
+													value="3" data-min="1"
+													data-max="10" data-step="1" data-width="50" data-height="50"
+													data-thickness=".2" id="pc_idc_threadcount" />
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label class="col-sm-5 control-label no-padding-right">机房内部并发度</label>
+									<div class="controls col-xs-12 col-sm-3">
+										<div class="col-xs-6 center">
+											<div class="knob-container inline">
+												<input type="text" class="input-small knob"
+													value="4" data-min="1"
+													data-max="10" data-step="1" data-width="50" data-height="50"
+													data-thickness=".2" id="pc_host_threadcount" />
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label class="col-sm-5 control-label no-padding-right">机房并行度是否需要暂停</label>
+									<div class="controls col-xs-12 col-sm-4">
+										<label> <input name="switch-field-1"
+											class="ace ace-switch" type="checkbox" id="pc_idc_pause" onclick="onPauseClick(this)"
+											checked="true" />
 
 
-			<form>
+											<span class="lbl"></span>
+										</label>
+									</div>
+								</div>
 
+								<div class="form-group" id="check_div"     >
+									<label class="col-sm-5 control-label no-padding-right">发布机房</label>
+									<div class="controls col-xs-12 col-sm-4">
+										<table id="sample-table-1"
+									class="table table-striped table-bordered table-hover">
+									<thead>
+										<tr>
+											<th>机房</th>
+											<th>是否发布</th>
+										</tr>
+									</thead>
+									<tbody>
+										
+													<tr>
+														<td>cdes-t</td>
+														<td><input name="check_list" class="ace ace-switch ace-switch-6" type="checkbox" >
+														<span class="lbl"></span>
+														</td>
+													</tr>
+												
+													<tr>
+														<td>cdtb-tomcat</td>
+														<td><input name="check_list" class="ace ace-switch ace-switch-6" type="checkbox" >
+														<span class="lbl"></span>
+														</td>
+													</tr>
+												
+													<tr>
+														<td>gztb-tomcat</td>
+														<td><input name="check_list" class="ace ace-switch ace-switch-6" type="checkbox" >
+														<span class="lbl"></span>
+														</td>
+													</tr>
+												
+													<tr>
+														<td>gzyt-t</td>
+														<td><input name="check_list" class="ace ace-switch ace-switch-6" type="checkbox" >
+														<span class="lbl"></span>
+														</td>
+													</tr>
+												
+													<tr>
+														<td>shnj-b</td>
+														<td><input name="check_list" class="ace ace-switch ace-switch-6" type="checkbox" checked="true">
+														<span class="lbl"></span>
+														</td>
+													</tr>
+												
+													<tr>
+														<td>shwgq-t</td>
+														<td><input name="check_list" class="ace ace-switch ace-switch-6" type="checkbox" checked="true">
+														<span class="lbl"></span>
+														</td>
+													</tr>
+												
+													<tr>
+														<td>sydd-c</td>
+														<td><input name="check_list" class="ace ace-switch ace-switch-6" type="checkbox" >
+														<span class="lbl"></span>
+														</td>
+													</tr>
+												
+													<tr>
+														<td>tjhy-c</td>
+														<td><input name="check_list" class="ace ace-switch ace-switch-6" type="checkbox" checked="true">
+														<span class="lbl"></span>
+														</td>
+													</tr>
+												
 
-				<div class="form-group">
-					<label class="col-sm-5 control-label no-padding-right">设置发布模式</label>
-					<div class="controls col-xs-12 col-sm-2">
+									</tbody>
+								</table>
+									</div>
+								</div>
 
-
-						<div class="form-inline">
-
-							
-								<div class="radio">
-									<label> <input name="models" type="radio" class="ace"
-										id="A/B" value="1"
-										 />
-										<span class="lbl">A/B</span>
-									</label>
+								<!-- 按照服务池类型决定是否需要摘除流量 -->
+								
+									<div class="form-group">
+										<label class="col-sm-5 control-label no-padding-right">发布时LB是否需要摘除流量</label>
+										<div class="controls col-xs-12 col-sm-4">
+											<label> 
+											<input name="switch-field-1" class="ace ace-switch" type="checkbox" id="is_remove_flow" 	 />
+											<span class="lbl"></span>
+											</label>
+										</div>
+									</div>
+								<div class="form-group">
+									<label class="col-sm-5 control-label no-padding-right"
+										for="notification-mail">通知机制</label>
+									<div class="col-sm-4">
+										<input type="text" name="tags" id="notification-mail"
+											value="vivicai@pptv.com" placeholder="请输入需通知的邮箱..." />
+									</div>
 								</div>
 
 
-							
-								<div class="radio">
-									<label> <input name="models" type="radio" class="ace"
-										id="Gated Launch" value="2"
-										checked="true" />
-										<span class="lbl">Gated Launch</span>
-									</label>
+								<div class="clearfix form-actions">
+									<div class="col-md-offset-5 col-md-9">
+										<button class="btn" type="reset">
+											<i class="icon-undo bigger-110"></i> 重置
+										</button>
+										&nbsp; &nbsp; &nbsp;
+										<button class="btn btn-info" type="button"
+											onclick="commitDeploySettings()">
+											<i class="icon-ok bigger-110"></i> 提交
+										</button>
+									</div>
 								</div>
-
-
-							
-						</div>
-
-
-					</div>
-
-
-				</div>
-
-				
-				<div class="form-group">
-					<label class="col-sm-5 control-label no-padding-right">设置发布模式是否需要暂停(灰度)</label>
-					<div class="controls col-xs-12 col-sm-4">
-						<label> <input name="switch-field-1"
-							class="ace ace-switch" type="checkbox" id="pc_tag_pause"
-							checked="true" />
-							<span class="lbl"></span>
-						</label>
-					</div>
-				</div>
-				<div class="form-group">
-					<label class="col-sm-5 control-label no-padding-right">设置容错阀值</label>
-					<div class="controls col-xs-12 col-sm-3">
-						<div class="col-xs-6 center">
-							<div class="knob-container inline">
-								<input type="text" class="input-small knob"
-									value="5" data-min="0"
-									data-max="10" data-step="1" data-width="50" data-height="50"
-									data-thickness=".2" id="pc_fail_allow_count" />
-							</div>
+							</form>
 						</div>
 					</div>
 				</div>
-
-				<div class="form-group">
-					<label class="col-sm-5 control-label no-padding-right">机房并发度</label>
-					<div class="controls col-xs-12 col-sm-3">
-						<div class="col-xs-6 center">
-							<div class="knob-container inline">
-								<input type="text" class="input-small knob"
-									value="3" data-min="1"
-									data-max="10" data-step="1" data-width="50" data-height="50"
-									data-thickness=".2" id="pc_idc_threadcount" />
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<div class="form-group">
-					<label class="col-sm-5 control-label no-padding-right">机房内部并发度</label>
-					<div class="controls col-xs-12 col-sm-3">
-						<div class="col-xs-6 center">
-							<div class="knob-container inline">
-								<input type="text" class="input-small knob"
-									value="4" data-min="1"
-									data-max="10" data-step="1" data-width="50" data-height="50"
-									data-thickness=".2" id="pc_host_threadcount" />
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<div class="form-group">
-					<label class="col-sm-5 control-label no-padding-right">机房并行度是否需要暂停</label>
-					<div class="controls col-xs-12 col-sm-4">
-						<label> <input name="switch-field-1"
-							class="ace ace-switch" type="checkbox" id="pc_idc_pause" onclick="onPauseClick(this)"
-							checked="true" />
-
-
-							<span class="lbl"></span>
-						</label>
-					</div>
-				</div>
-
-				<div class="form-group" id="check_div"     >
-					<label class="col-sm-5 control-label no-padding-right">发布机房</label>
-					<div class="controls col-xs-12 col-sm-4">
-						<table id="sample-table-1"
-					class="table table-striped table-bordered table-hover">
-					<thead>
-						<tr>
-							<th>机房</th>
-							<th>是否发布</th>
-						</tr>
-					</thead>
-					<tbody>
-						
-									<tr>
-										<td>cdes-t</td>
-										<td><input name="check_list" class="ace ace-switch ace-switch-6" type="checkbox" >
-										<span class="lbl"></span>
-										</td>
-									</tr>
-								
-									<tr>
-										<td>cdtb-tomcat</td>
-										<td><input name="check_list" class="ace ace-switch ace-switch-6" type="checkbox" >
-										<span class="lbl"></span>
-										</td>
-									</tr>
-								
-									<tr>
-										<td>gztb-tomcat</td>
-										<td><input name="check_list" class="ace ace-switch ace-switch-6" type="checkbox" >
-										<span class="lbl"></span>
-										</td>
-									</tr>
-								
-									<tr>
-										<td>gzyt-t</td>
-										<td><input name="check_list" class="ace ace-switch ace-switch-6" type="checkbox" >
-										<span class="lbl"></span>
-										</td>
-									</tr>
-								
-									<tr>
-										<td>shnj-b</td>
-										<td><input name="check_list" class="ace ace-switch ace-switch-6" type="checkbox" checked="true">
-										<span class="lbl"></span>
-										</td>
-									</tr>
-								
-									<tr>
-										<td>shwgq-t</td>
-										<td><input name="check_list" class="ace ace-switch ace-switch-6" type="checkbox" checked="true">
-										<span class="lbl"></span>
-										</td>
-									</tr>
-								
-									<tr>
-										<td>sydd-c</td>
-										<td><input name="check_list" class="ace ace-switch ace-switch-6" type="checkbox" >
-										<span class="lbl"></span>
-										</td>
-									</tr>
-								
-									<tr>
-										<td>tjhy-c</td>
-										<td><input name="check_list" class="ace ace-switch ace-switch-6" type="checkbox" checked="true">
-										<span class="lbl"></span>
-										</td>
-									</tr>
-								
-
-					</tbody>
-				</table>
-					</div>
-				</div>
-
-				<!-- 按照服务池类型决定是否需要摘除流量 -->
-				
-					<div class="form-group">
-						<label class="col-sm-5 control-label no-padding-right">发布时LB是否需要摘除流量</label>
-						<div class="controls col-xs-12 col-sm-4">
-							<label> 
-							<input name="switch-field-1" class="ace ace-switch" type="checkbox" id="is_remove_flow" 	 />
-							<span class="lbl"></span>
-							</label>
-						</div>
-					</div>
-				
-				
-
-
-
-
-
-				<div class="form-group">
-					<label class="col-sm-5 control-label no-padding-right"
-						for="notification-mail">通知机制</label>
-					<div class="col-sm-4">
-						<input type="text" name="tags" id="notification-mail"
-							value="vivicai@pptv.com" placeholder="请输入需通知的邮箱..." />
-					</div>
-				</div>
-
-
-				<div class="clearfix form-actions">
-					<div class="col-md-offset-5 col-md-9">
-						<button class="btn" type="reset">
-							<i class="icon-undo bigger-110"></i> 重置
-						</button>
-						&nbsp; &nbsp; &nbsp;
-						<button class="btn btn-info" type="button"
-							onclick="commitDeploySettings()">
-							<i class="icon-ok bigger-110"></i> 提交
-						</button>
-					</div>
-				</div>
-			</form>
-
-	
-		</div>
-
-	</div>
-
-
-	<p hidden="hidden" id="id">164</p>
-	<p hidden="hidden" id="id_param">239</p>
-
-
-
-</div>
 
 
 
       </div>
-    </div>
-    </div>
-  </div>
-  <!-- /column -->
-</div>
-<!-- /hbox layout -->
+      <div class="panel panel-default" ng-show="padderSelect=='operation'">
+        <div class="panel-heading">
+          创建发布单
+        </div>
+				<div class="page-content">
+					<div id="opration_btn" class="center" style="color:red"></div>
+					<div class="table-responsive">
+						<h4 class="header blue bolder smaller">操作</h4>
+					<div>
+							
+									<button class="btn btn-app btn-info btn-sm" onclick="viewProgress(24627)">
+										<i class="fa-clock-o bigger-200"></i>
+										发布记录
+									</button>
 
+							<button class="btn btn-app btn-error btn-sm" onclick="jobCenter(24627)">
+								<i class="fa-clock-o bigger-200"></i>
+								返回
+							</button>
+						</div>
+						
+						<h4 class="header blue bolder smaller">发布单信息</h4>
+						<table class="table table-striped table-bordered table-hover" cellspacing="0" cellpadding="0" style="width:98%!important;">
+							<thead>
+								<tr>
+									<th style="width:15%;">ID</th>
+									<th style="width:15%;">Pool</th>
+									<th style="width:15%;">类型</th>
+									<th style="width:15%;">提交人</th>
+									<th style="width:15%;">提交时间</th>
+									<th style="width:15%;">状态</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td style="width:15%;">24627</td>
+									<td style="width:15%;">ad.delivery.sub</td>
+									<td style="width:15%;">tomcat</td>
+									<td style="width:15%;">qinggao</td>
+									<td style="width:15%;">2017年 01月12日	 08:11:43	星期四</td>
+									<td style="width:15%;">
+												<span class="label label-success arrowed">部署成功</span>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						
+						<h4 class="header blue bolder smaller">QA审批信息</h4>
+						<table class="table table-striped table-bordered table-hover" cellspacing="0" cellpadding="0" style="width:98%!important;">
+							<thead>
+								<tr>
+									<th style="width:20%;">审批状态</th>
+									<th style="width:20%;">审批人</th>
+									<th style="width:20%;">审批时间</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td buid="6084" style="width:20%;">
+									
+												审核通过
+
+									</td>
+									<td style="width:20%;">
+
+												qinggao
+
+									</td>
+									<td style="width:20%;">
+																	
+												2017年 01月12日	 08:11:48	星期四
+
+									</td>
+									
+								</tr>
+							</tbody>
+						</table>
+						
+						<h4 class="header blue bolder smaller">Ops审批信息</h4>
+						<table class="table table-striped table-bordered table-hover" cellspacing="0" cellpadding="0" style="width:98%!important;">
+							<thead>
+								<tr>
+									<th style="width:20%;">审批状态</th>
+									<th style="width:20%;">审批人</th>
+									<th style="width:20%;">审批时间</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td buid="6084" style="width:20%;">
+					
+												审核通过
+
+									</td>
+									<td style="width:20%;">
+										
+											
+												dingxu
+											
+											
+										
+									</td>
+									<td style="width:20%;">
+										
+											
+												2017年 01月12日	 08:13:34	星期四
+											
+											
+										
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						
+						<h4 class="header blue bolder smaller">版本信息</h4>
+						<table class="table table-striped table-bordered table-hover" cellspacing="0" cellpadding="0" style="width:98%!important;">
+							<thead>
+								<tr>
+									<th style="width:20%;">版本号</th>
+									<th style="width:20%;">glu脚本</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td buid="6084" style="width:40%;">20170111.1</td>
+									<td style="width:40%;">http://glu.idc.pplive.cn/console/gluScript/AdpTomcatChangeWarGluScript.groovy</td>
+								</tr>
+							</tbody>
+						</table>
+						<h4 class="header blue bolder smaller">部署配置</h4>
+						<table class="table table-striped table-bordered table-hover" cellspacing="0" cellpadding="0" style="width:98%!important;">
+							<thead>
+								<tr>
+									<th style="width:12%;">发布模式</th>
+									<th style="width:12%;">发布模式是否需要暂停</th>
+									<th style="width:12%;">机房并行度</th>
+									<th style="width:12%;">机房并行度是否需要暂停</th>
+									<th style="width:12%;">主机并行度</th>
+									<th style="width:12%;">最大允许失败次数</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td style="width:12%;">Gated Launch</td>
+									<td buid="6084" style="width:12%;">true</td>
+									<td style="width:12%;">3</td>
+									<td style="width:12%;">true</td>
+									<td style="width:12%;">4</td>
+									<td buid="6084" style="width:12%;">5</td>
+								</tr>
+							</tbody>
+						</table>
+						<h4 class="header blue bolder smaller">部署信息</h4>
+						<table id= "taskDeployInfoListTable" class="table table-striped table-bordered table-hover" cellspacing="0" cellpadding="0" style="width:98%!important;">
+							<thead>
+								<tr>
+									<th style="width:30%;">机房</th>
+									<th style="width:30%;">发布类型</th>
+									<th style="width:30%;">发布状态</th>
+								</tr>
+							</thead>
+							<tbody>
+								
+								<tr>
+									<td>cdes-t</td>
+									<td></td>
+									<td></td>
+								</tr>
+								
+								<tr>
+									<td>cdtb-tomcat</td>
+									<td></td>
+									<td></td>
+								</tr>
+								
+								<tr>
+									<td>gztb-tomcat</td>
+									<td></td>
+									<td></td>
+								</tr>
+								
+								<tr>
+									<td>gzyt-t</td>
+									<td></td>
+									<td></td>
+								</tr>
+								
+								<tr>
+									<td>shnj-b</td>
+									<td>10%灰度</td>
+									<td>部署成功</td>
+								</tr>
+								
+								<tr>
+									<td>shnj-b</td>
+									<td>40%灰度</td>
+									<td>部署成功</td>
+								</tr>
+								
+								<tr>
+									<td>shnj-b</td>
+									<td>70%灰度</td>
+									<td>部署成功</td>
+								</tr>
+								
+								<tr>
+									<td>shnj-b</td>
+									<td>100%灰度</td>
+									<td>部署成功</td>
+								</tr>
+								
+								<tr>
+									<td>shwgq-t</td>
+									<td>10%灰度</td>
+									<td>部署成功</td>
+								</tr>
+								
+								<tr>
+									<td>shwgq-t</td>
+									<td>40%灰度</td>
+									<td>部署成功</td>
+								</tr>
+								
+								<tr>
+									<td>shwgq-t</td>
+									<td>70%灰度</td>
+									<td>部署成功</td>
+								</tr>
+								
+								<tr>
+									<td>shwgq-t</td>
+									<td>100%灰度</td>
+									<td>部署成功</td>
+								</tr>
+								
+								<tr>
+									<td>sydd-c</td>
+									<td></td>
+									<td></td>
+								</tr>
+								
+								<tr>
+									<td>tjhy-c</td>
+									<td>10%灰度</td>
+									<td>部署成功</td>
+								</tr>
+								
+								<tr>
+									<td>tjhy-c</td>
+									<td>40%灰度</td>
+									<td>部署成功</td>
+								</tr>
+								
+								<tr>
+									<td>tjhy-c</td>
+									<td>70%灰度</td>
+									<td>部署成功</td>
+								</tr>
+								
+								<tr>
+									<td>tjhy-c</td>
+									<td>100%灰度</td>
+									<td>部署成功</td>
+								</tr>
+								
+							</tbody>
+						</table>
+						<h4 class="header blue bolder smaller">备注信息</h4>
+						<div style="width:98%!important;">
+							<textarea class="autosize-transition form-control" readonly="readonly">os请求参数修改</textarea>
+						</div>
+						<br>
+						<h4 class="header blue bolder smaller">操作</h4>
+					
+				<div>
+
+									<button class="btn btn-app btn-info btn-sm" ng-click="padderSelect='detail'">
+										<i class="fa-clock-o bigger-200"></i>
+										发布记录
+									</button>
+							<button class="btn btn-app btn-error btn-sm" onclick="jobCenter(24627)">
+								<i class="fa-clock-o bigger-200"></i>
+								返回
+							</button>
+						</div>
+						
+					</div>
+				</div>
+      </div>
+      <div class="panel panel-default" ng-show="padderSelect=='detail'">
+        <div class="panel-heading">
+          创建发布单
+        </div>
+
+
+
+<style>
+	.tdcenter td{
+		text-align:center;vertical-align:middle; 
+	}
+</style>
+
+<button class="btn btn-danger" onclick="deployTaskInfo(24627)">返回</button>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<button class="btn btn-warning" onclick="viewProgress(24627)">刷新</button>
+<!-- <button class="btn btn-inverse">Mailbox</button> -->
+<input id="releaseinstanceId" type="hidden" value="24627"/>
 
 <div class="page-content">
-	<div id="opration_btn" class="center" style="color:red"></div>
 	<div class="table-responsive">
-	
-		<h4 class="header blue bolder smaller">操作</h4>
-		
-		
-
-
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-<div>
-			
-				
-					
-					
-				
-				
-				
-				
-				
-					<button class="btn btn-app btn-info btn-sm" onclick="viewProgress(24627)">
-						<i class="fa-clock-o bigger-200"></i>
-						发布记录
-					</button>
-				
-			
-			
-			<button class="btn btn-app btn-error btn-sm" onclick="jobCenter(24627)">
-				<i class="fa-clock-o bigger-200"></i>
-				返回
-			</button>
-		</div>
-		
 		<h4 class="header blue bolder smaller">发布单信息</h4>
-		<table class="table table-striped table-bordered table-hover" cellspacing="0" cellpadding="0" style="width:98%!important;">
+		<table class="table table-striped table-bordered table-hover " cellspacing="0" cellpadding="0" style="width:98%!important;">
 			<thead>
 				<tr>
-					<th style="width:15%;">ID</th>
-					<th style="width:15%;">Pool</th>
-					<th style="width:15%;">类型</th>
-					<th style="width:15%;">提交人</th>
-					<th style="width:15%;">提交时间</th>
-					<th style="width:15%;">状态</th>
+					<th style="width:20%;">ID</th>
+					<th style="width:20%;">Pool</th>
+					<th style="width:20%;">类型</th>
+					<th style="width:20%;">提交人</th>
+					<th style="width:20%;">提交时间</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -730,8 +853,270 @@
 					<td style="width:15%;">tomcat</td>
 					<td style="width:15%;">qinggao</td>
 					<td style="width:15%;">2017年 01月12日	 08:11:43	星期四</td>
-					<td style="width:15%;">
+				</tr>
+			</tbody>
+		</table>
+		
+		<input id="shouldRefresh" type="hidden" value="true"/>
+		<h4 class="header blue bolder smaller">发布进度
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<button class="btn btn-danger" onclick="goTogluConsole()" style="margin-left:50%">Abandon</button>
+		</h4>
+		
+		<table class="table table-striped table-bordered table-hover tdcenter" cellspacing="0" cellpadding="0" style="width:98%!important;">
+			<thead>
+				<tr>
+					<th>部署类型</th>
+					<th>PLAN ID</th>
+					<th>进度</th>
+					<!-- <th>操作</th> -->
+				</tr>
+			</thead>
+			<tbody>
+				
+					<tr>
+						<td style="width:5%;">10%灰度</td>
 						
+						<td style="width:15%;">
+							<font id="showInfo" class="" >shnj-b机房&nbsp;</font>
+							<font id="104989-Info" class="" >Data Loading</font>
+						</td>
+						
+						<td style="width:70%;">
+							<div id="104989-val" class="progress progress-striped" style="width:98%!important;">
+								<div id="104989-Bar" class="progress-bar progress-bar-success"></div>
+							</div>
+						</td>
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
+						
+					</tr>
+				
+					<tr>
+						<td style="width:5%;">40%灰度</td>
+						
+						<td style="width:15%;">
+							<font id="showInfo" class="" >shnj-b机房&nbsp;</font>
+							<font id="104991-Info" class="" >Data Loading</font>
+						</td>
+						
+						<td style="width:70%;">
+							<div id="104991-val" class="progress progress-striped" style="width:98%!important;">
+								<div id="104991-Bar" class="progress-bar progress-bar-success"></div>
+							</div>
+						</td>
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
+						
+					</tr>
+				
+					<tr>
+						<td style="width:5%;">70%灰度</td>
+						
+						<td style="width:15%;">
+							<font id="showInfo" class="" >shnj-b机房&nbsp;</font>
+							<font id="104993-Info" class="" >Data Loading</font>
+						</td>
+						
+						<td style="width:70%;">
+							<div id="104993-val" class="progress progress-striped" style="width:98%!important;">
+								<div id="104993-Bar" class="progress-bar progress-bar-success"></div>
+							</div>
+						</td>
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
+						
+					</tr>
+				
+					<tr>
+						<td style="width:5%;">100%灰度</td>
+						
+						<td style="width:15%;">
+							<font id="showInfo" class="" >shnj-b机房&nbsp;</font>
+							<font id="104995-Info" class="" >Data Loading</font>
+						</td>
+						
+						<td style="width:70%;">
+							<div id="104995-val" class="progress progress-striped" style="width:98%!important;">
+								<div id="104995-Bar" class="progress-bar progress-bar-success"></div>
+							</div>
+						</td>
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
+						
+					</tr>
+				
+					<tr>
+						<td style="width:5%;">10%灰度</td>
+						
+						<td style="width:15%;">
+							<font id="showInfo" class="" >shwgq-t机房&nbsp;</font>
+							<font id="104997-Info" class="" >Data Loading</font>
+						</td>
+						
+						<td style="width:70%;">
+							<div id="104997-val" class="progress progress-striped" style="width:98%!important;">
+								<div id="104997-Bar" class="progress-bar progress-bar-success"></div>
+							</div>
+						</td>
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
+						
+					</tr>
+				
+					<tr>
+						<td style="width:5%;">40%灰度</td>
+						
+						<td style="width:15%;">
+							<font id="showInfo" class="" >shwgq-t机房&nbsp;</font>
+							<font id="104999-Info" class="" >Data Loading</font>
+						</td>
+						
+						<td style="width:70%;">
+							<div id="104999-val" class="progress progress-striped" style="width:98%!important;">
+								<div id="104999-Bar" class="progress-bar progress-bar-success"></div>
+							</div>
+						</td>
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
+						
+					</tr>
+				
+					<tr>
+						<td style="width:5%;">70%灰度</td>
+						
+						<td style="width:15%;">
+							<font id="showInfo" class="" >shwgq-t机房&nbsp;</font>
+							<font id="105001-Info" class="" >Data Loading</font>
+						</td>
+						
+						<td style="width:70%;">
+							<div id="105001-val" class="progress progress-striped" style="width:98%!important;">
+								<div id="105001-Bar" class="progress-bar progress-bar-success"></div>
+							</div>
+						</td>
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
+						
+					</tr>
+				
+					<tr>
+						<td style="width:5%;">100%灰度</td>
+						
+						<td style="width:15%;">
+							<font id="showInfo" class="" >shwgq-t机房&nbsp;</font>
+							<font id="105003-Info" class="" >Data Loading</font>
+						</td>
+						
+						<td style="width:70%;">
+							<div id="105003-val" class="progress progress-striped" style="width:98%!important;">
+								<div id="105003-Bar" class="progress-bar progress-bar-success"></div>
+							</div>
+						</td>
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
+						
+					</tr>
+				
+					<tr>
+						<td style="width:5%;">10%灰度</td>
+						
+						<td style="width:15%;">
+							<font id="showInfo" class="" >tjhy-c机房&nbsp;</font>
+							<font id="105005-Info" class="" >Data Loading</font>
+						</td>
+						
+						<td style="width:70%;">
+							<div id="105005-val" class="progress progress-striped" style="width:98%!important;">
+								<div id="105005-Bar" class="progress-bar progress-bar-success"></div>
+							</div>
+						</td>
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
+						
+					</tr>
+				
+					<tr>
+						<td style="width:5%;">40%灰度</td>
+						
+						<td style="width:15%;">
+							<font id="showInfo" class="" >tjhy-c机房&nbsp;</font>
+							<font id="105007-Info" class="" >Data Loading</font>
+						</td>
+						
+						<td style="width:70%;">
+							<div id="105007-val" class="progress progress-striped" style="width:98%!important;">
+								<div id="105007-Bar" class="progress-bar progress-bar-success"></div>
+							</div>
+						</td>
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
+						
+					</tr>
+				
+					<tr>
+						<td style="width:5%;">70%灰度</td>
+						
+						<td style="width:15%;">
+							<font id="showInfo" class="" >tjhy-c机房&nbsp;</font>
+							<font id="105009-Info" class="" >Data Loading</font>
+						</td>
+						
+						<td style="width:70%;">
+							<div id="105009-val" class="progress progress-striped" style="width:98%!important;">
+								<div id="105009-Bar" class="progress-bar progress-bar-success"></div>
+							</div>
+						</td>
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
+						
+					</tr>
+				
+					<tr>
+						<td style="width:5%;">100%灰度</td>
+						
+						<td style="width:15%;">
+							<font id="showInfo" class="" >tjhy-c机房&nbsp;</font>
+							<font id="105011-Info" class="" >Data Loading</font>
+						</td>
+						
+						<td style="width:70%;">
+							<div id="105011-val" class="progress progress-striped" style="width:98%!important;">
+								<div id="105011-Bar" class="progress-bar progress-bar-success"></div>
+							</div>
+						</td>
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
+						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
+						
+					</tr>
+				
+			</tbody>
+		</table>
+		
+		
+		<h4 class="header blue bolder smaller">发布类型详细信息</h4>
+		<table class="table table-striped table-bordered table-hover tdcenter" cellspacing="0" cellpadding="0" style="width:98%!important;">
+			<thead>
+				<tr>
+					<th style="width:20%;">开始时间</th>
+					<th style="width:20%;">结束时间</th>
+					<th style="width:10%;">部署类型</th>
+					<th style="width:30%;">PLAN ID</th>
+					<th style="width:20%;">部署状态</th>
+				</tr>
+			</thead>
+			<tbody>
+				
+					<tr>
+						<td style="widtd:20%;">2017年 01月12日	 08:13:39	星期四</td>
+						<td style="widtd:20%;">2017年 01月12日	 08:14:36	星期四</td>
+						
+						<td style="widtd:20%;">10%灰度</td>
+						
+						<td style="widtd:20%;">38358948-3349-4260-9aae-4721d1fecaff</td>
+						
+						
+						<td style="width:20%;">
 							
 							
 							
@@ -739,387 +1124,280 @@
 								<span class="label label-success arrowed">部署成功</span>
 							
 							
+							
+							
+							
+						</td>
+					</tr>
+				
+					<tr>
+						<td style="widtd:20%;">2017年 01月12日	 08:21:58	星期四</td>
+						<td style="widtd:20%;">2017年 01月12日	 08:22:54	星期四</td>
+						
+						<td style="widtd:20%;">40%灰度</td>
+						
+						<td style="widtd:20%;">106cc6f5-6f2f-4795-84cb-25f6e64ed6fb</td>
 						
 						
-					</td>
-				</tr>
+						<td style="width:20%;">
+							
+							
+							
+							
+								<span class="label label-success arrowed">部署成功</span>
+							
+							
+							
+							
+							
+						</td>
+					</tr>
+				
+					<tr>
+						<td style="widtd:20%;">2017年 01月12日	 08:21:58	星期四</td>
+						<td style="widtd:20%;">2017年 01月12日	 08:23:47	星期四</td>
+						
+						<td style="widtd:20%;">70%灰度</td>
+						
+						<td style="widtd:20%;">4b0d5aa9-0159-4eb8-8e84-548d8124ec35</td>
+						
+						
+						<td style="width:20%;">
+							
+							
+							
+							
+								<span class="label label-success arrowed">部署成功</span>
+							
+							
+							
+							
+							
+						</td>
+					</tr>
+				
+					<tr>
+						<td style="widtd:20%;">2017年 01月12日	 08:21:58	星期四</td>
+						<td style="widtd:20%;">2017年 01月12日	 08:24:45	星期四</td>
+						
+						<td style="widtd:20%;">100%灰度</td>
+						
+						<td style="widtd:20%;">6270ff9a-c7fb-4c70-b60c-1717970fe833</td>
+						
+						
+						<td style="width:20%;">
+							
+							
+							
+							
+								<span class="label label-success arrowed">部署成功</span>
+							
+							
+							
+							
+							
+						</td>
+					</tr>
+				
+					<tr>
+						<td style="widtd:20%;">2017年 01月12日	 08:13:39	星期四</td>
+						<td style="widtd:20%;">2017年 01月12日	 08:15:55	星期四</td>
+						
+						<td style="widtd:20%;">10%灰度</td>
+						
+						<td style="widtd:20%;">94528276-2054-417f-bbfe-e1ef9d9d480b</td>
+						
+						
+						<td style="width:20%;">
+							
+							
+							
+							
+								<span class="label label-success arrowed">部署成功</span>
+							
+							
+							
+							
+							
+						</td>
+					</tr>
+				
+					<tr>
+						<td style="widtd:20%;">2017年 01月12日	 08:21:58	星期四</td>
+						<td style="widtd:20%;">2017年 01月12日	 08:24:16	星期四</td>
+						
+						<td style="widtd:20%;">40%灰度</td>
+						
+						<td style="widtd:20%;">12a13929-6789-45b2-a06a-3df89bc69589</td>
+						
+						
+						<td style="width:20%;">
+							
+							
+							
+							
+								<span class="label label-success arrowed">部署成功</span>
+							
+							
+							
+							
+							
+						</td>
+					</tr>
+				
+					<tr>
+						<td style="widtd:20%;">2017年 01月12日	 08:21:58	星期四</td>
+						<td style="widtd:20%;">2017年 01月12日	 08:26:38	星期四</td>
+						
+						<td style="widtd:20%;">70%灰度</td>
+						
+						<td style="widtd:20%;">47a5abb1-bdd8-4dc1-af53-0b023932f21f</td>
+						
+						
+						<td style="width:20%;">
+							
+							
+							
+							
+								<span class="label label-success arrowed">部署成功</span>
+							
+							
+							
+							
+							
+						</td>
+					</tr>
+				
+					<tr>
+						<td style="widtd:20%;">2017年 01月12日	 08:21:58	星期四</td>
+						<td style="widtd:20%;">2017年 01月12日	 08:29:02	星期四</td>
+						
+						<td style="widtd:20%;">100%灰度</td>
+						
+						<td style="widtd:20%;">063cba3e-8860-4884-ad1f-956829cb3e22</td>
+						
+						
+						<td style="width:20%;">
+							
+							
+							
+							
+								<span class="label label-success arrowed">部署成功</span>
+							
+							
+							
+							
+							
+						</td>
+					</tr>
+				
+					<tr>
+						<td style="widtd:20%;">2017年 01月12日	 08:13:39	星期四</td>
+						<td style="widtd:20%;">2017年 01月12日	 08:14:48	星期四</td>
+						
+						<td style="widtd:20%;">10%灰度</td>
+						
+						<td style="widtd:20%;">8e483bac-46c8-41a7-9e21-b6fab0e24217</td>
+						
+						
+						<td style="width:20%;">
+							
+							
+							
+							
+								<span class="label label-success arrowed">部署成功</span>
+						</td>
+					</tr>
+					<tr>
+						<td style="widtd:20%;">2017年 01月12日	 08:21:58	星期四</td>
+						<td style="widtd:20%;">2017年 01月12日	 08:23:08	星期四</td>
+						<td style="widtd:20%;">40%灰度</td>	
+						<td style="widtd:20%;">c37ac442-bbcf-43a3-b3f0-e03525e47904</td>
+						<td style="width:20%;">
+								<span class="label label-success arrowed">部署成功</span>
+						</td>
+					</tr>
+					<tr>
+						<td style="widtd:20%;">2017年 01月12日	 08:21:58	星期四</td>
+						<td style="widtd:20%;">2017年 01月12日	 08:24:19	星期四</td>
+						<td style="widtd:20%;">70%灰度</td>
+						<td style="widtd:20%;">0dd28ad5-2de1-4a14-a43f-f6e4d8841436</td>
+						<td style="width:20%;">
+								<span class="label label-success arrowed">部署成功</span>
+						</td>
+					</tr>
+				
+					<tr>
+						<td style="widtd:20%;">2017年 01月12日	 08:21:58	星期四</td>
+						<td style="widtd:20%;">2017年 01月12日	 08:25:29	星期四</td>
+						<td style="widtd:20%;">100%灰度</td>
+						<td style="widtd:20%;">79f1c940-3872-4f7f-ad71-e1aea1272f36</td>
+						<td style="width:20%;">
+								<span class="label label-success arrowed">部署成功</span>
+						</td>
+					</tr>
+				
 			</tbody>
 		</table>
 		
-		<h4 class="header blue bolder smaller">QA审批信息</h4>
-		<table class="table table-striped table-bordered table-hover" cellspacing="0" cellpadding="0" style="width:98%!important;">
-			<thead>
-				<tr>
-					<th style="width:20%;">审批状态</th>
-					<th style="width:20%;">审批人</th>
-					<th style="width:20%;">审批时间</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td buid="6084" style="width:20%;">
-						
-							
-								审核通过
-							
-							
-						
-					</td>
-					<td style="width:20%;">
-						
-							
-								qinggao
-							
-							
-						
-					</td>
-					<td style="width:20%;">
-						
-							
-								2017年 01月12日	 08:11:48	星期四
-							
-							
-						
-					</td>
+		
+		<h4 class="header blue bolder smaller">发布主机状态</h4>
+		<div class="tab-pane in active" id="deployHostStatusdiv">
+			<div class="row">
+				<div class="col-xs-12">
+<!-- 					<div class="table-header">Host and Agent Information</div>
+ -->					<div class="table-responsive">
 					
-				</tr>
-			</tbody>
-		</table>
-		
-		<h4 class="header blue bolder smaller">Ops审批信息</h4>
-		<table class="table table-striped table-bordered table-hover" cellspacing="0" cellpadding="0" style="width:98%!important;">
-			<thead>
-				<tr>
-					<th style="width:20%;">审批状态</th>
-					<th style="width:20%;">审批人</th>
-					<th style="width:20%;">审批时间</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td buid="6084" style="width:20%;">
+					<table id="deployHostStatuslists"	class="table table-striped table-bordered table-hover">
+						<thead>
+							<tr>
+								<th style="width:3%;">主机ID</th>
+								<th style="width:25%;">主机名</th>
+								<th style="width:10%;">主机IP</th>
+								<th style="width:7%;">所属机房</th>
+								<th style="width:5%;">发布类型</th>
+								<th style="width:10%;">发布状态</th>
+								<th style="width:30%;">发布日志</th>
+							</tr>
+						</thead>
+						<tbody>
+							
+							<tr>
+								<td style="width:3%;">297393</td>
+								<td style="width:25%;">shwgq-t-tomcat-189-173.ad-delv-tf.lin.idc.pplive.cn</td>
+								<td style="width:10%;"><a href="#" onclick="viewDetailInfo('10.203.189.173','24627')">10.203.189.173</a></td>
+								<td style="width:7%;">shwgq-t</td>
+								<td style="width:5%;">10%灰度</td>
+								<td style="width:10%;">
+										<span class="label label-success arrowed">部署成功</span>
+								</td>
+								<td style="width:30%;"><pre>Debug information--><br/>shield relust :true<br/>stop server...
+downloading war file...
+The War file has been successfully downloaded
+The md5 file has been successfully downloaded
+md5 check...<br/>update or installing...<br/>/home/pplive/web/ikandelivery/version.html->currentVersion:20170111.1<br/>unshield relust :true<br/>starting...
+The application is deployed</pre></td>
+							</tr>
+							</tbody>
+						</table>
 						
-							
-								审核通过
-							
-							
-						
-					</td>
-					<td style="width:20%;">
-						
-							
-								dingxu
-							
-							
-						
-					</td>
-					<td style="width:20%;">
-						
-							
-								2017年 01月12日	 08:13:34	星期四
-							
-							
-						
-					</td>
-				</tr>
-			</tbody>
-		</table>
-		
-		<h4 class="header blue bolder smaller">版本信息</h4>
-		<table class="table table-striped table-bordered table-hover" cellspacing="0" cellpadding="0" style="width:98%!important;">
-			<thead>
-				<tr>
-					<th style="width:20%;">版本号</th>
-					<th style="width:20%;">glu脚本</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td buid="6084" style="width:40%;">20170111.1</td>
-					<td style="width:40%;">http://glu.idc.pplive.cn/console/gluScript/AdpTomcatChangeWarGluScript.groovy</td>
-				</tr>
-			</tbody>
-		</table>
-		<h4 class="header blue bolder smaller">部署配置</h4>
-		<table class="table table-striped table-bordered table-hover" cellspacing="0" cellpadding="0" style="width:98%!important;">
-			<thead>
-				<tr>
-					<th style="width:12%;">发布模式</th>
-					<th style="width:12%;">发布模式是否需要暂停</th>
-					<th style="width:12%;">机房并行度</th>
-					<th style="width:12%;">机房并行度是否需要暂停</th>
-					<th style="width:12%;">主机并行度</th>
-					<th style="width:12%;">最大允许失败次数</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td style="width:12%;">Gated Launch</td>
-					<td buid="6084" style="width:12%;">true</td>
-					<td style="width:12%;">3</td>
-					<td style="width:12%;">true</td>
-					<td style="width:12%;">4</td>
-					<td buid="6084" style="width:12%;">5</td>
-				</tr>
-			</tbody>
-		</table>
-		<h4 class="header blue bolder smaller">部署信息</h4>
-		<table id= "taskDeployInfoListTable" class="table table-striped table-bordered table-hover" cellspacing="0" cellpadding="0" style="width:98%!important;">
-			<thead>
-				<tr>
-					<th style="width:30%;">机房</th>
-					<th style="width:30%;">发布类型</th>
-					<th style="width:30%;">发布状态</th>
-				</tr>
-			</thead>
-			<tbody>
-				
-				<tr>
-					<td>cdes-t</td>
-					<td></td>
-					<td></td>
-				</tr>
-				
-				<tr>
-					<td>cdtb-tomcat</td>
-					<td></td>
-					<td></td>
-				</tr>
-				
-				<tr>
-					<td>gztb-tomcat</td>
-					<td></td>
-					<td></td>
-				</tr>
-				
-				<tr>
-					<td>gzyt-t</td>
-					<td></td>
-					<td></td>
-				</tr>
-				
-				<tr>
-					<td>shnj-b</td>
-					<td>10%灰度</td>
-					<td>部署成功</td>
-				</tr>
-				
-				<tr>
-					<td>shnj-b</td>
-					<td>40%灰度</td>
-					<td>部署成功</td>
-				</tr>
-				
-				<tr>
-					<td>shnj-b</td>
-					<td>70%灰度</td>
-					<td>部署成功</td>
-				</tr>
-				
-				<tr>
-					<td>shnj-b</td>
-					<td>100%灰度</td>
-					<td>部署成功</td>
-				</tr>
-				
-				<tr>
-					<td>shwgq-t</td>
-					<td>10%灰度</td>
-					<td>部署成功</td>
-				</tr>
-				
-				<tr>
-					<td>shwgq-t</td>
-					<td>40%灰度</td>
-					<td>部署成功</td>
-				</tr>
-				
-				<tr>
-					<td>shwgq-t</td>
-					<td>70%灰度</td>
-					<td>部署成功</td>
-				</tr>
-				
-				<tr>
-					<td>shwgq-t</td>
-					<td>100%灰度</td>
-					<td>部署成功</td>
-				</tr>
-				
-				<tr>
-					<td>sydd-c</td>
-					<td></td>
-					<td></td>
-				</tr>
-				
-				<tr>
-					<td>tjhy-c</td>
-					<td>10%灰度</td>
-					<td>部署成功</td>
-				</tr>
-				
-				<tr>
-					<td>tjhy-c</td>
-					<td>40%灰度</td>
-					<td>部署成功</td>
-				</tr>
-				
-				<tr>
-					<td>tjhy-c</td>
-					<td>70%灰度</td>
-					<td>部署成功</td>
-				</tr>
-				
-				<tr>
-					<td>tjhy-c</td>
-					<td>100%灰度</td>
-					<td>部署成功</td>
-				</tr>
-				
-			</tbody>
-		</table>
-		<h4 class="header blue bolder smaller">备注信息</h4>
-		<div style="width:98%!important;">
-			<textarea class="autosize-transition form-control" readonly="readonly">os请求参数修改</textarea>
+				</div>
+			</div>
+			
+			
 		</div>
-		<br>
-		<h4 class="header blue bolder smaller">操作</h4>
 		
 		
-
-
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-<div>
-			
-				
-					
-					
-				
-				
-				
-				
-				
-					<button class="btn btn-app btn-info btn-sm" onclick="viewProgress(24627)">
-						<i class="fa-clock-o bigger-200"></i>
-						发布记录
-					</button>
-				
-			
-			
-			<button class="btn btn-app btn-error btn-sm" onclick="jobCenter(24627)">
-				<i class="fa-clock-o bigger-200"></i>
-				返回
-			</button>
-		</div>
 		
 	</div>
 </div>
 
-
-
+      </div>
+    </div>
+    </div>
+  </div>
+  <!-- /column -->
+</div>
+<!-- /hbox layout -->
 
 

@@ -48,36 +48,39 @@ func checkService(newService *Service) error {
 	return nil
 
 }
-func AddOrUpdateService(o orm.Ormer,newService *Service) (int64,error) {
+func AddOrUpdateService(o orm.Ormer,newService *Service,updatecols ...string) error {
     var err error
-    var id int64
     var roles []*Role
     err = checkService(newService)
     if err != nil {
-        return id,err
+        return err
     }
     if newService.Id == 0 {
-        id,err = o.Insert(newService)
+        _,err = o.Insert(newService)
         if err!=nil {
-            return id,err
+            return err
         }
         roles,err = GetRoleNodes()
         if err != nil {
-            return 0,err
+            return err
         }
         for _,role := range roles {
 			_,err = NewServiceAuth(o,role,newService)
 			if err != nil {
-				return 0,err
+				return err
 			}
         }
     } else {
-        _,err = o.Update(newService)
+        if len(updatecols) == 0 {
+            _,err = o.Update(newService)
+        } else {
+           _,err = o.Update(newService,updatecols...) 
+        }
         if err != nil {
-            return int64(newService.Id),err
+            return err
         }
     }
-    return id,err
+    return err
 }
 
 

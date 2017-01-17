@@ -54,39 +54,43 @@ func GetRoleListFromOrm() ([]*Role,error) {
 }
 
 
-func AddOrUpdateRole(o orm.Ormer,role *Role) (int64, error) {
+func AddOrUpdateRole(o orm.Ormer,role *Role,updatecols ...string) error {
 	var id int64
 	var err error
 	if err = checkRole(role); err != nil {
-		return 0, err
+		return  err
 	}
 	if role.Id == 0 {
 		id, err = o.Insert(role)
 		if err != nil {
-			return 0,err
+			return err
 		}
 		if role.NeedAddAuth == true {
 			var services []*Service
 			services,err = QueryService()
 			if err != nil {
-				return 0,err
+				return err
 			}
 			for _,service := range services {
 				_,err = NewServiceAuth(o,role,service)
 				if err != nil {
-						return 0,err
+						return err
 				}
 			}
 		} else {
 			_,err = NewServiceAuth(o,role,nil)
 			if err != nil {
-					return 0,err
+					return err
 			}
 		}
 	} else {
-		_,err = o.Update(role)
+		if len(updatecols) == 0 {
+			_,err = o.Update(role)
+		} else {
+			_,err = o.Update(role,updatecols...)
+		}
 		if err != nil {
-			return 0,err
+			return err
 		}
 	}
 
@@ -95,7 +99,7 @@ func AddOrUpdateRole(o orm.Ormer,role *Role) (int64, error) {
 	} else {
 		UpdateRoleNodes(role,false)
 	}
-	return role.Id, err
+	return err
 }
 
 

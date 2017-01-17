@@ -25,7 +25,7 @@ func (c *MarathonCfController) AddOrUpdateMarathonConf() {
 	if err != nil {
 		c.Rsp(false, err.Error(),nil)
 	}
-	_,err = models.AddOrUpdateMarathonSerConf(o,belongIdc.MarathonSerConf)
+	err = models.AddOrUpdateMarathonSerConf(o,belongIdc.MarathonSerConf)
 	if err !=nil {
 		c.Rsp(false,err.Error(),nil)
 		err = o.Rollback()

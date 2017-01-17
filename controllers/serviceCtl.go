@@ -26,7 +26,7 @@ func (c *ServiceController) AddOrUpdateService() {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
-	_,err = models.AddOrUpdateService(o,&newService)
+	err = models.AddOrUpdateService(o,&newService)
 	if err != nil {
 		c.Rsp(false, err.Error(),nil)
 		err = o.Rollback()
