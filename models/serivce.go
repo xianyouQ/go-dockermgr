@@ -18,6 +18,7 @@ type Service struct {
     ReleaseTask []*ReleaseTask `orm:"reverse(many)"`
     Roles []*Role  `orm:"reverse(many)"`
     MarathonConf string `orm:"type(text)"`
+    UsedReleaseConf *ReleaseConf `orm:"null;rel(fk)"`
 }
 
 func ( this *Service) TableName() string {
