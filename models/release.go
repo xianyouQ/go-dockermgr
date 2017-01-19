@@ -11,6 +11,7 @@ const (
     NotReady = iota
     Ready
     Running
+	Paused
     Success
     Failed
     Cancel

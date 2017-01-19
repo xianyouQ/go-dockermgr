@@ -79,16 +79,13 @@ func (c *ReleaseController) OperationReleaseTask () {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
-	/*
-	operation
-	*/
 	o := orm.NewOrm()
 	err = o.Begin()
 	if err != nil {
 		c.Rsp(false, err.Error(),nil)
 		return
 	}
-	releaseTask.TaskStatus = models.Success
+	releaseTask.TaskStatus = models.Running
 	err = models.CreateOrUpdateRelease(o,&releaseTask,"OperationUser","TaskStatus")
 	if err != nil {
 		c.Rsp(false,err.Error(),nil)
@@ -103,6 +100,11 @@ func (c *ReleaseController) OperationReleaseTask () {
 		logs.GetLogger("RegistryCtl").Printf("commit error:%s",err.Error())
 	}
 	c.Rsp(true,"success",releaseTask)
+
+}
+
+
+func (c *ReleaseController) CheckReleaseTaskStatus () {
 
 }
 
