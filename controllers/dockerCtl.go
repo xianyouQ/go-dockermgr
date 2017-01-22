@@ -151,8 +151,9 @@ func (c *DockerController) ScaleContainers() {
         }
         for idx,ip := range requestIp {
             application.ID = fmt.Sprintf("/%s/%s",mServiceContainerForm.Service.Code,ip.IpAddr)
-            application.Container.Docker.AddParameter("ip",ip.IpAddr)
-            application.Container.Docker.AddParameter("mac-address",ip.MacAddr)
+            //application.Container.Docker.EmptyParameters()
+            application.Container.Docker.SetParameter("ip",ip.IpAddr)
+            application.Container.Docker.SetParameter("mac-address",ip.MacAddr)
             //application.Container.Docker.AddParameter("hostname",XXXXX)
             _,err = utils.NewApplication(client,application)
             if err != nil {

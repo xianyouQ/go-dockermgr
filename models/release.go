@@ -35,6 +35,7 @@ type ReleaseConf struct {
     Service *Service `orm:"rel(fk)" valid:"Required"`
     FaultTolerant int `orm:"default(1)"`
     IdcParalle int `orm:"default(1)"`
+	IdcInnerParalle int `orm:"default(1)"`
     ReleaseIdc []*IdcConf `orm:"rel(m2m)"`
     //NoticeMail 
 }
