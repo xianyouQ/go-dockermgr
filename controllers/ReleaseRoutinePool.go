@@ -8,10 +8,16 @@ import (
     outMarathon "github.com/xianyouQ/go-marathon"
 	"github.com/astaxie/beego/orm"
 	"time"
+	"fmt"
+	"github.com/rogpeppe/godef/vendor/9fans.net/go/plan9/client"
 )
 
 
-
+const (
+    InstanceReady = iota
+    InstanceStopping
+    InstanceStarting
+)
 type  ContainerRes struct {
     Instance *models.Ip
     ReleaseMsg string
@@ -27,9 +33,13 @@ type ReleaseRoutine struct {
 type IdcReleaseInstance struct {
     idcCode string
     client outMarathon.Marathon
-    runningInstances []*models.Ip
+    runningInstances []*ReleaseInstace
     done bool 
-    instances chan models.Ip
+    instances chan *models.Ip
+}
+type ReleaseInstace struct {
+    InstanceIp *models.Ip
+    Status  int
 }
 var (
     TaskChannel chan *ReleaseRoutine
@@ -57,6 +67,8 @@ func init() {
 
 
 func idcTaskMonitor(clients <-chan *IdcReleaseInstance,task *ReleaseRoutine) {
+    var err error
+    var errCount int
     IdcReleaseInstances := make([]*IdcReleaseInstance,3,3)
     for {
         if len(IdcReleaseInstances) < task.ReleaseTask.ReleaseConf.IdcParalle {
@@ -64,13 +76,109 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance,task *ReleaseRoutine) {
                 case newIdcRelease := <- clients:
                     IdcReleaseInstances = append(IdcReleaseInstances,newIdcRelease)
                 case <- time.After(time.Second):
-                    if task.Done == true {
+                    if task.Done == true && len(IdcReleaseInstances) == 0{
                         return
                     }
                     continue
             }
         }
-        
+            for count := len(idc.runningInstances);count <= task.ReleaseTask.ReleaseConf.IdcInnerParalle ; {
+                select {
+                    case newInstance := <- idc.instances:
+                        newRunningInstance := &ReleaseInstace{}
+                        newRunningInstance.InstanceIp = newInstance
+                        newRunningInstance.Status = InstanceReady
+                        idc.runningInstances = append(idc.runningInstances,newRunningInstance)
+                        count = len(idc.runningInstances)
+                    case <- time.After(time.Second):
+                        if len(idc.runningInstances) == 0 {
+                            
+                        }
+                        break
+
+                }
+            }
+        for _,idc := range IdcReleaseInstances {
+            for index:=0 ;index < len(idc.runningInstances);{
+                instance := idc.runningInstances[index]
+                applicationString := fmt.Sprintf("/%s/%s",task.ReleaseTask.ReleaseConf.Service.Code,instance.InstanceIp.IpAddr)
+                if instance.Status == InstanceReady {
+                    _,err = idc.client.DeleteApplication(applicationString,true)
+                    if err != nil {
+                        for _,mContainerRes := range task.ContainerResChan {
+                            if mContainerRes.Instance == instance.InstanceIp { //可能有坑
+                                mContainerRes.ReleaseMsg = err.Error()
+                            } 
+                        }
+                        errCount = errCount + 1
+                        if errCount >= task.ReleaseTask.ReleaseConf.FaultTolerant {
+                            task.ErrorMsg = "错误过多"
+                        }
+                    }
+                    for _,mContainerRes := range task.ContainerResChan {
+                        if mContainerRes.Instance == instance.InstanceIp { //可能有坑
+                            mContainerRes.ReleaseMsg = "正在关闭容器"
+                        } 
+                    }
+                    instance.Status = InstanceStopping
+                    index = index + 1
+                } 
+                if instance.Status == InstanceStopping {
+                    var ok bool
+                    ok,err = idc.client.IsExistApplication(applicationString)
+                    if err != nil  {
+                        for _,mContainerRes := range task.ContainerResChan {
+                            if mContainerRes.Instance == instance.InstanceIp { //可能有坑
+                                mContainerRes.ReleaseMsg = err.Error()
+
+                                
+                            } 
+                        }
+                        errCount = errCount + 1
+                        if errCount >= task.ReleaseTask.ReleaseConf.FaultTolerant {
+                            task.ErrorMsg = "错误过多"
+                        }
+                    }
+                    if !ok {
+                        var mApplication outMarathon.Application
+                        mApplication,err =utils.CreateMarathonAppFromJson(task.ReleaseTask.ReleaseConf.Service.MarathonConf)
+                        if err != nil {
+                            task.ErrorMsg = err.Error()
+                        }
+                        mApplication.Container.Docker.SetParameter
+                        idc.client.CreateApplication(mApplication)
+
+                    }
+                }
+                if instance.Status == InstanceStarting {
+                    var ok bool
+                    ok,err = idc.client.ApplicationOK(applicationString)
+                    if err != nil {
+                        for _,mContainerRes := range task.ContainerResChan {
+                            if mContainerRes.Instance == instance.InstanceIp { //可能有坑
+                                mContainerRes.ReleaseMsg = err.Error()
+                            } 
+                        }
+                        errCount = errCount + 1
+                        if errCount >= task.ReleaseTask.ReleaseConf.FaultTolerant {
+                            task.ErrorMsg = "错误过多"
+                        }
+                    }
+                    if ok {
+                        for _,mContainerRes := range task.ContainerResChan {
+                            if mContainerRes.Instance == instance.InstanceIp { //可能有坑
+                                 mContainerRes.ReleaseMsg = "容器启动成功"
+                            } 
+                        }
+                        idc.runningInstances = append(idc.runningInstances[:index],idc.runningInstances[index+1:]...)
+                    } else {
+                        index = index + 1
+                    }
+                }
+            }
+
+
+        }
 
     }
 
@@ -90,7 +198,7 @@ func releaseTaskFunc(task *ReleaseRoutine) {
         mIdcReleaseInstance := &IdcReleaseInstance{}
         mIdcReleaseInstance.client = client
         mIdcReleaseInstance.idcCode = idc.IdcCode
-        mIdcReleaseInstance.instances = make(chan models.Ip,task.ReleaseTask.ReleaseConf.IdcInnerParalle)
+        mIdcReleaseInstance.instances = make(chan *models.Ip,task.ReleaseTask.ReleaseConf.IdcInnerParalle)
         clients = append(clients,mIdcReleaseInstance)
         o := orm.NewOrm()
         var iplist []*models.Ip
@@ -115,7 +223,7 @@ func releaseTaskFunc(task *ReleaseRoutine) {
                 var endIndex int
                 for index,instance := range instances {
                     select {
-                        case client.instances <- *instance:
+                        case client.instances <- instance:
                             continue
                         case <- time.After(time.Second):
                             endIndex = index
