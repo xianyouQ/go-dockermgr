@@ -46,6 +46,10 @@ type ReleaseConf struct {
 func (this *ReleaseTask) TableName() string {
 	return beego.AppConfig.String("dockermgr_release_table")
 }
+
+func (this *ReleaseConf) TableName() string {
+	return beego.AppConfig.String("dockermgr_releaseconf_table")
+}
 func init() {
 	orm.RegisterModel(new(ReleaseTask), new(ReleaseConf))
 }
@@ -75,6 +79,12 @@ func QueryRelease(o orm.Ormer, service *Service) ([]*ReleaseTask, error) {
 	var ReleaseTaskList []*ReleaseTask
 	_, err := o.QueryTable(beego.AppConfig.String("dockermgr_release_table")).Filter("Service__Id", service.Id).All(&ReleaseTaskList)
 	return ReleaseTaskList, err
+}
+
+func QueryReleaseConf(o orm.Ormer, service *Service) (ReleaseConf, error) {
+	var releaseConf ReleaseConf
+	err := o.QueryTable(beego.AppConfig.String("dockermgr_releaseconf_table")).Filter("Service__Id", service.Id).One(&releaseConf)
+	return releaseConf, err
 }
 
 func CreateOrUpdateRelease(o orm.Ormer, releaseTask *ReleaseTask, updatecols ...string) error {

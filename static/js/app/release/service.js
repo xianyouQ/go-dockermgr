@@ -1,4 +1,4 @@
-app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal',function($scope, $http, $filter,$modal) {
+app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','toaster',function($scope, $http, $filter,$modal,toaster) {
   function isObjectValueEqual(a, b) {
    if(a.Code === b.Code){
      return true;
@@ -38,8 +38,9 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal',func
   $scope.filter = new Map();
   $scope.count = [];
   $scope.idcs = [];
-  $scope.instances = [];
- //$scope.$watch('services',null,true);
+  $scope.releaseConf = {};
+  $scope.padderSelect = "list";
+  $scope.releases = [];
 
 
 
@@ -130,6 +131,7 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal',func
   $scope.selectService = function(item,idx){
     if (idx == $scope.count.length - 1) {
       $scope.selectedService = item;
+      $scope.changepadder("list");
       return
     } 
     angular.forEach($scope.services, function(item) {
@@ -141,10 +143,66 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal',func
     $scope.filter[idx] = serviceSplit[idx];
   };
 
+  $scope.commitDeploySettings = function(){
+    var enableidcs = [];
+    angular.forEach($scope.idcs,function(idc){
+      if (idc.enableRelease) {
+        enableidcs.push(idc);
+      }
+    });
+    $scope.releaseConf.Service = $scope.selectedService
+    $scope.releaseConf.ReleaseIdc = enableidcs
+    $scope.releaseConf.FaultTolerant = Number($scope.releaseConf.FaultTolerant)
+    $scope.releaseConf.IdcParalle = Number($scope.releaseConf.IdcParalle)
+    $scope.releaseConf.IdcInnerParalle = Number($scope.releaseConf.IdcInnerParalle)
+    $scope.releaseConf.TimeOut = Number($scope.releaseConf.TimeOut)
+    console.log($scope.releaseConf)
+    $http.post("/api/release/conf",$scope.releaseConf).then(function(resp){
+      if(resp.data.status) {
+        $scope.releaseConf = resp.data.data;
+      }
+      else {
+        toaster.pop("error","update conf error",resp.data.info);
+      }
+    },function(){
+      
+    })
+  }
+
+  $scope.changepadder = function(selectPadder) {
+    $scope.padderSelect = selectPadder;
+    if(selectPadder == "list") {
+      $http.post("/api/release/task",$scope.selectedService).then(function(resp){
+        if(resp.data.status) {
+          $scope.releases = resp.data.data;
+        }
+        else {
+          toaster.pop("error","get task error",resp.data.info);
+        }
+      },function(){
+
+      });
+    }
+    if(selectPadder == "new" || selectPadder == "config") {
+      $http.post("/api/release/getconf",$scope.selectedService).then(function(resp){
+        if(resp.data.status) {
+          $scope.releaseConf = resp.data.data
+        }
+        else {
+          toaster.pop("error","get conf error",resp.data.info);
+        }
+      },function(){
+
+      });
+    }
+
+  }
   $scope.returnUpper = function(idx) {
     $scope.filter[idx-1] = "";
     $scope.selectedService = undefined;
   }
+
+
   /*
   $scope.detail = function(idc) {
     $scope.selectedIdc = idc;
