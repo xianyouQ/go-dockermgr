@@ -41,6 +41,8 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','toa
   $scope.releaseConf = {};
   $scope.padderSelect = "list";
   $scope.releases = [];
+  $scope.newReleaseTask = {};
+  $scope.selectedTask = undefined;
 
 
 
@@ -131,6 +133,7 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','toa
   $scope.selectService = function(item,idx){
     if (idx == $scope.count.length - 1) {
       $scope.selectedService = item;
+      $scope.releaseConf = {};
       $scope.changepadder("list");
       return
     } 
@@ -156,7 +159,6 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','toa
     $scope.releaseConf.IdcParalle = Number($scope.releaseConf.IdcParalle)
     $scope.releaseConf.IdcInnerParalle = Number($scope.releaseConf.IdcInnerParalle)
     $scope.releaseConf.TimeOut = Number($scope.releaseConf.TimeOut)
-    console.log($scope.releaseConf)
     $http.post("/api/release/conf",$scope.releaseConf).then(function(resp){
       if(resp.data.status) {
         $scope.releaseConf = resp.data.data;
@@ -183,7 +185,7 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','toa
 
       });
     }
-    if(selectPadder == "new" || selectPadder == "config") {
+    if(selectPadder == "new" || selectPadder == "config"||selectPadder == "operation") {
       $http.post("/api/release/getconf",$scope.selectedService).then(function(resp){
         if(resp.data.status) {
           $scope.releaseConf = resp.data.data
@@ -197,78 +199,32 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','toa
     }
 
   }
+
+  $scope.selectTask = function(release) {
+    $scope.selectedTask = release;
+    $scope.changepadder('operation')
+  }
   $scope.returnUpper = function(idx) {
     $scope.filter[idx-1] = "";
     $scope.selectedService = undefined;
   }
 
-
-  /*
-  $scope.detail = function(idc) {
-    $scope.selectedIdc = idc;
-    $http.post("/api/docker/list",{"Service":$scope.selectedService,"Idc":$scope.selectedIdc,"Scale":0}).then(function(resp){
-      if(resp.data.status){
-        $scope.instances = resp.data.data;
+  $scope.submitTask = function() {
+    $scope.newReleaseTask.ReleaseConf = $scope.releaseConf;
+    $scope.newReleaseTask.Service = $scope.selectedService;
+    $http.post("/api/release/newtask",$scope.newReleaseTask).then(function(resp){
+      if(resp.data.status) {
+        $scope.releases.push(resp.data.data)
       }
       else {
-        toaster.pop("error","get container error",resp.data.info);
-      } 
+        toaster.pop("error","new task error",resp.data.info);
+      }
     },function(){
 
-    })
+    });
+
+
   }
-  $scope.returnIdc = function() {
-    $scope.selectedIdc = undefined;
-  }
+
   
-  $scope.scaleContainer = function() {
-      var modalInstance = $modal.open({
-        templateUrl: 'scaleContianerModalContent.html',
-        controller: 'scaleContianerModalInstanceCtrl',
-        size: 'lg',
-        resolve: {
-          selectedIdc: function () {
-            return $scope.selectedIdc;
-          },
-          selectedService: function () {
-            return $scope.selectedService;
-          }
-        }
-      });
- 
-      modalInstance.result.then(function (newAuth) {
-      }, function () {
-        //log error
-      });
-  } */
 }]);
-
-/*
-   app.controller('scaleContianerModalInstanceCtrl', ['$scope', '$modalInstance','$http','selectedIdc','selectedService',function($scope, $modalInstance,$http,$selectedIdc,$selectedService) {
-    $scope.formError = null;
-    $scope.ContainerScaleForm = {"Service":$selectedService,"Idc":$selectedIdc,"Scale":0};
-    $scope.ok = function () {
-      $scope.formError = null;
-      if (isNaN($scope.ContainerCount) == false){
-        $scope.formError = "ContainerCount must be a number";
-        return
-      }
-      $scope.ContainerScaleForm.Scale = Number($scope.ContainerScaleForm.Scale);
-        $http.post('/api/docker/scale', $scope.ContainerScaleForm).then(function(response) {
-          if (response.data.status ){
-            console.log(response.data.data);
-            $modalInstance.close(response.data.data);
-          }
-          if  (!response.data.status ) {
-            $scope.formError = response.data.info;
-          }
-        }, function(x) {
-        $scope.formError = 'Server Error';
-      });
-      
-    };
-
-    $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
-    };
-  }]); */

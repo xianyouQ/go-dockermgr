@@ -68,6 +68,9 @@
                   <th>
                       审批状态
                   </th>
+				  <th>
+					  审批人
+				  </th>
                   <th>
                     部署人
                   </th>
@@ -83,16 +86,17 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
-                  <td>123</td>
-                  <td>Isidra</td>
-                  <td>22 Jun 1972</td>
-                  <td>12306</td>
+              <tr ng-repeat="release in releases">
+				  <td>{{release.Id}}</td>
+				  <td>{{release.ReleaseUser.Username}}</td>
+				  <td>{{release.ReleaseTime}}</td>
+				  <td>{{release.ImageTag}}</td>
                   <td><span class="label label-lg label-primary arrowed-in">审核通过</span></td>
-                  <td>Isidra</td>
-                  <td>22 Jun 1972</td>
+				  <td>{{release.ReviewUser.Username}}</td>
+                  <td>{{release.OperationUser.Username}}</td>
+				  <td>{{release.OperationTime}}</td>
                   <td><span class="label label-lg label-success">部署成功</span></td>
-                  <td><a class="blue" title="详情" ng-click="padderSelect='operation'"><i class="glyphicon-zoom-in glyphicon"></i></a></td>
+                  <td><a class="blue" title="详情" ng-click="selectTask(release)"><i class="glyphicon-zoom-in glyphicon"></i></a></td>
               </tr>
               </tbody>
               <tfoot class="hide-if-no-paging">
@@ -141,16 +145,8 @@
                       <span class="label label-xlg label-primary arrowed arrowed-right">
                         
                         
-                          shnj-b<i class="message-star icon-star orange2" title="发布的机房"></i>
+                         <i ng-repeat="idc in releaseConf.ReleaseIdc" class="message-star icon-star orange2" title="发布的机房">shnj-b</i>
                           
-                        
-                          shwgq-t<i class="message-star icon-star orange2" title="发布的机房"></i>
-                          
-                        
-                          sydd-c
-                          <i class="message-star icon-star-empty light-grey" title="不需要发布的机房"></i>
-                        
-                          tjhy-c<i class="message-star icon-star orange2" title="发布的机房"></i>
                           
                         
                       </span>
@@ -174,14 +170,14 @@
                 <div class="form-group">
                   <label class="col-sm-5 control-label no-padding-right red">版本号</label>
                   <div class="controls col-xs-12 col-sm-3">
-                    <input id="ri_version" type="text" placeholder="请输入版本号..."	>
+                    <input ng-model="newReleaseTask.ImageTag" type="text" placeholder="请输入版本号..."	>
                   </div>
                 </div>
 
                 <div class="form-group">
                   <label class="col-sm-5 control-label no-padding-right red">备注</label>
                   <div class="controls col-xs-12 col-sm-3">
-                    <textarea id="ri_remark" class="form-control limited"
+                    <textarea ng-model="newReleaseTask.ReleaseDetail" class="form-control limited"
                       id="form-field-9" maxlength="200" placeholder="请填写发布的原因或者目的..."></textarea>
                   </div>
                 </div>
@@ -194,7 +190,7 @@
                     </button>
                     
                     <button id="btn_createInstance" class="btn btn-info" type="button"
-                      onclick="submitData()">
+                      ng-click="submitTask()">
                       <i class="icon-ok bigger-110">提交</i>
                     </button>
                   </div>
@@ -304,20 +300,20 @@
       </div>
       <div class="panel panel-default" ng-show="padderSelect=='operation'">
         <div class="panel-heading">
-          创建发布单
+          发布单详情
         </div>
 				<div class="page-content">
-					<div id="opration_btn" class="center" style="color:red"></div>
+					<div  class="center" style="color:red"></div>
 					<div class="table-responsive">
 						<h4 class="header blue bolder smaller">操作</h4>
 					<div>
 							
-									<button class="btn btn-app btn-info btn-sm" onclick="viewProgress(24627)">
+									<button class="btn btn-app btn-info btn-sm" ng-click="changepadder('detail')">
 										<i class="fa-clock-o bigger-200"></i>
 										发布记录
 									</button>
 
-							<button class="btn btn-app btn-error btn-sm" onclick="jobCenter(24627)">
+							<button class="btn btn-app btn-error btn-sm" ng-click="changepadder('list')">
 								<i class="fa-clock-o bigger-200"></i>
 								返回
 							</button>
@@ -328,8 +324,7 @@
 							<thead>
 								<tr>
 									<th style="width:15%;">ID</th>
-									<th style="width:15%;">Pool</th>
-									<th style="width:15%;">类型</th>
+									<th style="width:15%;">业务</th>
 									<th style="width:15%;">提交人</th>
 									<th style="width:15%;">提交时间</th>
 									<th style="width:15%;">状态</th>
@@ -337,11 +332,10 @@
 							</thead>
 							<tbody>
 								<tr>
-									<td style="width:15%;">24627</td>
-									<td style="width:15%;">ad.delivery.sub</td>
-									<td style="width:15%;">tomcat</td>
-									<td style="width:15%;">qinggao</td>
-									<td style="width:15%;">2017年 01月12日	 08:11:43	星期四</td>
+									<td style="width:15%;">{{selectedTask.Id}}</td>
+									<td style="width:15%;">{{selectedService.Name}}</td>
+									<td style="width:15%;">{{selectedTask.ReleaseUser.Username}}</td>
+									<td style="width:15%;">{{selectedTask.ReleaseTime}}</td>
 									<td style="width:15%;">
 												<span class="label label-success arrowed">部署成功</span>
 									</td>
@@ -349,7 +343,7 @@
 							</tbody>
 						</table>
 						
-						<h4 class="header blue bolder smaller">QA审批信息</h4>
+						<h4 class="header blue bolder smaller">审批信息</h4>
 						<table class="table table-striped table-bordered table-hover" cellspacing="0" cellpadding="0" style="width:98%!important;">
 							<thead>
 								<tr>
@@ -367,12 +361,12 @@
 									</td>
 									<td style="width:20%;">
 
-												qinggao
+												{{selectedTask.ReviewUser.Username}}
 
 									</td>
 									<td style="width:20%;">
 																	
-												2017年 01月12日	 08:11:48	星期四
+												{{selectedTask.ReviewTime}}
 
 									</td>
 									
@@ -380,54 +374,17 @@
 							</tbody>
 						</table>
 						
-						<h4 class="header blue bolder smaller">Ops审批信息</h4>
-						<table class="table table-striped table-bordered table-hover" cellspacing="0" cellpadding="0" style="width:98%!important;">
-							<thead>
-								<tr>
-									<th style="width:20%;">审批状态</th>
-									<th style="width:20%;">审批人</th>
-									<th style="width:20%;">审批时间</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr>
-									<td buid="6084" style="width:20%;">
-					
-												审核通过
-
-									</td>
-									<td style="width:20%;">
-										
-											
-												dingxu
-											
-											
-										
-									</td>
-									<td style="width:20%;">
-										
-											
-												2017年 01月12日	 08:13:34	星期四
-											
-											
-										
-									</td>
-								</tr>
-							</tbody>
-						</table>
 						
 						<h4 class="header blue bolder smaller">版本信息</h4>
 						<table class="table table-striped table-bordered table-hover" cellspacing="0" cellpadding="0" style="width:98%!important;">
 							<thead>
 								<tr>
 									<th style="width:20%;">版本号</th>
-									<th style="width:20%;">glu脚本</th>
 								</tr>
 							</thead>
 							<tbody>
 								<tr>
-									<td buid="6084" style="width:40%;">20170111.1</td>
-									<td style="width:40%;">http://glu.idc.pplive.cn/console/gluScript/AdpTomcatChangeWarGluScript.groovy</td>
+									<td buid="6084" style="width:40%;">{{selectedTask.ImageTag}}</td>
 								</tr>
 							</tbody>
 						</table>
@@ -435,154 +392,48 @@
 						<table class="table table-striped table-bordered table-hover" cellspacing="0" cellpadding="0" style="width:98%!important;">
 							<thead>
 								<tr>
-									<th style="width:12%;">发布模式</th>
-									<th style="width:12%;">发布模式是否需要暂停</th>
 									<th style="width:12%;">机房并行度</th>
-									<th style="width:12%;">机房并行度是否需要暂停</th>
 									<th style="width:12%;">主机并行度</th>
 									<th style="width:12%;">最大允许失败次数</th>
 								</tr>
 							</thead>
 							<tbody>
 								<tr>
-									<td style="width:12%;">Gated Launch</td>
-									<td buid="6084" style="width:12%;">true</td>
-									<td style="width:12%;">3</td>
-									<td style="width:12%;">true</td>
-									<td style="width:12%;">4</td>
-									<td buid="6084" style="width:12%;">5</td>
+									<td style="width:12%;">{{releaseConf.IdcParalle}}</td>
+									<td style="width:12%;">{{releaseConf.IdcInnerParalle}}</td>
+									<td style="width:12%;">{{releaseConf.FaultTolerant}}</td>
 								</tr>
 							</tbody>
 						</table>
 						<h4 class="header blue bolder smaller">部署信息</h4>
-						<table id= "taskDeployInfoListTable" class="table table-striped table-bordered table-hover" cellspacing="0" cellpadding="0" style="width:98%!important;">
+						<table class="table table-striped table-bordered table-hover" cellspacing="0" cellpadding="0" style="width:98%!important;">
 							<thead>
 								<tr>
 									<th style="width:30%;">机房</th>
-									<th style="width:30%;">发布类型</th>
 									<th style="width:30%;">发布状态</th>
 								</tr>
 							</thead>
 							<tbody>
-								
 								<tr>
 									<td>cdes-t</td>
 									<td></td>
-									<td></td>
 								</tr>
-								
-								<tr>
-									<td>cdtb-tomcat</td>
-									<td></td>
-									<td></td>
-								</tr>
-								
-								<tr>
-									<td>gztb-tomcat</td>
-									<td></td>
-									<td></td>
-								</tr>
-								
-								<tr>
-									<td>gzyt-t</td>
-									<td></td>
-									<td></td>
-								</tr>
-								
-								<tr>
-									<td>shnj-b</td>
-									<td>10%灰度</td>
-									<td>部署成功</td>
-								</tr>
-								
-								<tr>
-									<td>shnj-b</td>
-									<td>40%灰度</td>
-									<td>部署成功</td>
-								</tr>
-								
-								<tr>
-									<td>shnj-b</td>
-									<td>70%灰度</td>
-									<td>部署成功</td>
-								</tr>
-								
-								<tr>
-									<td>shnj-b</td>
-									<td>100%灰度</td>
-									<td>部署成功</td>
-								</tr>
-								
-								<tr>
-									<td>shwgq-t</td>
-									<td>10%灰度</td>
-									<td>部署成功</td>
-								</tr>
-								
-								<tr>
-									<td>shwgq-t</td>
-									<td>40%灰度</td>
-									<td>部署成功</td>
-								</tr>
-								
-								<tr>
-									<td>shwgq-t</td>
-									<td>70%灰度</td>
-									<td>部署成功</td>
-								</tr>
-								
-								<tr>
-									<td>shwgq-t</td>
-									<td>100%灰度</td>
-									<td>部署成功</td>
-								</tr>
-								
-								<tr>
-									<td>sydd-c</td>
-									<td></td>
-									<td></td>
-								</tr>
-								
-								<tr>
-									<td>tjhy-c</td>
-									<td>10%灰度</td>
-									<td>部署成功</td>
-								</tr>
-								
-								<tr>
-									<td>tjhy-c</td>
-									<td>40%灰度</td>
-									<td>部署成功</td>
-								</tr>
-								
-								<tr>
-									<td>tjhy-c</td>
-									<td>70%灰度</td>
-									<td>部署成功</td>
-								</tr>
-								
-								<tr>
-									<td>tjhy-c</td>
-									<td>100%灰度</td>
-									<td>部署成功</td>
-								</tr>
-								
 							</tbody>
 						</table>
 						<h4 class="header blue bolder smaller">备注信息</h4>
 						<div style="width:98%!important;">
-							<textarea class="autosize-transition form-control" readonly="readonly">os请求参数修改</textarea>
+							<textarea class="autosize-transition form-control" readonly="readonly">{{selectedTask.ReleaseDetail}}</textarea>
 						</div>
 						<br>
 						<h4 class="header blue bolder smaller">操作</h4>
 					
 				<div>
 
-									<button class="btn btn-app btn-info btn-sm" ng-click="padderSelect='detail'">
+									<button class="btn btn-app btn-info btn-sm" ng-click="changepadder('detail')">
 										<i class="fa-clock-o bigger-200"></i>
 										发布记录
 									</button>
-							<button class="btn btn-app btn-error btn-sm" onclick="jobCenter(24627)">
+							<button class="btn btn-app btn-error btn-sm" ng-click="changepadder('list')">
 								<i class="fa-clock-o bigger-200"></i>
 								返回
 							</button>
@@ -593,7 +444,7 @@
       </div>
       <div class="panel panel-default" ng-show="padderSelect=='detail'">
         <div class="panel-heading">
-          创建发布单
+          发布记录
         </div>
 
 
@@ -604,11 +455,12 @@
 	}
 </style>
 
-<button class="btn btn-danger" onclick="deployTaskInfo(24627)">返回</button>
+<button class="btn btn-danger" ng-click="changepadder('operation')">返回</button>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<button class="btn btn-warning" onclick="viewProgress(24627)">刷新</button>
-<!-- <button class="btn btn-inverse">Mailbox</button> -->
-<input id="releaseinstanceId" type="hidden" value="24627"/>
+
+<button class="btn btn-warning" ng-click="refreshTaskStatus(selectedTask.Id)">刷新</button>
+ 
+
 
 <div class="page-content">
 	<div class="table-responsive">
@@ -617,19 +469,17 @@
 			<thead>
 				<tr>
 					<th style="width:20%;">ID</th>
-					<th style="width:20%;">Pool</th>
-					<th style="width:20%;">类型</th>
+					<th style="width:20%;">业务</th>
 					<th style="width:20%;">提交人</th>
 					<th style="width:20%;">提交时间</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr>
-					<td style="width:15%;">24627</td>
-					<td style="width:15%;">ad.delivery.sub</td>
-					<td style="width:15%;">tomcat</td>
-					<td style="width:15%;">qinggao</td>
-					<td style="width:15%;">2017年 01月12日	 08:11:43	星期四</td>
+					<td style="width:15%;">{{selectedTask.Id}}</td>
+					<td style="width:15%;">{{selectedService.Name}}</td>
+					<td style="width:15%;">{{selectedTask.ReleaseUser.Username}}</td>
+					<td style="width:15%;">{{selectedTask.ReleaseTime}}</td>
 				</tr>
 			</tbody>
 		</table>
@@ -637,7 +487,7 @@
 		<input id="shouldRefresh" type="hidden" value="true"/>
 		<h4 class="header blue bolder smaller">发布进度
 			&nbsp;&nbsp;&nbsp;&nbsp;
-			<button class="btn btn-danger" onclick="goTogluConsole()" style="margin-left:50%">Abandon</button>
+			<button class="btn btn-danger" ng-click="abandonTask(selectedTask.Id)" style="margin-left:50%">Abandon</button>
 		</h4>
 		
 		<table class="table table-striped table-bordered table-hover tdcenter" cellspacing="0" cellpadding="0" style="width:98%!important;">
@@ -669,457 +519,10 @@
 						
 					</tr>
 				
-					<tr>
-						<td style="width:5%;">40%灰度</td>
-						
-						<td style="width:15%;">
-							<font id="showInfo" class="" >shnj-b机房&nbsp;</font>
-							<font id="104991-Info" class="" >Data Loading</font>
-						</td>
-						
-						<td style="width:70%;">
-							<div id="104991-val" class="progress progress-striped" style="width:98%!important;">
-								<div id="104991-Bar" class="progress-bar progress-bar-success"></div>
-							</div>
-						</td>
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
-						
-					</tr>
-				
-					<tr>
-						<td style="width:5%;">70%灰度</td>
-						
-						<td style="width:15%;">
-							<font id="showInfo" class="" >shnj-b机房&nbsp;</font>
-							<font id="104993-Info" class="" >Data Loading</font>
-						</td>
-						
-						<td style="width:70%;">
-							<div id="104993-val" class="progress progress-striped" style="width:98%!important;">
-								<div id="104993-Bar" class="progress-bar progress-bar-success"></div>
-							</div>
-						</td>
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
-						
-					</tr>
-				
-					<tr>
-						<td style="width:5%;">100%灰度</td>
-						
-						<td style="width:15%;">
-							<font id="showInfo" class="" >shnj-b机房&nbsp;</font>
-							<font id="104995-Info" class="" >Data Loading</font>
-						</td>
-						
-						<td style="width:70%;">
-							<div id="104995-val" class="progress progress-striped" style="width:98%!important;">
-								<div id="104995-Bar" class="progress-bar progress-bar-success"></div>
-							</div>
-						</td>
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
-						
-					</tr>
-				
-					<tr>
-						<td style="width:5%;">10%灰度</td>
-						
-						<td style="width:15%;">
-							<font id="showInfo" class="" >shwgq-t机房&nbsp;</font>
-							<font id="104997-Info" class="" >Data Loading</font>
-						</td>
-						
-						<td style="width:70%;">
-							<div id="104997-val" class="progress progress-striped" style="width:98%!important;">
-								<div id="104997-Bar" class="progress-bar progress-bar-success"></div>
-							</div>
-						</td>
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
-						
-					</tr>
-				
-					<tr>
-						<td style="width:5%;">40%灰度</td>
-						
-						<td style="width:15%;">
-							<font id="showInfo" class="" >shwgq-t机房&nbsp;</font>
-							<font id="104999-Info" class="" >Data Loading</font>
-						</td>
-						
-						<td style="width:70%;">
-							<div id="104999-val" class="progress progress-striped" style="width:98%!important;">
-								<div id="104999-Bar" class="progress-bar progress-bar-success"></div>
-							</div>
-						</td>
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
-						
-					</tr>
-				
-					<tr>
-						<td style="width:5%;">70%灰度</td>
-						
-						<td style="width:15%;">
-							<font id="showInfo" class="" >shwgq-t机房&nbsp;</font>
-							<font id="105001-Info" class="" >Data Loading</font>
-						</td>
-						
-						<td style="width:70%;">
-							<div id="105001-val" class="progress progress-striped" style="width:98%!important;">
-								<div id="105001-Bar" class="progress-bar progress-bar-success"></div>
-							</div>
-						</td>
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
-						
-					</tr>
-				
-					<tr>
-						<td style="width:5%;">100%灰度</td>
-						
-						<td style="width:15%;">
-							<font id="showInfo" class="" >shwgq-t机房&nbsp;</font>
-							<font id="105003-Info" class="" >Data Loading</font>
-						</td>
-						
-						<td style="width:70%;">
-							<div id="105003-val" class="progress progress-striped" style="width:98%!important;">
-								<div id="105003-Bar" class="progress-bar progress-bar-success"></div>
-							</div>
-						</td>
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
-						
-					</tr>
-				
-					<tr>
-						<td style="width:5%;">10%灰度</td>
-						
-						<td style="width:15%;">
-							<font id="showInfo" class="" >tjhy-c机房&nbsp;</font>
-							<font id="105005-Info" class="" >Data Loading</font>
-						</td>
-						
-						<td style="width:70%;">
-							<div id="105005-val" class="progress progress-striped" style="width:98%!important;">
-								<div id="105005-Bar" class="progress-bar progress-bar-success"></div>
-							</div>
-						</td>
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
-						
-					</tr>
-				
-					<tr>
-						<td style="width:5%;">40%灰度</td>
-						
-						<td style="width:15%;">
-							<font id="showInfo" class="" >tjhy-c机房&nbsp;</font>
-							<font id="105007-Info" class="" >Data Loading</font>
-						</td>
-						
-						<td style="width:70%;">
-							<div id="105007-val" class="progress progress-striped" style="width:98%!important;">
-								<div id="105007-Bar" class="progress-bar progress-bar-success"></div>
-							</div>
-						</td>
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
-						
-					</tr>
-				
-					<tr>
-						<td style="width:5%;">70%灰度</td>
-						
-						<td style="width:15%;">
-							<font id="showInfo" class="" >tjhy-c机房&nbsp;</font>
-							<font id="105009-Info" class="" >Data Loading</font>
-						</td>
-						
-						<td style="width:70%;">
-							<div id="105009-val" class="progress progress-striped" style="width:98%!important;">
-								<div id="105009-Bar" class="progress-bar progress-bar-success"></div>
-							</div>
-						</td>
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
-						
-					</tr>
-				
-					<tr>
-						<td style="width:5%;">100%灰度</td>
-						
-						<td style="width:15%;">
-							<font id="showInfo" class="" >tjhy-c机房&nbsp;</font>
-							<font id="105011-Info" class="" >Data Loading</font>
-						</td>
-						
-						<td style="width:70%;">
-							<div id="105011-val" class="progress progress-striped" style="width:98%!important;">
-								<div id="105011-Bar" class="progress-bar progress-bar-success"></div>
-							</div>
-						</td>
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="abandonDeploymentPlan()">Abandon</button></td> -->
-						<!-- <td style="width:10%;"><button class="btn btn-danger" onclick="goTogluConsole()">Abandon</button></td> -->
-						
-					</tr>
-				
 			</tbody>
 		</table>
-		
-		
-		<h4 class="header blue bolder smaller">发布类型详细信息</h4>
-		<table class="table table-striped table-bordered table-hover tdcenter" cellspacing="0" cellpadding="0" style="width:98%!important;">
-			<thead>
-				<tr>
-					<th style="width:20%;">开始时间</th>
-					<th style="width:20%;">结束时间</th>
-					<th style="width:10%;">部署类型</th>
-					<th style="width:30%;">PLAN ID</th>
-					<th style="width:20%;">部署状态</th>
-				</tr>
-			</thead>
-			<tbody>
-				
-					<tr>
-						<td style="widtd:20%;">2017年 01月12日	 08:13:39	星期四</td>
-						<td style="widtd:20%;">2017年 01月12日	 08:14:36	星期四</td>
-						
-						<td style="widtd:20%;">10%灰度</td>
-						
-						<td style="widtd:20%;">38358948-3349-4260-9aae-4721d1fecaff</td>
-						
-						
-						<td style="width:20%;">
-							
-							
-							
-							
-								<span class="label label-success arrowed">部署成功</span>
-							
-							
-							
-							
-							
-						</td>
-					</tr>
-				
-					<tr>
-						<td style="widtd:20%;">2017年 01月12日	 08:21:58	星期四</td>
-						<td style="widtd:20%;">2017年 01月12日	 08:22:54	星期四</td>
-						
-						<td style="widtd:20%;">40%灰度</td>
-						
-						<td style="widtd:20%;">106cc6f5-6f2f-4795-84cb-25f6e64ed6fb</td>
-						
-						
-						<td style="width:20%;">
-							
-							
-							
-							
-								<span class="label label-success arrowed">部署成功</span>
-							
-							
-							
-							
-							
-						</td>
-					</tr>
-				
-					<tr>
-						<td style="widtd:20%;">2017年 01月12日	 08:21:58	星期四</td>
-						<td style="widtd:20%;">2017年 01月12日	 08:23:47	星期四</td>
-						
-						<td style="widtd:20%;">70%灰度</td>
-						
-						<td style="widtd:20%;">4b0d5aa9-0159-4eb8-8e84-548d8124ec35</td>
-						
-						
-						<td style="width:20%;">
-							
-							
-							
-							
-								<span class="label label-success arrowed">部署成功</span>
-							
-							
-							
-							
-							
-						</td>
-					</tr>
-				
-					<tr>
-						<td style="widtd:20%;">2017年 01月12日	 08:21:58	星期四</td>
-						<td style="widtd:20%;">2017年 01月12日	 08:24:45	星期四</td>
-						
-						<td style="widtd:20%;">100%灰度</td>
-						
-						<td style="widtd:20%;">6270ff9a-c7fb-4c70-b60c-1717970fe833</td>
-						
-						
-						<td style="width:20%;">
-							
-							
-							
-							
-								<span class="label label-success arrowed">部署成功</span>
-							
-							
-							
-							
-							
-						</td>
-					</tr>
-				
-					<tr>
-						<td style="widtd:20%;">2017年 01月12日	 08:13:39	星期四</td>
-						<td style="widtd:20%;">2017年 01月12日	 08:15:55	星期四</td>
-						
-						<td style="widtd:20%;">10%灰度</td>
-						
-						<td style="widtd:20%;">94528276-2054-417f-bbfe-e1ef9d9d480b</td>
-						
-						
-						<td style="width:20%;">
-							
-							
-							
-							
-								<span class="label label-success arrowed">部署成功</span>
-							
-							
-							
-							
-							
-						</td>
-					</tr>
-				
-					<tr>
-						<td style="widtd:20%;">2017年 01月12日	 08:21:58	星期四</td>
-						<td style="widtd:20%;">2017年 01月12日	 08:24:16	星期四</td>
-						
-						<td style="widtd:20%;">40%灰度</td>
-						
-						<td style="widtd:20%;">12a13929-6789-45b2-a06a-3df89bc69589</td>
-						
-						
-						<td style="width:20%;">
-							
-							
-							
-							
-								<span class="label label-success arrowed">部署成功</span>
-							
-							
-							
-							
-							
-						</td>
-					</tr>
-				
-					<tr>
-						<td style="widtd:20%;">2017年 01月12日	 08:21:58	星期四</td>
-						<td style="widtd:20%;">2017年 01月12日	 08:26:38	星期四</td>
-						
-						<td style="widtd:20%;">70%灰度</td>
-						
-						<td style="widtd:20%;">47a5abb1-bdd8-4dc1-af53-0b023932f21f</td>
-						
-						
-						<td style="width:20%;">
-							
-							
-							
-							
-								<span class="label label-success arrowed">部署成功</span>
-							
-							
-							
-							
-							
-						</td>
-					</tr>
-				
-					<tr>
-						<td style="widtd:20%;">2017年 01月12日	 08:21:58	星期四</td>
-						<td style="widtd:20%;">2017年 01月12日	 08:29:02	星期四</td>
-						
-						<td style="widtd:20%;">100%灰度</td>
-						
-						<td style="widtd:20%;">063cba3e-8860-4884-ad1f-956829cb3e22</td>
-						
-						
-						<td style="width:20%;">
-							
-							
-							
-							
-								<span class="label label-success arrowed">部署成功</span>
-							
-							
-							
-							
-							
-						</td>
-					</tr>
-				
-					<tr>
-						<td style="widtd:20%;">2017年 01月12日	 08:13:39	星期四</td>
-						<td style="widtd:20%;">2017年 01月12日	 08:14:48	星期四</td>
-						
-						<td style="widtd:20%;">10%灰度</td>
-						
-						<td style="widtd:20%;">8e483bac-46c8-41a7-9e21-b6fab0e24217</td>
-						
-						
-						<td style="width:20%;">
-							
-							
-							
-							
-								<span class="label label-success arrowed">部署成功</span>
-						</td>
-					</tr>
-					<tr>
-						<td style="widtd:20%;">2017年 01月12日	 08:21:58	星期四</td>
-						<td style="widtd:20%;">2017年 01月12日	 08:23:08	星期四</td>
-						<td style="widtd:20%;">40%灰度</td>	
-						<td style="widtd:20%;">c37ac442-bbcf-43a3-b3f0-e03525e47904</td>
-						<td style="width:20%;">
-								<span class="label label-success arrowed">部署成功</span>
-						</td>
-					</tr>
-					<tr>
-						<td style="widtd:20%;">2017年 01月12日	 08:21:58	星期四</td>
-						<td style="widtd:20%;">2017年 01月12日	 08:24:19	星期四</td>
-						<td style="widtd:20%;">70%灰度</td>
-						<td style="widtd:20%;">0dd28ad5-2de1-4a14-a43f-f6e4d8841436</td>
-						<td style="width:20%;">
-								<span class="label label-success arrowed">部署成功</span>
-						</td>
-					</tr>
-				
-					<tr>
-						<td style="widtd:20%;">2017年 01月12日	 08:21:58	星期四</td>
-						<td style="widtd:20%;">2017年 01月12日	 08:25:29	星期四</td>
-						<td style="widtd:20%;">100%灰度</td>
-						<td style="widtd:20%;">79f1c940-3872-4f7f-ad71-e1aea1272f36</td>
-						<td style="width:20%;">
-								<span class="label label-success arrowed">部署成功</span>
-						</td>
-					</tr>
-				
-			</tbody>
-		</table>
-		
-		
 		<h4 class="header blue bolder smaller">发布主机状态</h4>
-		<div class="tab-pane in active" id="deployHostStatusdiv">
+		<div class="tab-pane in active">
 			<div class="row">
 				<div class="col-xs-12">
 <!-- 					<div class="table-header">Host and Agent Information</div>

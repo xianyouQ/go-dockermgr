@@ -5,8 +5,8 @@ app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal','toa
     $http.get('/api/idc').then(function (resp) {
       if (resp.data.status ){
         $scope.idcs = resp.data.data;
-        $scope.selectedidc = $filter('orderBy')($scope.idcs, 'first')[0];
-        $scope.selectedidc.selected = true;
+        //$scope.selectedidc = $filter('orderBy')($scope.idcs, 'first')[0];
+        //$scope.selectedidc.selected = true;
       }
       else {
         toaster.pop("error","get idc error",resp.data.info);

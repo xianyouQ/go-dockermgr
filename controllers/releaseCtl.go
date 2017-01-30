@@ -25,6 +25,10 @@ func (c *ReleaseController) NewReleaseTask() {
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
+	releaseTask.TaskStatus = models.NotReady
+	uinfo := c.Ctx.Input.Session("userinfo")
+	releaseUser := uinfo.(models.User)
+	releaseTask.ReleaseUser = &releaseUser
 	err = models.CreateOrUpdateRelease(o, &releaseTask)
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
@@ -56,6 +60,9 @@ func (c *ReleaseController) ReviewReleaseTask() {
 		return
 	}
 	releaseTask.TaskStatus = models.Ready
+	uinfo := c.Ctx.Input.Session("userinfo")
+	reviewUser := uinfo.(models.User)
+	releaseTask.ReviewUser = &reviewUser
 	err = models.CreateOrUpdateRelease(o, &releaseTask, "ReviewUser", "TaskStatus")
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
@@ -86,6 +93,9 @@ func (c *ReleaseController) OperationReleaseTask() {
 		return
 	}
 	releaseTask.TaskStatus = models.Running
+	uinfo := c.Ctx.Input.Session("userinfo")
+	operationUser := uinfo.(models.User)
+	releaseTask.OperationUser = &operationUser
 	err = models.CreateOrUpdateRelease(o, &releaseTask, "OperationUser", "TaskStatus")
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
@@ -194,6 +204,10 @@ func (c *ReleaseController) GetReleaseConf() {
 	}
 	o := orm.NewOrm()
 	conf, err = models.QueryReleaseConf(o, &querySerivce)
+	if err == orm.ErrNoRows {
+		c.Rsp(false, "release conf not set", nil)
+		return
+	}
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		return

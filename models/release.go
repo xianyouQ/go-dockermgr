@@ -23,11 +23,13 @@ type ReleaseTask struct {
 	Id            int          `orm:"auto"`
 	ReleaseConf   *ReleaseConf `orm:"rel(fk)" valid:"Required"`
 	ReleaseTime   time.Time    `orm:"auto_now_add"`
+	OperationTime time.Time    `orm:"null"`
 	Service       *Service     `orm:"rel(fk)" valid:"Required"`
 	ImageTag      string       `orm:"size(20)" valid:"Required"`
 	ReleaseUser   *User        `orm:"null;rel(fk)" valid:"Required"`
 	OperationUser *User        `orm:"null;rel(fk)"`
 	ReviewUser    *User        `orm:"null;rel(fk)"`
+	ReviewTime    time.Time    `orm:"null"`
 	TaskStatus    int
 	CancelUser    *User  `orm:"null;rel(fk)"`
 	ReleaseDetail string `orm:"type(text)"`
@@ -77,7 +79,7 @@ func checkReleaseConf(t *ReleaseConf) (err error) {
 
 func QueryRelease(o orm.Ormer, service *Service) ([]*ReleaseTask, error) {
 	var ReleaseTaskList []*ReleaseTask
-	_, err := o.QueryTable(beego.AppConfig.String("dockermgr_release_table")).Filter("Service__Id", service.Id).All(&ReleaseTaskList)
+	_, err := o.QueryTable(beego.AppConfig.String("dockermgr_release_table")).Filter("Service__Id", service.Id).RelatedSel("ReviewUser", "ReleaseUser", "OperationUser", "CancelUser").All(&ReleaseTaskList)
 	return ReleaseTaskList, err
 }
 
@@ -93,6 +95,7 @@ func CreateOrUpdateRelease(o orm.Ormer, releaseTask *ReleaseTask, updatecols ...
 		return err
 	}
 	if releaseTask.Id == 0 {
+		//releaseTask.TaskStatus = NotReady
 		_, err = o.Insert(releaseTask)
 		return err
 	} else {
