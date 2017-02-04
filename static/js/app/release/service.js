@@ -1,6 +1,6 @@
 app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','toaster',function($scope, $http, $filter,$modal,toaster) {
   function isObjectValueEqual(a, b) {
-   if(a.Code === b.Code){
+   if(a.Id === b.Id){
      return true;
    } 
    else {
@@ -43,6 +43,7 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','toa
   $scope.releases = [];
   $scope.newReleaseTask = {};
   $scope.selectedTask = undefined;
+  $scope.releasestatus = [];
 
 
 
@@ -189,6 +190,7 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','toa
       $http.post("/api/release/getconf",$scope.selectedService).then(function(resp){
         if(resp.data.status) {
           $scope.releaseConf = resp.data.data
+          
         }
         else {
           toaster.pop("error","get conf error",resp.data.info);
@@ -197,7 +199,18 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','toa
 
       });
     }
+    if(selectPadder == "detail") {
+      $http.post("/api/release/status",$scope.selectedTask).then(function(resp){
+        if(resp.data.status) {
+          console.log(resp.data.data);
+        }
+        else{
+          toaster.pop("error","get detail error",resp.data.info);
+        }
+      },function(){
 
+      });
+    }
   }
 
   $scope.selectTask = function(release) {
@@ -222,9 +235,37 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','toa
     },function(){
 
     });
-
-
   }
+  $scope.reviewTask = function() {
+    $http.post("/api/release/review",$scope.selectedTask).then(function(resp){
+      if(resp.data.status) {
+        $scope.releases.remove($scope.selectedTask);
+        $scope.selectedTask = resp.data.data;
+        $scope.releases.push(resp.data.data);
+      }
+      else {
+        toaster.pop("error","review task error",resp.data.info);
+      }
+    },function(){
 
+    });
+  };
+  $scope.operationTask = function() {
+    $scope.selectedTask.ReleaseConf = $scope.releaseConf;
+    $scope.selectedTask.Service = $scope.selectedService;
+    $http.post("/api/release/operate",$scope.selectedTask).then(function(resp){
+      if(resp.data.status) {
+        $scope.releases.remove($scope.selectedTask);
+        $scope.selectedTask = resp.data.data;
+        $scope.releases.push(resp.data.data);
+        $scope.changepadder("detail");
+      }
+      else {
+        toaster.pop("error","operate task error",resp.data.info);
+      }
+    },function(){
+      
+    });
+  }
   
 }]);

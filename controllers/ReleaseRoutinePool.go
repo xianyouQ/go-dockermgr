@@ -58,7 +58,7 @@ func init() {
 
 	}
 	TaskChannel = make(chan *ReleaseRoutine, TaskChannelSize)
-	ReleaseRoutineTasks = make([]ReleaseRoutine, TaskChannelSize)
+	ReleaseRoutineTasks = make([]ReleaseRoutine, 0, TaskChannelSize)
 	Stop = make(chan struct{})
 	RoutinePoolSize, err = beego.AppConfig.Int("routinepool_size")
 	if err != nil {
@@ -70,7 +70,7 @@ func init() {
 func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 	var err error
 	var errCount int
-	IdcReleaseInstances := make([]*IdcReleaseInstance, 3, 3)
+	IdcReleaseInstances := make([]*IdcReleaseInstance, 0, 3)
 	for {
 		if len(IdcReleaseInstances) < task.ReleaseTask.ReleaseConf.IdcParalle {
 			select {
@@ -276,7 +276,7 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 func releaseTaskFunc(task *ReleaseRoutine) {
 	var err error
 	clientChannel := make(chan *IdcReleaseInstance, task.ReleaseTask.ReleaseConf.IdcParalle)
-	clients := make([]*IdcReleaseInstance, 3, 3)
+	clients := make([]*IdcReleaseInstance, 0, 3)
 	ips := make(map[string][]*models.Ip)
 	for _, idc := range task.ReleaseTask.ReleaseConf.ReleaseIdc {
 		var client outMarathon.Marathon

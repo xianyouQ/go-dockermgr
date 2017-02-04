@@ -3,6 +3,8 @@ package controllers
 import (
 	"encoding/json"
 
+	"time"
+
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 	"github.com/xianyouQ/go-dockermgr/models"
@@ -61,9 +63,11 @@ func (c *ReleaseController) ReviewReleaseTask() {
 	}
 	releaseTask.TaskStatus = models.Ready
 	uinfo := c.Ctx.Input.Session("userinfo")
+	reviewTime := time.Now()
 	reviewUser := uinfo.(models.User)
 	releaseTask.ReviewUser = &reviewUser
-	err = models.CreateOrUpdateRelease(o, &releaseTask, "ReviewUser", "TaskStatus")
+	releaseTask.ReviewTime = reviewTime
+	err = models.CreateOrUpdateRelease(o, &releaseTask, "ReviewUser", "TaskStatus", "ReviewTime")
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		err = o.Rollback()
@@ -92,11 +96,22 @@ func (c *ReleaseController) OperationReleaseTask() {
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
+	err = AddTask(&releaseTask)
+	if err != nil {
+		c.Rsp(false, err.Error(), nil)
+		err = o.Rollback()
+		if err != nil {
+			logs.GetLogger("RegistryCtl").Printf("rollback error:%s", err.Error())
+		}
+		return
+	}
 	releaseTask.TaskStatus = models.Running
 	uinfo := c.Ctx.Input.Session("userinfo")
 	operationUser := uinfo.(models.User)
+	operationTime := time.Now()
 	releaseTask.OperationUser = &operationUser
-	err = models.CreateOrUpdateRelease(o, &releaseTask, "OperationUser", "TaskStatus")
+	releaseTask.OperationTime = operationTime
+	err = models.CreateOrUpdateRelease(o, &releaseTask, "OperationUser", "TaskStatus", "OperationTime")
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		err = o.Rollback()
@@ -115,7 +130,19 @@ func (c *ReleaseController) OperationReleaseTask() {
 }
 
 func (c *ReleaseController) CheckReleaseTaskStatus() {
-
+	var err error
+	var ContainerResList []*ContainerRes
+	releaseTask := models.ReleaseTask{}
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &releaseTask); err != nil {
+		c.Rsp(false, err.Error(), nil)
+		return
+	}
+	ContainerResList, err = CheckTaskStatus(&releaseTask)
+	if err != nil {
+		c.Rsp(false, err.Error(), nil)
+		return
+	}
+	c.Rsp(true, "success", ContainerResList)
 }
 
 func (c *ReleaseController) CancelReleaseTask() {
