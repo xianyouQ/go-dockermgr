@@ -33,7 +33,7 @@ func init() {
 	beego.Router("/api/release/review", &controllers.ReleaseController{}, "post:ReviewReleaseTask")
 	beego.Router("/api/release/operate", &controllers.ReleaseController{}, "post:OperationReleaseTask")
 	beego.Router("/api/release/cancel", &controllers.ReleaseController{}, "post:CancelReleaseTask")
-	beego.Router("/api/release/conf", &controllers.ReleaseController{}, "post:CreateOrUpdateReleaseConf")
+	beego.Router("/api/release/conf", &controllers.ReleaseController{}, "post:CreateReleaseConf")
 	beego.Router("/api/release/getconf", &controllers.ReleaseController{}, "post:GetReleaseConf")
 	beego.Router("/api/release/status", &controllers.ReleaseController{}, "post:CheckReleaseTaskStatus")
 

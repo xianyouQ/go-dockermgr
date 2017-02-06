@@ -114,6 +114,7 @@ func (c *DockerController) ScaleContainers() {
 	containerCount, err = m.GetInstancesCount(o, mServiceContainerForm.Service, mServiceContainerForm.Idc)
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
+
 		return
 	}
 	diff := mServiceContainerForm.Scale - containerCount

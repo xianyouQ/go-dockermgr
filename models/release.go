@@ -41,8 +41,14 @@ type ReleaseConf struct {
 	FaultTolerant   int        `orm:"default(1)"`
 	IdcParalle      int        `orm:"default(1)"`
 	IdcInnerParalle int        `orm:"default(1)"`
-	ReleaseIdc      []*IdcConf `orm:"rel(m2m)"`
+	ReleaseIdc      []*IdcConf `orm:"rel(m2m);rel_through(github.com/xianyouQ/go-dockermgr/models.ReleaseConfIdc)"`
 	TimeOut         int64
+}
+
+type ReleaseConfIdc struct {
+	Id          int          `orm:"auto"`
+	ReleaseConf *ReleaseConf `orm:"rel(fk)"`
+	Idc         *IdcConf     `orm:"rel(fk)"`
 }
 
 func (this *ReleaseTask) TableName() string {
@@ -52,8 +58,12 @@ func (this *ReleaseTask) TableName() string {
 func (this *ReleaseConf) TableName() string {
 	return beego.AppConfig.String("dockermgr_releaseconf_table")
 }
+
+func (this *ReleaseConfIdc) TableName() string {
+	return beego.AppConfig.String("dockermgr_releaseconfidc_table")
+}
 func init() {
-	orm.RegisterModel(new(ReleaseTask), new(ReleaseConf))
+	orm.RegisterModel(new(ReleaseTask), new(ReleaseConf), new(ReleaseConfIdc))
 }
 func checkReleaseTask(t *ReleaseTask) (err error) {
 	valid := validation.Validation{}
@@ -77,15 +87,43 @@ func checkReleaseConf(t *ReleaseConf) (err error) {
 	return nil
 }
 
+func LoadReleaseConf(o orm.Ormer, releaseConf *ReleaseConf) error {
+	var ReleaseConfIdcs []*ReleaseConfIdc
+	var err error
+	_, err = o.QueryTable(beego.AppConfig.String("dockermgr_releaseconfidc_table")).Filter("ReleaseConf__Id", releaseConf.Id).All(&ReleaseConfIdcs)
+	if err != nil {
+		return err
+	}
+	var idcs []*IdcConf
+	idcs, err = GetIdcs()
+	if err != nil {
+		return err
+	}
+	for _, ReleaseConfIdc := range ReleaseConfIdcs {
+		for _, idc := range idcs {
+			if idc.Id == ReleaseConfIdc.Idc.Id {
+				releaseConf.ReleaseIdc = append(releaseConf.ReleaseIdc, idc)
+
+			}
+		}
+
+	}
+	return nil
+}
 func QueryRelease(o orm.Ormer, service *Service) ([]*ReleaseTask, error) {
 	var ReleaseTaskList []*ReleaseTask
-	_, err := o.QueryTable(beego.AppConfig.String("dockermgr_release_table")).Filter("Service__Id", service.Id).RelatedSel("ReviewUser", "ReleaseUser", "OperationUser", "CancelUser").All(&ReleaseTaskList)
+	_, err := o.QueryTable(beego.AppConfig.String("dockermgr_release_table")).Filter("Service__Id", service.Id).RelatedSel("ReviewUser", "ReleaseUser", "OperationUser", "CancelUser", "ReleaseConf").All(&ReleaseTaskList)
 	return ReleaseTaskList, err
 }
 
 func QueryReleaseConf(o orm.Ormer, service *Service) (ReleaseConf, error) {
+	var err error
 	var releaseConf ReleaseConf
-	err := o.QueryTable(beego.AppConfig.String("dockermgr_releaseconf_table")).Filter("Service__Id", service.Id).One(&releaseConf)
+	err = o.QueryTable(beego.AppConfig.String("dockermgr_releaseconf_table")).Filter("Service__Id", service.Id).OrderBy("-Id").One(&releaseConf)
+	if err != nil {
+		return releaseConf, err
+	}
+	_, err = o.LoadRelated(&releaseConf, "ReleaseIdc")
 	return releaseConf, err
 }
 
@@ -108,20 +146,20 @@ func CreateOrUpdateRelease(o orm.Ormer, releaseTask *ReleaseTask, updatecols ...
 	}
 }
 
-func CreateOrUpdateReleaseConf(o orm.Ormer, releaseConf *ReleaseConf, updatecols ...string) error {
+func CreateReleaseConf(o orm.Ormer, releaseConf *ReleaseConf) error {
 	var err error
 	if err = checkReleaseConf(releaseConf); err != nil {
 		return err
 	}
-	if releaseConf.Id == 0 {
-		_, err = o.Insert(releaseConf)
-		return err
-	} else {
-		if len(updatecols) == 0 {
-			_, err = o.Update(releaseConf)
-		} else {
-			_, err = o.Update(releaseConf, updatecols...)
-		}
+	_, err = o.Insert(releaseConf)
+	if err != nil {
 		return err
 	}
+	m2m := o.QueryM2M(releaseConf, "ReleaseIdc")
+	_, err = m2m.Add(releaseConf.ReleaseIdc)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }

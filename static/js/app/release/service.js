@@ -190,6 +190,13 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','toa
       $http.post("/api/release/getconf",$scope.selectedService).then(function(resp){
         if(resp.data.status) {
           $scope.releaseConf = resp.data.data
+          angular.forEach($scope.releaseConf.ReleaseIdc,function(outIdc){
+            angular.forEach($scope.idcs,function(idc){
+               if(idc.Id == outIdc.Id) {
+                 idc.enableRelease = true;
+               }
+            });
+          });
           
         }
         else {
@@ -251,7 +258,7 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','toa
     });
   };
   $scope.operationTask = function() {
-    $scope.selectedTask.ReleaseConf = $scope.releaseConf;
+    //$scope.selectedTask.ReleaseConf = $scope.releaseConf;
     $scope.selectedTask.Service = $scope.selectedService;
     $http.post("/api/release/operate",$scope.selectedTask).then(function(resp){
       if(resp.data.status) {

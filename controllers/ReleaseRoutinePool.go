@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 	"github.com/xianyouQ/go-dockermgr/models"
 	"github.com/xianyouQ/go-dockermgr/utils"
@@ -26,9 +27,9 @@ type ContainerRes struct {
 type ReleaseRoutine struct {
 	ReleaseTask        *models.ReleaseTask
 	ContainerResChan   []*ContainerRes
-	Abandon            chan struct{}
+	abandon            chan struct{}
 	Done               bool
-	FaultOutOfTolerant chan struct{}
+	faultOutOfTolerant chan struct{}
 	ErrorMsg           string
 }
 type IdcReleaseInstance struct {
@@ -99,7 +100,7 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 						errCount = errCount + 1
 						if errCount >= task.ReleaseTask.ReleaseConf.FaultTolerant {
 							task.ErrorMsg = "错误过多"
-							task.FaultOutOfTolerant <- struct{}{}
+							task.faultOutOfTolerant <- struct{}{}
 							return
 						} else {
 							idc.runningInstances = append(idc.runningInstances[:index], idc.runningInstances[index+1:]...)
@@ -127,7 +128,7 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 						errCount = errCount + 1
 						if errCount >= task.ReleaseTask.ReleaseConf.FaultTolerant {
 							task.ErrorMsg = "错误过多"
-							task.FaultOutOfTolerant <- struct{}{}
+							task.faultOutOfTolerant <- struct{}{}
 							return
 						} else {
 							idc.runningInstances = append(idc.runningInstances[:index], idc.runningInstances[index+1:]...)
@@ -146,7 +147,7 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 							errCount = errCount + 1
 							if errCount >= task.ReleaseTask.ReleaseConf.FaultTolerant {
 								task.ErrorMsg = "错误过多"
-								task.FaultOutOfTolerant <- struct{}{}
+								task.faultOutOfTolerant <- struct{}{}
 								return
 							} else {
 								idc.runningInstances = append(idc.runningInstances[:index], idc.runningInstances[index+1:]...)
@@ -165,7 +166,7 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 							errCount = errCount + 1
 							if errCount >= task.ReleaseTask.ReleaseConf.FaultTolerant {
 								task.ErrorMsg = "错误过多"
-								task.FaultOutOfTolerant <- struct{}{}
+								task.faultOutOfTolerant <- struct{}{}
 								return
 							} else {
 								idc.runningInstances = append(idc.runningInstances[:index], idc.runningInstances[index+1:]...)
@@ -191,7 +192,7 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 							errCount = errCount + 1
 							if errCount >= task.ReleaseTask.ReleaseConf.FaultTolerant {
 								task.ErrorMsg = "错误过多"
-								task.FaultOutOfTolerant <- struct{}{}
+								task.faultOutOfTolerant <- struct{}{}
 								return
 							} else {
 								idc.runningInstances = append(idc.runningInstances[:index], idc.runningInstances[index+1:]...)
@@ -213,7 +214,7 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 						errCount = errCount + 1
 						if errCount >= task.ReleaseTask.ReleaseConf.FaultTolerant {
 							task.ErrorMsg = "错误过多"
-							task.FaultOutOfTolerant <- struct{}{}
+							task.faultOutOfTolerant <- struct{}{}
 							return
 						} else {
 							idc.runningInstances = append(idc.runningInstances[:index], idc.runningInstances[index+1:]...)
@@ -239,7 +240,7 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 							errCount = errCount + 1
 							if errCount >= task.ReleaseTask.ReleaseConf.FaultTolerant {
 								task.ErrorMsg = "错误过多"
-								task.FaultOutOfTolerant <- struct{}{}
+								task.faultOutOfTolerant <- struct{}{}
 								return
 							} else {
 								idc.runningInstances = append(idc.runningInstances[:index], idc.runningInstances[index+1:]...)
@@ -283,6 +284,7 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 		client, err = utils.NewMarathonClient(idc.MarathonSerConf.Server, idc.MarathonSerConf.HttpBasicAuthUser, idc.MarathonSerConf.HttpBasicPassword)
 		if err != nil {
 			task.ErrorMsg = err.Error()
+			logs.GetLogger("ReleaseRoutinePool").Println(err.Error())
 			return
 		}
 		mIdcReleaseInstance := &IdcReleaseInstance{}
@@ -318,7 +320,7 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 					case <-time.After(time.Second):
 						endIndex = index
 						break
-					case <-task.FaultOutOfTolerant:
+					case <-task.faultOutOfTolerant:
 						return
 					}
 				}
@@ -343,14 +345,14 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 		select {
 		case clientChannel <- clients[count]:
 			count = count + 1
-		case <-task.Abandon:
+		case <-task.abandon:
 			for _, client := range clients {
 				if client.done == false {
 					client.done = true
 				}
 			}
 			return
-		case <-task.FaultOutOfTolerant:
+		case <-task.faultOutOfTolerant:
 			return
 		case <-time.After(time.Second):
 			continue
@@ -374,10 +376,10 @@ func AddTask(mReleaseTask *models.ReleaseTask) error {
 	}
 }
 
-func CheckTaskStatus(mReleaseTask *models.ReleaseTask) ([]*ContainerRes, error) {
+func CheckTaskStatus(mReleaseTask *models.ReleaseTask) (*ReleaseRoutine, error) {
 	for _, mReleaseRoutine := range ReleaseRoutineTasks {
 		if mReleaseRoutine.ReleaseTask.Id == mReleaseTask.Id {
-			return mReleaseRoutine.ContainerResChan, nil
+			return &mReleaseRoutine, nil
 		}
 	}
 	return nil, errors.New("task no found")
@@ -386,7 +388,7 @@ func CheckTaskStatus(mReleaseTask *models.ReleaseTask) ([]*ContainerRes, error) 
 func AbandonTask(mReleaseTask *models.ReleaseTask) error {
 	for _, mReleaseRoutine := range ReleaseRoutineTasks {
 		if mReleaseRoutine.ReleaseTask.Id == mReleaseTask.Id {
-			close(mReleaseRoutine.Abandon)
+			close(mReleaseRoutine.abandon)
 			return nil
 		}
 	}

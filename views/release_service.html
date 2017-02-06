@@ -152,7 +152,7 @@
                       <span class="label label-xlg label-primary arrowed arrowed-right">
                         
                         
-                         <i ng-repeat="idc in releaseConf.ReleaseIdc" class="message-star icon-star orange2" title="发布的机房">shnj-b</i>
+                         <i ng-repeat="idc in releaseConf.ReleaseIdc" class="message-star icon-star orange2" title="发布的机房">{{idc.IdcCode}}</i>
                           
                           
                         
@@ -432,7 +432,7 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr>
+								<tr ng-repeat="idc in releaseConf.ReleaseIdc">
 									<td>cdes-t</td>
 									<td></td>
 								</tr>

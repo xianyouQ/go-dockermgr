@@ -91,11 +91,13 @@ func (c *ReleaseController) OperationReleaseTask() {
 		return
 	}
 	o := orm.NewOrm()
+	err = models.LoadReleaseConf(o, releaseTask.ReleaseConf)
 	err = o.Begin()
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
+
 	err = AddTask(&releaseTask)
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
@@ -131,18 +133,18 @@ func (c *ReleaseController) OperationReleaseTask() {
 
 func (c *ReleaseController) CheckReleaseTaskStatus() {
 	var err error
-	var ContainerResList []*ContainerRes
+	var mReleaseRoutine *ReleaseRoutine
 	releaseTask := models.ReleaseTask{}
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &releaseTask); err != nil {
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
-	ContainerResList, err = CheckTaskStatus(&releaseTask)
+	mReleaseRoutine, err = CheckTaskStatus(&releaseTask)
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
-	c.Rsp(true, "success", ContainerResList)
+	c.Rsp(true, "success", mReleaseRoutine)
 }
 
 func (c *ReleaseController) CancelReleaseTask() {
@@ -176,7 +178,7 @@ func (c *ReleaseController) CancelReleaseTask() {
 	c.Rsp(true, "success", releaseTask)
 }
 
-func (c *ReleaseController) CreateOrUpdateReleaseConf() {
+func (c *ReleaseController) CreateReleaseConf() {
 	var err error
 	releaseConf := models.ReleaseConf{}
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &releaseConf); err != nil {
@@ -189,7 +191,7 @@ func (c *ReleaseController) CreateOrUpdateReleaseConf() {
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
-	err = models.CreateOrUpdateReleaseConf(o, &releaseConf)
+	err = models.CreateReleaseConf(o, &releaseConf)
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		err = o.Rollback()
