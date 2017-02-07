@@ -191,6 +191,7 @@ func (c *ReleaseController) CreateReleaseConf() {
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
+	releaseConf.Id = 0
 	err = models.CreateReleaseConf(o, &releaseConf)
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)

@@ -49,7 +49,7 @@ var (
 	TaskChannel         chan *ReleaseRoutine
 	RoutinePoolSize     int
 	Stop                chan struct{}
-	ReleaseRoutineTasks []ReleaseRoutine
+	ReleaseRoutineTasks []*ReleaseRoutine
 )
 
 func init() {
@@ -59,7 +59,7 @@ func init() {
 
 	}
 	TaskChannel = make(chan *ReleaseRoutine, TaskChannelSize)
-	ReleaseRoutineTasks = make([]ReleaseRoutine, 0, TaskChannelSize)
+	ReleaseRoutineTasks = make([]*ReleaseRoutine, 0, TaskChannelSize)
 	Stop = make(chan struct{})
 	RoutinePoolSize, err = beego.AppConfig.Int("routinepool_size")
 	if err != nil {
@@ -79,6 +79,7 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 				IdcReleaseInstances = append(IdcReleaseInstances, newIdcRelease)
 			case <-time.After(time.Second):
 				if task.Done == true && len(IdcReleaseInstances) == 0 {
+					logs.GetLogger("ReleaseRoutinePool").Println("task finish")
 					return
 				}
 			}
@@ -92,6 +93,7 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 				if instance.Status == InstanceReady {
 					_, err = idc.client.DeleteApplication(applicationString, true)
 					if err != nil {
+						logs.GetLogger("ReleaseRoutinePool").Println(err.Error())
 						for _, mContainerRes := range task.ContainerResChan {
 							if mContainerRes.Instance == instance.InstanceIp { //可能有坑
 								mContainerRes.ReleaseMsg = err.Error()
@@ -115,11 +117,13 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 					instance.Status = InstanceStopping
 					instance.LastCheck = time.Now().Unix()
 					index = index + 1
+					continue
 				}
 				if instance.Status == InstanceStopping {
 					var ok bool
-					ok, err = utils.IsExistApplication(idc.client, applicationString)
+					ok, err = utils.CheckIfDeployment(idc.client, applicationString)
 					if err != nil {
+						logs.GetLogger("ReleaseRoutinePool").Println(err.Error())
 						for _, mContainerRes := range task.ContainerResChan {
 							if mContainerRes.Instance == instance.InstanceIp { //可能有坑
 								mContainerRes.ReleaseMsg = err.Error()
@@ -139,6 +143,7 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 						var mApplication *outMarathon.Application
 						mApplication, err = utils.CreateMarathonAppFromJson(task.ReleaseTask.ReleaseConf.Service.MarathonConf)
 						if err != nil {
+							logs.GetLogger("ReleaseRoutinePool").Println(err.Error())
 							for _, mContainerRes := range task.ContainerResChan {
 								if mContainerRes.Instance == instance.InstanceIp { //可能有坑
 									mContainerRes.ReleaseMsg = err.Error()
@@ -155,9 +160,13 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 							}
 						}
 						imageTag := fmt.Sprintf("%s:%s", task.ReleaseTask.ReleaseConf.Service.Code, task.ReleaseTask.ImageTag)
-						mApplication.Container.Docker.SetParameter("image", imageTag)
+						mApplication.Container.Docker.Image = imageTag
+						mApplication.ID = applicationString
+						mApplication.Container.Docker.SetParameter("ip", instance.InstanceIp.IpAddr)
+						mApplication.Container.Docker.SetParameter("mac-address", instance.InstanceIp.MacAddr)
 						_, err = idc.client.CreateApplication(mApplication)
 						if err != nil {
+							logs.GetLogger("ReleaseRoutinePool").Println(err.Error())
 							for _, mContainerRes := range task.ContainerResChan {
 								if mContainerRes.Instance == instance.InstanceIp { //可能有坑
 									mContainerRes.ReleaseMsg = err.Error()
@@ -181,6 +190,7 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 						instance.Status = InstanceStarting
 						instance.LastCheck = time.Now().Unix()
 						index = index + 1
+						continue
 					} else {
 						nowTime := time.Now().Unix()
 						if nowTime-instance.LastCheck > task.ReleaseTask.ReleaseConf.TimeOut {
@@ -200,12 +210,14 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 							}
 						}
 						index = index + 1
+						continue
 					}
 				}
 				if instance.Status == InstanceStarting {
 					var ok bool
 					ok, err = idc.client.ApplicationOK(applicationString)
 					if err != nil {
+						logs.GetLogger("ReleaseRoutinePool").Println(err.Error())
 						for _, mContainerRes := range task.ContainerResChan {
 							if mContainerRes.Instance == instance.InstanceIp { //可能有坑
 								mContainerRes.ReleaseMsg = err.Error()
@@ -248,10 +260,12 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 							}
 						}
 						index = index + 1
+						continue
 					}
 				}
 			}
-			for count := len(idc.runningInstances); count <= task.ReleaseTask.ReleaseConf.IdcInnerParalle; {
+		OUT1:
+			for count := len(idc.runningInstances); count < task.ReleaseTask.ReleaseConf.IdcInnerParalle; {
 				select {
 				case newInstance := <-idc.instances:
 					newRunningInstance := &ReleaseInstace{}
@@ -262,15 +276,17 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 				case <-time.After(time.Second):
 					if len(idc.runningInstances) == 0 && idc.done == true {
 						IdcReleaseInstances = append(IdcReleaseInstances[:outindex], IdcReleaseInstances[outindex+1:]...)
+						break OUT1
 					} else {
-						break
+						break OUT1
 					}
 
 				}
 			}
 
+			<-time.After(time.Millisecond * 200)
 		}
-		<-time.After(time.Second)
+
 	}
 
 }
@@ -284,7 +300,6 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 		client, err = utils.NewMarathonClient(idc.MarathonSerConf.Server, idc.MarathonSerConf.HttpBasicAuthUser, idc.MarathonSerConf.HttpBasicPassword)
 		if err != nil {
 			task.ErrorMsg = err.Error()
-			logs.GetLogger("ReleaseRoutinePool").Println(err.Error())
 			return
 		}
 		mIdcReleaseInstance := &IdcReleaseInstance{}
@@ -313,18 +328,20 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 		for _, client := range clients {
 			if instances, ok := ips[client.idcCode]; ok {
 				var endIndex int
+			OUT2:
 				for index, instance := range instances {
 					select {
 					case client.instances <- instance:
-						continue
+						endIndex = index + 1
 					case <-time.After(time.Second):
 						endIndex = index
-						break
+						break OUT2
 					case <-task.faultOutOfTolerant:
 						return
 					}
 				}
 				instances = instances[endIndex:]
+				ips[client.idcCode] = instances
 				if len(instances) == 0 {
 					client.done = true
 				} else {
@@ -355,7 +372,6 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 		case <-task.faultOutOfTolerant:
 			return
 		case <-time.After(time.Second):
-			continue
 
 		}
 
@@ -369,7 +385,7 @@ func AddTask(mReleaseTask *models.ReleaseTask) error {
 	//...
 	select {
 	case TaskChannel <- &task:
-		ReleaseRoutineTasks = append(ReleaseRoutineTasks, task)
+		ReleaseRoutineTasks = append(ReleaseRoutineTasks, &task)
 		return nil
 	default:
 		return errors.New("Release TaskChannel is full")
@@ -379,7 +395,7 @@ func AddTask(mReleaseTask *models.ReleaseTask) error {
 func CheckTaskStatus(mReleaseTask *models.ReleaseTask) (*ReleaseRoutine, error) {
 	for _, mReleaseRoutine := range ReleaseRoutineTasks {
 		if mReleaseRoutine.ReleaseTask.Id == mReleaseTask.Id {
-			return &mReleaseRoutine, nil
+			return mReleaseRoutine, nil
 		}
 	}
 	return nil, errors.New("task no found")

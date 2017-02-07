@@ -259,7 +259,7 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','toa
   };
   $scope.operationTask = function() {
     //$scope.selectedTask.ReleaseConf = $scope.releaseConf;
-    $scope.selectedTask.Service = $scope.selectedService;
+    $scope.selectedTask.ReleaseConf.Service = $scope.selectedService;
     $http.post("/api/release/operate",$scope.selectedTask).then(function(resp){
       if(resp.data.status) {
         $scope.releases.remove($scope.selectedTask);

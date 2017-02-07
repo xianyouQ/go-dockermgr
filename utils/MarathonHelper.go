@@ -109,3 +109,18 @@ func IsExistApplication(marathonClient outMarathon.Marathon, name string) (bool,
 	}
 	return false, err
 }
+
+func CheckIfDeployment(marathonClient outMarathon.Marathon, name string) (bool, error) {
+	deployments, err := marathonClient.Deployments()
+	if err != nil {
+		return false, err
+	}
+	for _, deployment := range deployments {
+		for _, affectedApp := range deployment.AffectedApps {
+			if affectedApp == name {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
+}
