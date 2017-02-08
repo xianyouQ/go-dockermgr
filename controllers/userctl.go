@@ -1,27 +1,25 @@
 package controllers
 
 import (
-	m "github.com/xianyouQ/go-dockermgr/models"
-	"github.com/xianyouQ/go-dockermgr/auth"
-	"github.com/astaxie/beego"
 	"encoding/json"
-	"github.com/astaxie/beego/orm"
-	"github.com/astaxie/beego/logs"
-)
 
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/orm"
+	"github.com/xianyouQ/go-dockermgr/auth"
+	m "github.com/xianyouQ/go-dockermgr/models"
+)
 
 type UserController struct {
 	CommonController
 }
-
-
 
 func (this *UserController) AddUser() {
 	u := m.User{}
 	var err error
 	if err = json.Unmarshal(this.Ctx.Input.RequestBody, &u); err != nil {
 		//handle error
-		this.Rsp(false, err.Error(),nil)
+		this.Rsp(false, err.Error(), nil)
 		return
 	}
 	u.Password = beego.AppConfig.String("rbac_auth_defaultpasswd")
@@ -29,56 +27,58 @@ func (this *UserController) AddUser() {
 	o := orm.NewOrm()
 	err = o.Begin()
 	if err != nil {
-		this.Rsp(false, err.Error(),nil)
+		this.Rsp(false, err.Error(), nil)
 		return
 	}
-	_, err = m.AddUser(o,&u)
+	_, err = m.AddUser(o, &u)
 	if err == nil {
-		this.Rsp(true, "Success",u)
+		this.Rsp(true, "Success", u)
 		err = o.Commit()
 		if err != nil {
-			logs.GetLogger("userCtl").Printf("commit error:%s",err.Error())
+			logs.GetLogger("userCtl").Printf("commit error:%s", err.Error())
 		}
 		return
 	} else {
-		this.Rsp(false, err.Error(),nil)
+		this.Rsp(false, err.Error(), nil)
 		err = o.Rollback()
 		if err != nil {
-			logs.GetLogger("userCtl").Printf("rollback error:%s",err.Error())
+			logs.GetLogger("userCtl").Printf("rollback error:%s", err.Error())
 		}
 		return
 	}
 
 }
 
+/*
 func (this *UserController) UpdateUser() {
 	u := m.User{}
 	if err := this.ParseForm(&u); err != nil {
 		//handle error
-		this.Rsp(false, err.Error(),nil)
+		this.Rsp(false, err.Error(), nil)
 		return
 	}
 	o := orm.NewOrm()
-	id, err := m.UpdateUser(o,&u)
+	id, err := m.UpdateUser(o, &u)
 	if err == nil && id > 0 {
-		this.Rsp(true, "Success",nil)
+		this.Rsp(true, "Success", nil)
 		return
 	} else {
-		this.Rsp(false, err.Error(),nil)
+		this.Rsp(false, err.Error(), nil)
 		return
 	}
 
 }
+*/
 
 func (this *UserController) DelUser() {
 	Id, _ := this.GetInt64("Id")
 	o := orm.NewOrm()
-	status, err := m.DelUserById(o,Id)
+	status, err := m.DelUserById(o, Id)
 	if err == nil && status > 0 {
-		this.Rsp(true, "Success",nil)
+		this.Rsp(true, "Success", nil)
 		return
 	} else {
-		this.Rsp(false, err.Error(),nil)
+		this.Rsp(false, err.Error(), nil)
 		return
 	}
 }
@@ -89,14 +89,13 @@ func (this *UserController) Login() {
 	data := make(map[string]string)
 	if uinfo != nil {
 		data["Username"] = uinfo.(m.User).Username
-		//datajson,_ := json.Marshal(data)
-		this.Rsp(false,"不可重复登陆", data);
+		this.Rsp(false, "不可重复登陆", data)
 		return
 	}
 	u := m.User{}
 	if err := json.Unmarshal(this.Ctx.Input.RequestBody, &u); err != nil {
 		//handle error
-		this.Rsp(false, err.Error(),nil)
+		this.Rsp(false, err.Error(), nil)
 		return
 	}
 
@@ -107,10 +106,10 @@ func (this *UserController) Login() {
 		//this.SetSession("accesslist", accesslist)
 		data["Username"] = user.Username
 		//datajson,_ := json.Marshal(data)
-		this.Rsp(true, "登陆成功",data)
+		this.Rsp(true, "登陆成功", data)
 		return
 	} else {
-		this.Rsp(false, err.Error(),nil)
+		this.Rsp(false, err.Error(), nil)
 		return
 	}
 }
@@ -118,20 +117,20 @@ func (this *UserController) Login() {
 //退出
 func (this *UserController) Logout() {
 	this.DelSession("userinfo")
-	this.Rsp(true, "退出成功",nil)
+	this.Rsp(true, "退出成功", nil)
 }
 
 //修改密码
 func (this *UserController) Changepwd() {
 	userinfo := this.GetSession("userinfo")
 	if userinfo == nil {
-		this.Rsp(false,"请先登录",nil)
+		this.Rsp(false, "请先登录", nil)
 	}
 	oldpassword := this.GetString("oldpassword")
 	newpassword := this.GetString("newpassword")
 	repeatpassword := this.GetString("repeatpassword")
 	if newpassword != repeatpassword {
-		this.Rsp(false, "两次输入密码不一致",nil)
+		this.Rsp(false, "两次输入密码不一致", nil)
 	}
 	user, err := auth.CheckLogin(userinfo.(m.User).Username, oldpassword)
 	if err == nil {
@@ -139,16 +138,16 @@ func (this *UserController) Changepwd() {
 		u.Id = user.Id
 		u.Password = newpassword
 		o := orm.NewOrm()
-		id, err := m.UpdateUser(o,&u)
+		id, err := m.UpdateUser(o, &u, "Password")
 		if err == nil && id > 0 {
-			this.Rsp(true, "密码修改成功",nil)
+			this.Rsp(true, "密码修改成功", nil)
 			return
 		} else {
-			this.Rsp(false, err.Error(),nil)
+			this.Rsp(false, err.Error(), nil)
 			return
 		}
 	}
-	this.Rsp(false, "密码有误",nil)
+	this.Rsp(false, "密码有误", nil)
 
 }
 
@@ -157,7 +156,7 @@ func (this *UserController) ResetPwd() {
 	u := m.User{}
 	if err = json.Unmarshal(this.Ctx.Input.RequestBody, &u); err != nil {
 		//handle error
-		this.Rsp(false, err.Error(),nil)
+		this.Rsp(false, err.Error(), nil)
 		return
 	}
 	u.Password = beego.AppConfig.String("rbac_auth_defaultpasswd")
@@ -165,12 +164,12 @@ func (this *UserController) ResetPwd() {
 	newU := m.User{}
 	newU.Id = u.Id
 	newU.Password = u.Password
-	_, err = m.UpdateUser(o,&newU)
+	_, err = m.UpdateUser(o, &newU)
 	if err == nil {
-		this.Rsp(true, "密码重置成功",nil)
+		this.Rsp(true, "密码重置成功", nil)
 		return
 	} else {
-		this.Rsp(false, err.Error(),nil)
+		this.Rsp(false, err.Error(), nil)
 		return
 	}
 }
@@ -178,10 +177,10 @@ func (this *UserController) ResetPwd() {
 func (this *UserController) GetUserList() {
 	//pageId,err := this.GetInt("pageId")
 	UserName := this.GetString("username")
-	users,err := m.QueryUserAuthListByUser(UserName)
+	users, err := m.QueryUserAuthListByUser(UserName)
 	if err != nil {
-		this.Rsp(false,err.Error(),nil)
+		this.Rsp(false, err.Error(), nil)
 		return
 	}
-	this.Rsp(true,"success",users)
+	this.Rsp(true, "success", users)
 }

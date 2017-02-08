@@ -13,9 +13,10 @@ const (
 	NotReady = iota
 	Ready
 	Running
-	Paused
+	Abandon
 	Success
 	Failed
+	OutOfTolerant
 	Cancel
 )
 
@@ -33,6 +34,8 @@ type ReleaseTask struct {
 	TaskStatus    int
 	CancelUser    *User  `orm:"null;rel(fk)"`
 	ReleaseDetail string `orm:"type(text)"`
+	ReleaseResult string `orm:"type(text)"`
+	ReleaseMsg    string `orm:"type(text)"`
 }
 
 type ReleaseConf struct {

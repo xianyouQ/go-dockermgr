@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"encoding/json"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
@@ -17,32 +19,29 @@ const (
 	InstanceReady = iota
 	InstanceStopping
 	InstanceStarting
+	InstanceFinish
+	InstanceFail
 )
 
 type ContainerRes struct {
 	Instance   *models.Ip
 	ReleaseMsg string
+	Status     int
+	LastCheck  int64
+	IdcCode    string
 }
 
 type ReleaseRoutine struct {
-	ReleaseTask        *models.ReleaseTask
-	ContainerResChan   []*ContainerRes
-	abandon            chan struct{}
-	Done               bool
-	faultOutOfTolerant chan struct{}
-	ErrorMsg           string
+	ReleaseTask      *models.ReleaseTask
+	ContainerResChan []*ContainerRes
+	abandon          chan struct{}
+	Status           int
+	ErrorMsg         string
 }
 type IdcReleaseInstance struct {
 	idcCode          string
 	client           outMarathon.Marathon
-	runningInstances []*ReleaseInstace
-	done             bool
-	instances        chan *models.Ip
-}
-type ReleaseInstace struct {
-	InstanceIp *models.Ip
-	Status     int
-	LastCheck  int64
+	runningInstances []*ContainerRes
 }
 
 var (
@@ -68,52 +67,101 @@ func init() {
 	StartReleaseRoutinePool()
 }
 
-func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
+func releaseTaskFunc(task *ReleaseRoutine) {
+	//task.Status = TaskRunning
 	var err error
+	clients := make([]*IdcReleaseInstance, 0, 3)
+	ips := make(map[string][]*ContainerRes)
+	o := orm.NewOrm()
+	for _, idc := range task.ReleaseTask.ReleaseConf.ReleaseIdc {
+		var client outMarathon.Marathon
+		client, err = utils.NewMarathonClient(idc.MarathonSerConf.Server, idc.MarathonSerConf.HttpBasicAuthUser, idc.MarathonSerConf.HttpBasicPassword)
+		if err != nil {
+			task.ErrorMsg = err.Error()
+			//task.Status = TaskFail
+			task.ReleaseTask.TaskStatus = models.Failed
+			task.ReleaseTask.ReleaseMsg = err.Error()
+			err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
+			if err != nil {
+				logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
+			}
+			return
+		}
+		mIdcReleaseInstance := &IdcReleaseInstance{}
+		mIdcReleaseInstance.client = client
+		mIdcReleaseInstance.idcCode = idc.IdcCode
+		var iplist []*models.Ip
+		iplist, err = models.GetInstances(o, task.ReleaseTask.ReleaseConf.Service, idc)
+		if err != nil {
+			task.ErrorMsg = err.Error()
+			//task.Status = TaskFail
+			task.ReleaseTask.TaskStatus = models.Failed
+			task.ReleaseTask.ReleaseMsg = err.Error()
+			err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
+			if err != nil {
+				logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
+			}
+			return
+		}
+		for _, ip := range iplist {
+			mContainerRes := &ContainerRes{}
+			mContainerRes.Instance = ip
+			mContainerRes.IdcCode = idc.IdcCode
+			mContainerRes.Status = InstanceReady
+			task.ContainerResChan = append(task.ContainerResChan, mContainerRes)
+			ips[idc.IdcCode] = append(ips[idc.IdcCode], mContainerRes)
+		}
+		clients = append(clients, mIdcReleaseInstance)
+	}
 	var errCount int
 	IdcReleaseInstances := make([]*IdcReleaseInstance, 0, 3)
 	for {
-		if len(IdcReleaseInstances) < task.ReleaseTask.ReleaseConf.IdcParalle {
-			select {
-			case newIdcRelease := <-clients:
-				IdcReleaseInstances = append(IdcReleaseInstances, newIdcRelease)
-			case <-time.After(time.Second):
-				if task.Done == true && len(IdcReleaseInstances) == 0 {
-					logs.GetLogger("ReleaseRoutinePool").Println("task finish")
-					return
-				}
+		length := len(IdcReleaseInstances)
+		diff := task.ReleaseTask.ReleaseConf.IdcParalle - length
+		if diff > 0 && len(clients) > diff {
+			IdcReleaseInstances = append(IdcReleaseInstances, clients[:diff]...)
+			clients = clients[diff:]
+		} else if diff > 0 && len(clients) > 0 {
+			IdcReleaseInstances = append(IdcReleaseInstances, clients...)
+			clients = clients[:0]
+		} else if diff == task.ReleaseTask.ReleaseConf.IdcParalle && len(clients) == 0 {
+			//task.Status = TaskSuccess
+			task.ReleaseTask.TaskStatus = models.Success
+			err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus")
+			if err != nil {
+				logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
 			}
+			return
 		}
 
 		for outindex := 0; outindex < len(IdcReleaseInstances); {
 			idc := IdcReleaseInstances[outindex]
 			for index := 0; index < len(idc.runningInstances); {
 				instance := idc.runningInstances[index]
-				applicationString := fmt.Sprintf("/%s/%s", task.ReleaseTask.ReleaseConf.Service.Code, instance.InstanceIp.IpAddr)
+				applicationString := fmt.Sprintf("/%s/%s", task.ReleaseTask.ReleaseConf.Service.Code, instance.Instance.IpAddr)
 				if instance.Status == InstanceReady {
 					_, err = idc.client.DeleteApplication(applicationString, true)
 					if err != nil {
 						logs.GetLogger("ReleaseRoutinePool").Println(err.Error())
-						for _, mContainerRes := range task.ContainerResChan {
-							if mContainerRes.Instance == instance.InstanceIp { //可能有坑
-								mContainerRes.ReleaseMsg = err.Error()
-							}
-						}
+						instance.ReleaseMsg = err.Error()
+						instance.Status = InstanceFail
 						errCount = errCount + 1
 						if errCount >= task.ReleaseTask.ReleaseConf.FaultTolerant {
 							task.ErrorMsg = "错误过多"
-							task.faultOutOfTolerant <- struct{}{}
+							//task.Status = TaskFail
+							task.ReleaseTask.TaskStatus = models.Failed
+							task.ReleaseTask.ReleaseMsg = "错误过多"
+							err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
+							if err != nil {
+								logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
+							}
 							return
 						} else {
 							idc.runningInstances = append(idc.runningInstances[:index], idc.runningInstances[index+1:]...)
 							continue
 						}
 					}
-					for _, mContainerRes := range task.ContainerResChan {
-						if mContainerRes.Instance == instance.InstanceIp { //可能有坑
-							mContainerRes.ReleaseMsg = "正在关闭容器"
-						}
-					}
+					instance.ReleaseMsg = "正在关闭容器"
 					instance.Status = InstanceStopping
 					instance.LastCheck = time.Now().Unix()
 					index = index + 1
@@ -124,15 +172,18 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 					ok, err = utils.CheckIfDeployment(idc.client, applicationString)
 					if err != nil {
 						logs.GetLogger("ReleaseRoutinePool").Println(err.Error())
-						for _, mContainerRes := range task.ContainerResChan {
-							if mContainerRes.Instance == instance.InstanceIp { //可能有坑
-								mContainerRes.ReleaseMsg = err.Error()
-							}
-						}
+						instance.ReleaseMsg = err.Error()
+						instance.Status = InstanceFail
 						errCount = errCount + 1
 						if errCount >= task.ReleaseTask.ReleaseConf.FaultTolerant {
 							task.ErrorMsg = "错误过多"
-							task.faultOutOfTolerant <- struct{}{}
+							//task.Status = TaskFail
+							task.ReleaseTask.TaskStatus = models.Failed
+							task.ReleaseTask.ReleaseMsg = "错误过多"
+							err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
+							if err != nil {
+								logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
+							}
 							return
 						} else {
 							idc.runningInstances = append(idc.runningInstances[:index], idc.runningInstances[index+1:]...)
@@ -144,15 +195,18 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 						mApplication, err = utils.CreateMarathonAppFromJson(task.ReleaseTask.ReleaseConf.Service.MarathonConf)
 						if err != nil {
 							logs.GetLogger("ReleaseRoutinePool").Println(err.Error())
-							for _, mContainerRes := range task.ContainerResChan {
-								if mContainerRes.Instance == instance.InstanceIp { //可能有坑
-									mContainerRes.ReleaseMsg = err.Error()
-								}
-							}
+							instance.ReleaseMsg = err.Error()
+							instance.Status = InstanceFail
 							errCount = errCount + 1
 							if errCount >= task.ReleaseTask.ReleaseConf.FaultTolerant {
 								task.ErrorMsg = "错误过多"
-								task.faultOutOfTolerant <- struct{}{}
+								//task.Status = TaskFail
+								task.ReleaseTask.TaskStatus = models.Failed
+								task.ReleaseTask.ReleaseMsg = "错误过多"
+								err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
+								if err != nil {
+									logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
+								}
 								return
 							} else {
 								idc.runningInstances = append(idc.runningInstances[:index], idc.runningInstances[index+1:]...)
@@ -162,31 +216,30 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 						imageTag := fmt.Sprintf("%s:%s", task.ReleaseTask.ReleaseConf.Service.Code, task.ReleaseTask.ImageTag)
 						mApplication.Container.Docker.Image = imageTag
 						mApplication.ID = applicationString
-						mApplication.Container.Docker.SetParameter("ip", instance.InstanceIp.IpAddr)
-						mApplication.Container.Docker.SetParameter("mac-address", instance.InstanceIp.MacAddr)
+						mApplication.Container.Docker.SetParameter("ip", instance.Instance.IpAddr)
+						mApplication.Container.Docker.SetParameter("mac-address", instance.Instance.MacAddr)
 						_, err = idc.client.CreateApplication(mApplication)
 						if err != nil {
 							logs.GetLogger("ReleaseRoutinePool").Println(err.Error())
-							for _, mContainerRes := range task.ContainerResChan {
-								if mContainerRes.Instance == instance.InstanceIp { //可能有坑
-									mContainerRes.ReleaseMsg = err.Error()
-								}
-							}
+							instance.ReleaseMsg = err.Error()
+							instance.Status = InstanceFail
 							errCount = errCount + 1
 							if errCount >= task.ReleaseTask.ReleaseConf.FaultTolerant {
 								task.ErrorMsg = "错误过多"
-								task.faultOutOfTolerant <- struct{}{}
+								//task.Status = TaskFail
+								task.ReleaseTask.TaskStatus = models.Failed
+								task.ReleaseTask.ReleaseMsg = "错误过多"
+								err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
+								if err != nil {
+									logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
+								}
 								return
 							} else {
 								idc.runningInstances = append(idc.runningInstances[:index], idc.runningInstances[index+1:]...)
 								continue
 							}
 						}
-						for _, mContainerRes := range task.ContainerResChan {
-							if mContainerRes.Instance == instance.InstanceIp { //可能有坑
-								mContainerRes.ReleaseMsg = "正在启动容器"
-							}
-						}
+						instance.ReleaseMsg = "正在启动容器"
 						instance.Status = InstanceStarting
 						instance.LastCheck = time.Now().Unix()
 						index = index + 1
@@ -194,15 +247,18 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 					} else {
 						nowTime := time.Now().Unix()
 						if nowTime-instance.LastCheck > task.ReleaseTask.ReleaseConf.TimeOut {
-							for _, mContainerRes := range task.ContainerResChan {
-								if mContainerRes.Instance == instance.InstanceIp { //可能有坑
-									mContainerRes.ReleaseMsg = "等待关闭容器时超时"
-								}
-							}
+							instance.ReleaseMsg = "等待关闭容器时超时"
+							instance.Status = InstanceFail
 							errCount = errCount + 1
 							if errCount >= task.ReleaseTask.ReleaseConf.FaultTolerant {
 								task.ErrorMsg = "错误过多"
-								task.faultOutOfTolerant <- struct{}{}
+								//task.Status = TaskFail
+								task.ReleaseTask.TaskStatus = models.Failed
+								task.ReleaseTask.ReleaseMsg = "错误过多"
+								err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
+								if err != nil {
+									logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
+								}
 								return
 							} else {
 								idc.runningInstances = append(idc.runningInstances[:index], idc.runningInstances[index+1:]...)
@@ -218,15 +274,18 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 					ok, err = idc.client.ApplicationOK(applicationString)
 					if err != nil {
 						logs.GetLogger("ReleaseRoutinePool").Println(err.Error())
-						for _, mContainerRes := range task.ContainerResChan {
-							if mContainerRes.Instance == instance.InstanceIp { //可能有坑
-								mContainerRes.ReleaseMsg = err.Error()
-							}
-						}
+						instance.ReleaseMsg = err.Error()
+						instance.Status = InstanceFail
 						errCount = errCount + 1
 						if errCount >= task.ReleaseTask.ReleaseConf.FaultTolerant {
 							task.ErrorMsg = "错误过多"
-							task.faultOutOfTolerant <- struct{}{}
+							//task.Status = TaskFail
+							task.ReleaseTask.TaskStatus = models.Failed
+							task.ReleaseTask.ReleaseMsg = "错误过多"
+							err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
+							if err != nil {
+								logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
+							}
 							return
 						} else {
 							idc.runningInstances = append(idc.runningInstances[:index], idc.runningInstances[index+1:]...)
@@ -234,25 +293,25 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 						}
 					}
 					if ok {
-						for _, mContainerRes := range task.ContainerResChan {
-							if mContainerRes.Instance == instance.InstanceIp { //可能有坑
-								mContainerRes.ReleaseMsg = "容器启动成功"
-							}
-						}
+						instance.ReleaseMsg = "容器启动成功"
+						instance.Status = InstanceFinish
 						idc.runningInstances = append(idc.runningInstances[:index], idc.runningInstances[index+1:]...)
 						continue
 					} else {
 						nowTime := time.Now().Unix()
 						if nowTime-instance.LastCheck > task.ReleaseTask.ReleaseConf.TimeOut {
-							for _, mContainerRes := range task.ContainerResChan {
-								if mContainerRes.Instance == instance.InstanceIp { //可能有坑
-									mContainerRes.ReleaseMsg = "等待启动容器时超时"
-								}
-							}
+							instance.ReleaseMsg = "等待启动容器时超时"
+							instance.Status = InstanceFail
 							errCount = errCount + 1
 							if errCount >= task.ReleaseTask.ReleaseConf.FaultTolerant {
 								task.ErrorMsg = "错误过多"
-								task.faultOutOfTolerant <- struct{}{}
+								//task.Status = TaskFail
+								task.ReleaseTask.TaskStatus = models.Failed
+								task.ReleaseTask.ReleaseMsg = "错误过多"
+								err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
+								if err != nil {
+									logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
+								}
 								return
 							} else {
 								idc.runningInstances = append(idc.runningInstances[:index], idc.runningInstances[index+1:]...)
@@ -264,115 +323,28 @@ func idcTaskMonitor(clients <-chan *IdcReleaseInstance, task *ReleaseRoutine) {
 					}
 				}
 			}
-		OUT1:
-			for count := len(idc.runningInstances); count < task.ReleaseTask.ReleaseConf.IdcInnerParalle; {
-				select {
-				case newInstance := <-idc.instances:
-					newRunningInstance := &ReleaseInstace{}
-					newRunningInstance.InstanceIp = newInstance
-					newRunningInstance.Status = InstanceReady
-					idc.runningInstances = append(idc.runningInstances, newRunningInstance)
-					count = len(idc.runningInstances)
-				case <-time.After(time.Second):
-					if len(idc.runningInstances) == 0 && idc.done == true {
-						IdcReleaseInstances = append(IdcReleaseInstances[:outindex], IdcReleaseInstances[outindex+1:]...)
-						break OUT1
-					} else {
-						break OUT1
-					}
-
-				}
+			innerLength := len(idc.runningInstances)
+			innerDiff := task.ReleaseTask.ReleaseConf.IdcInnerParalle - innerLength
+			if innerDiff > 0 && len(ips[idc.idcCode]) > innerDiff {
+				idc.runningInstances = append(idc.runningInstances, ips[idc.idcCode][:innerDiff]...)
+				ips[idc.idcCode] = ips[idc.idcCode][innerDiff:]
+			} else if innerDiff > 0 && len(ips[idc.idcCode]) > 0 {
+				idc.runningInstances = append(idc.runningInstances, ips[idc.idcCode]...)
+				ips[idc.idcCode] = ips[idc.idcCode][:0]
+			} else if innerDiff == task.ReleaseTask.ReleaseConf.IdcInnerParalle && len(ips[idc.idcCode]) == 0 {
+				IdcReleaseInstances = append(IdcReleaseInstances[:outindex], IdcReleaseInstances[outindex+1:]...)
 			}
-
-			<-time.After(time.Millisecond * 200)
-		}
-
-	}
-
-}
-func releaseTaskFunc(task *ReleaseRoutine) {
-	var err error
-	clientChannel := make(chan *IdcReleaseInstance, task.ReleaseTask.ReleaseConf.IdcParalle)
-	clients := make([]*IdcReleaseInstance, 0, 3)
-	ips := make(map[string][]*models.Ip)
-	for _, idc := range task.ReleaseTask.ReleaseConf.ReleaseIdc {
-		var client outMarathon.Marathon
-		client, err = utils.NewMarathonClient(idc.MarathonSerConf.Server, idc.MarathonSerConf.HttpBasicAuthUser, idc.MarathonSerConf.HttpBasicPassword)
-		if err != nil {
-			task.ErrorMsg = err.Error()
-			return
-		}
-		mIdcReleaseInstance := &IdcReleaseInstance{}
-		mIdcReleaseInstance.client = client
-		mIdcReleaseInstance.idcCode = idc.IdcCode
-		mIdcReleaseInstance.instances = make(chan *models.Ip, task.ReleaseTask.ReleaseConf.IdcInnerParalle)
-		clients = append(clients, mIdcReleaseInstance)
-		o := orm.NewOrm()
-		var iplist []*models.Ip
-		iplist, err = models.GetInstances(o, task.ReleaseTask.ReleaseConf.Service, idc)
-		if err != nil {
-			task.ErrorMsg = err.Error()
-			return
-		}
-		ips[idc.IdcCode] = iplist
-		for _, ip := range iplist {
-			mContainerRes := &ContainerRes{}
-			mContainerRes.Instance = ip
-			task.ContainerResChan = append(task.ContainerResChan, mContainerRes)
-		}
-	}
-	go idcTaskMonitor(clientChannel, task)
-	count := 0
-	for {
-		alldone := true
-		for _, client := range clients {
-			if instances, ok := ips[client.idcCode]; ok {
-				var endIndex int
-			OUT2:
-				for index, instance := range instances {
-					select {
-					case client.instances <- instance:
-						endIndex = index + 1
-					case <-time.After(time.Second):
-						endIndex = index
-						break OUT2
-					case <-task.faultOutOfTolerant:
-						return
-					}
+			select {
+			case <-task.abandon:
+				//task.Status = TaskAbandon
+				task.ReleaseTask.TaskStatus = models.Abandon
+				err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus")
+				if err != nil {
+					logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
 				}
-				instances = instances[endIndex:]
-				ips[client.idcCode] = instances
-				if len(instances) == 0 {
-					client.done = true
-				} else {
-					alldone = false
-				}
-			} else {
-				client.done = true
+				return
+			case <-time.After(time.Millisecond * 1000):
 			}
-
-		}
-		if count >= len(clients) && alldone == true {
-			task.Done = true
-			return
-		}
-		if count >= len(clients) {
-			continue
-		}
-		select {
-		case clientChannel <- clients[count]:
-			count = count + 1
-		case <-task.abandon:
-			for _, client := range clients {
-				if client.done == false {
-					client.done = true
-				}
-			}
-			return
-		case <-task.faultOutOfTolerant:
-			return
-		case <-time.After(time.Second):
-
 		}
 
 	}
@@ -382,7 +354,7 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 func AddTask(mReleaseTask *models.ReleaseTask) error {
 	task := ReleaseRoutine{}
 	task.ReleaseTask = mReleaseTask
-	//...
+	//task.Status = TaskReady
 	select {
 	case TaskChannel <- &task:
 		ReleaseRoutineTasks = append(ReleaseRoutineTasks, &task)
@@ -418,6 +390,23 @@ func StartReleaseRoutinePool() {
 				select {
 				case task := <-TaskChannel:
 					releaseTaskFunc(task)
+					var err error
+					var testjson []byte
+					testjson, err = json.Marshal(task.ContainerResChan)
+					if err != nil {
+						logs.GetLogger("ReleaseRoutinePool").Printf("save release result fail,detail:%s", err.Error())
+					}
+					task.ReleaseTask.ReleaseResult = string(testjson)
+					o := orm.NewOrm()
+					err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "ReleaseResult")
+					if err != nil {
+						logs.GetLogger("ReleaseRoutinePool").Printf("save release result fail,detail:%s", err.Error())
+					}
+					for index, mReleaseRoutine := range ReleaseRoutineTasks {
+						if mReleaseRoutine == task {
+							ReleaseRoutineTasks = append(ReleaseRoutineTasks[:index], ReleaseRoutineTasks[index+1:]...)
+						}
+					}
 				case <-Stop:
 					return
 				}

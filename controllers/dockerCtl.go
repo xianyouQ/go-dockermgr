@@ -154,7 +154,7 @@ func (c *DockerController) ScaleContainers() {
 
 			} else {
 				imageTag := fmt.Sprintf("%s:%s", mServiceContainerForm.Service.Code, mServiceContainerForm.Service.ReleaseVer.ImageTag)
-				application.Container.Docker.SetParameter("image", imageTag)
+				application.Container.Docker.Image = imageTag
 			}
 			application.Container.Docker.SetParameter("ip", ip.IpAddr)
 			application.Container.Docker.SetParameter("mac-address", ip.MacAddr)

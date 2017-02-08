@@ -141,10 +141,22 @@ func (c *ReleaseController) CheckReleaseTaskStatus() {
 	}
 	mReleaseRoutine, err = CheckTaskStatus(&releaseTask)
 	if err != nil {
-		c.Rsp(false, err.Error(), nil)
-		return
+		o := orm.NewOrm()
+		err = o.Read(&releaseTask)
+		if err != nil {
+			c.Rsp(false, err.Error(), nil)
+			return
+		}
+	} else {
+		var jsonByte []byte
+		jsonByte, err = json.Marshal(mReleaseRoutine.ContainerResChan)
+		if err != nil {
+			c.Rsp(false, err.Error(), nil)
+			return
+		}
+		releaseTask.ReleaseResult = string(jsonByte)
 	}
-	c.Rsp(true, "success", mReleaseRoutine)
+	c.Rsp(true, "success", releaseTask)
 }
 
 func (c *ReleaseController) CancelReleaseTask() {
