@@ -433,7 +433,7 @@
 							</thead>
 							<tbody>
 								<tr ng-repeat="idc in releaseConf.ReleaseIdc">
-									<td>cdes-t</td>
+									<td>{{idc.IdcCode}}</td>
 									<td></td>
 								</tr>
 							</tbody>
@@ -443,19 +443,6 @@
 							<textarea class="autosize-transition form-control" readonly="readonly">{{selectedTask.ReleaseDetail}}</textarea>
 						</div>
 						<br>
-						<h4 class="header blue bolder smaller">操作</h4>
-					
-				<div>
-
-									<button class="btn btn-app btn-info btn-sm" ng-click="changepadder('detail')">
-										<i class="fa-clock-o bigger-200"></i>
-										发布记录
-									</button>
-							<button class="btn btn-app btn-error btn-sm" ng-click="changepadder('list')">
-								<i class="fa-clock-o bigger-200"></i>
-								返回
-							</button>
-						</div>
 						
 					</div>
 				</div>

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -51,36 +50,64 @@ func (c *DockerController) DashBoard() {
 	c.Rsp(true, "success", idcs)
 }
 
-type ServiceContainerForm struct {
-	Service *m.Service
-	Idc     *m.IdcConf
-	Scale   int64
-}
-
 func (c *DockerController) GetContainers() {
 	var err error
-	mServiceContainerForm := ServiceContainerForm{}
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &mServiceContainerForm); err != nil {
-		//handle error
+	var serviceId, idcId int
+	serviceId, _ = c.GetInt("serviceId")
+	idcId, err = c.GetInt("idcId")
+	if err != nil {
 		c.Rsp(false, err.Error(), nil)
+		return
+	}
+
+	var idcs []*m.IdcConf
+	var queryIdc *m.IdcConf
+	var services []*m.Service
+	var queryService *m.Service
+	idcs, err = m.GetIdcs()
+	if err != nil {
+		c.Rsp(false, err.Error(), nil)
+		return
+	}
+	for _, idc := range idcs {
+		if idc.Id == idcId {
+			queryIdc = idc
+		}
+	}
+	if queryIdc == nil {
+		c.Rsp(false, "idc not found", nil)
+		return
+	}
+	services, err = m.GetServices()
+	if err != nil {
+		c.Rsp(false, err.Error(), nil)
+		return
+	}
+	for _, service := range services {
+		if service.Id == serviceId {
+			queryService = service
+		}
+	}
+	if queryService == nil {
+		c.Rsp(false, "service not found", nil)
 		return
 	}
 	o := orm.NewOrm()
 	var instances []*m.Ip
-	instances, err = m.GetInstances(o, mServiceContainerForm.Service, mServiceContainerForm.Idc)
+	instances, err = m.GetInstances(o, queryService, queryIdc)
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
 	var client outMarathon.Marathon
-	client, err = utils.NewMarathonClient(mServiceContainerForm.Idc.MarathonSerConf.Server, mServiceContainerForm.Idc.MarathonSerConf.HttpBasicAuthUser,
-		mServiceContainerForm.Idc.MarathonSerConf.HttpBasicPassword)
+	client, err = utils.NewMarathonClient(queryIdc.MarathonSerConf.Server, queryIdc.MarathonSerConf.HttpBasicAuthUser,
+		queryIdc.MarathonSerConf.HttpBasicPassword)
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
 	var marathonApps []*outMarathon.Application
-	marathonApps, err = utils.ListApplicationsFromGroup(mServiceContainerForm.Service.Code, client)
+	marathonApps, err = utils.ListApplicationsFromGroup(queryService.Code, client)
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		return
@@ -98,62 +125,101 @@ func (c *DockerController) GetContainers() {
 
 func (c *DockerController) ScaleContainers() {
 	var err error
-	var containerCount int64
-	mServiceContainerForm := ServiceContainerForm{}
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &mServiceContainerForm); err != nil {
-		//handle error
+	var scaleCount, serviceId, idcId int
+	serviceId, _ = c.GetInt("serviceId")
+	idcId, err = c.GetInt("idcId")
+	if err != nil {
 		c.Rsp(false, err.Error(), nil)
+		return
+	}
+	scaleCount, err = c.GetInt("scaleCount")
+	if err != nil {
+		c.Rsp(false, err.Error(), nil)
+		return
+	}
+
+	var idcs []*m.IdcConf
+	var queryIdc *m.IdcConf
+	var services []*m.Service
+	var queryService *m.Service
+	idcs, err = m.GetIdcs()
+	if err != nil {
+		c.Rsp(false, err.Error(), nil)
+		return
+	}
+	for _, idc := range idcs {
+		if idc.Id == idcId {
+			queryIdc = idc
+		}
+	}
+	if queryIdc == nil {
+		c.Rsp(false, "idc not found", nil)
+		return
+	}
+	services, err = m.GetServices()
+	if err != nil {
+		c.Rsp(false, err.Error(), nil)
+		return
+	}
+	for _, service := range services {
+		if service.Id == serviceId {
+			queryService = service
+		}
+	}
+	if queryService == nil {
+		c.Rsp(false, "service not found", nil)
 		return
 	}
 	o := orm.NewOrm()
-
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
-	containerCount, err = m.GetInstancesCount(o, mServiceContainerForm.Service, mServiceContainerForm.Idc)
+	var containerCount int64
+	containerCount, err = m.GetInstancesCount(o, queryService, queryIdc)
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 
 		return
 	}
-	diff := mServiceContainerForm.Scale - containerCount
+	diff := scaleCount - int(containerCount)
 	if diff == 0 {
 		c.Rsp(true, "success", nil)
 	}
 	var requestIp []*m.Ip
 	var application *outMarathon.Application
 	var client outMarathon.Marathon
-	client, err = utils.NewMarathonClient(mServiceContainerForm.Idc.MarathonSerConf.Server,
-		mServiceContainerForm.Idc.MarathonSerConf.HttpBasicAuthUser, mServiceContainerForm.Idc.MarathonSerConf.HttpBasicPassword)
+	client, err = utils.NewMarathonClient(queryIdc.MarathonSerConf.Server,
+		queryIdc.MarathonSerConf.HttpBasicAuthUser, queryIdc.MarathonSerConf.HttpBasicPassword)
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
-	application, err = utils.CreateMarathonAppFromJson(mServiceContainerForm.Service.MarathonConf)
+	application, err = utils.CreateMarathonAppFromJson(queryService.MarathonConf)
 	if err != nil {
+		logs.GetLogger("dockerCtl").Printf("rollback error:%s", err.Error())
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
 
 	err = o.Begin()
 	if diff > 0 {
-		requestIp, err = m.RequestIp(o, mServiceContainerForm.Service, mServiceContainerForm.Idc, int(diff))
+		requestIp, err = m.RequestIp(o, queryService, queryIdc, int(diff))
 		if err != nil {
 			c.Rsp(false, err.Error(), nil)
 			err = o.Rollback()
 			if err != nil {
-				logs.GetLogger("AuthCtl").Printf("rollback error:%s", err.Error())
+				logs.GetLogger("dockerCtl").Printf("rollback error:%s", err.Error())
 			}
 			return
 		}
 		for idx, ip := range requestIp {
-			application.ID = fmt.Sprintf("/%s/%s", mServiceContainerForm.Service.Code, ip.IpAddr)
+			application.ID = fmt.Sprintf("/%s/%s", queryService.Code, ip.IpAddr)
 			//application.Container.Docker.EmptyParameters()
-			if mServiceContainerForm.Service.ReleaseVer == nil {
+			if queryService.ReleaseVer == nil {
 
 			} else {
-				imageTag := fmt.Sprintf("%s:%s", mServiceContainerForm.Service.Code, mServiceContainerForm.Service.ReleaseVer.ImageTag)
+				imageTag := fmt.Sprintf("%s:%s", queryService.Code, queryService.ReleaseVer.ImageTag)
 				application.Container.Docker.Image = imageTag
 			}
 			application.Container.Docker.SetParameter("ip", ip.IpAddr)
@@ -162,7 +228,7 @@ func (c *DockerController) ScaleContainers() {
 			_, err = client.CreateApplication(application)
 			if err != nil {
 				for iner := 0; iner <= idx; iner++ {
-					applicationID := fmt.Sprintf("/%s/%s", mServiceContainerForm.Service.Code, requestIp[iner].IpAddr)
+					applicationID := fmt.Sprintf("/%s/%s", queryService.Code, requestIp[iner].IpAddr)
 					_, err := utils.DelApplication(client, applicationID)
 					if err != nil {
 						logs.GetLogger("dockerCtl").Printf("Stop Container failure:%s", applicationID)
@@ -171,24 +237,24 @@ func (c *DockerController) ScaleContainers() {
 				c.Rsp(false, err.Error(), nil)
 				err = o.Rollback()
 				if err != nil {
-					logs.GetLogger("AuthCtl").Printf("rollback error:%s", err.Error())
+					logs.GetLogger("dockerCtl").Printf("rollback error:%s", err.Error())
 				}
 				return
 			}
 		}
 
 	} else if diff < 0 {
-		requestIp, err = m.RecycleIp(o, mServiceContainerForm.Service, mServiceContainerForm.Idc, int(-diff))
+		requestIp, err = m.RecycleIp(o, queryService, queryIdc, int(-diff))
 		if err != nil {
 			c.Rsp(false, err.Error(), nil)
 			err = o.Rollback()
 			if err != nil {
-				logs.GetLogger("AuthCtl").Printf("rollback error:%s", err.Error())
+				logs.GetLogger("dockerCtl").Printf("rollback error:%s", err.Error())
 			}
 			return
 		}
 		for _, ip := range requestIp {
-			applicationID := fmt.Sprintf("/%s/%s", mServiceContainerForm.Service.Code, ip.IpAddr)
+			applicationID := fmt.Sprintf("/%s/%s", queryService.Code, ip.IpAddr)
 			_, err := utils.DelApplication(client, applicationID)
 			if err != nil {
 				logs.GetLogger("dockerCtl").Printf("Stop Container failure:%s", applicationID)
@@ -198,7 +264,7 @@ func (c *DockerController) ScaleContainers() {
 	}
 	err = o.Commit()
 	if err != nil {
-		logs.GetLogger("AuthCtl").Printf("commit error:%s", err.Error())
+		logs.GetLogger("dockerCtl").Printf("commit error:%s", err.Error())
 	}
 	c.Rsp(true, "success", requestIp)
 

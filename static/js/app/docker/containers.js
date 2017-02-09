@@ -92,7 +92,7 @@ app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal',fu
       } 
   });
 
-    $http.get('/api/idc').then(function (resp) {
+    $http.get('/api/idc/get').then(function (resp) {
       if (resp.data.status ){
         $scope.idcs = resp.data.data;
       }
@@ -148,7 +148,7 @@ app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal',fu
   $scope.detail = function(idc) {
     $scope.selectedIdc = idc;
     $scope.instances = [];
-    $http.post("/api/docker/list",{"Service":$scope.selectedService,"Idc":$scope.selectedIdc,"Scale":0}).then(function(resp){
+    $http.get("/api/docker/list?serviceId="+$scope.selectedService.Id+"&idcId="+$scope.selectedIdc.Id).then(function(resp){
       if(resp.data.status){
         $scope.instances = resp.data.data;
       }
@@ -186,15 +186,15 @@ app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal',fu
 
    app.controller('scaleContianerModalInstanceCtrl', ['$scope', '$modalInstance','$http','selectedIdc','selectedService',function($scope, $modalInstance,$http,$selectedIdc,$selectedService) {
     $scope.formError = null;
-    $scope.ContainerScaleForm = {"Service":$selectedService,"Idc":$selectedIdc,"Scale":0};
+    $scope.ContainerScaleForm = {"Scale":0};
     $scope.ok = function () {
       $scope.formError = null;
       if (isNaN($scope.ContainerCount) == false){
         $scope.formError = "ContainerCount must be a number";
         return
       }
-      $scope.ContainerScaleForm.Scale = Number($scope.ContainerScaleForm.Scale);
-        $http.post('/api/docker/scale', $scope.ContainerScaleForm).then(function(response) {
+      $scope.Scale = Number($scope.ContainerScaleForm.Scale);
+        $http.get('/api/docker/scale?serviceId='+$selectedService.Id+"&idcId="+$selectedIdc.Id+'&scaleCount='+$scope.Scale).then(function(response) {
           if (response.data.status ){
             console.log(response.data.data);
             $modalInstance.close(response.data.data);

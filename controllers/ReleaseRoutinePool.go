@@ -81,7 +81,7 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 			//task.Status = TaskFail
 			task.ReleaseTask.TaskStatus = models.Failed
 			task.ReleaseTask.ReleaseMsg = err.Error()
-			err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
+			_, err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
 			if err != nil {
 				logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
 			}
@@ -91,13 +91,13 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 		mIdcReleaseInstance.client = client
 		mIdcReleaseInstance.idcCode = idc.IdcCode
 		var iplist []*models.Ip
-		iplist, err = models.GetInstances(o, task.ReleaseTask.ReleaseConf.Service, idc)
+		iplist, err = models.GetInstances(o, task.ReleaseTask.Service, idc)
 		if err != nil {
 			task.ErrorMsg = err.Error()
 			//task.Status = TaskFail
 			task.ReleaseTask.TaskStatus = models.Failed
 			task.ReleaseTask.ReleaseMsg = err.Error()
-			err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
+			_, err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
 			if err != nil {
 				logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
 			}
@@ -127,7 +127,7 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 		} else if diff == task.ReleaseTask.ReleaseConf.IdcParalle && len(clients) == 0 {
 			//task.Status = TaskSuccess
 			task.ReleaseTask.TaskStatus = models.Success
-			err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus")
+			_, err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus")
 			if err != nil {
 				logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
 			}
@@ -138,7 +138,7 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 			idc := IdcReleaseInstances[outindex]
 			for index := 0; index < len(idc.runningInstances); {
 				instance := idc.runningInstances[index]
-				applicationString := fmt.Sprintf("/%s/%s", task.ReleaseTask.ReleaseConf.Service.Code, instance.Instance.IpAddr)
+				applicationString := fmt.Sprintf("/%s/%s", task.ReleaseTask.Service.Code, instance.Instance.IpAddr)
 				if instance.Status == InstanceReady {
 					_, err = idc.client.DeleteApplication(applicationString, true)
 					if err != nil {
@@ -151,7 +151,7 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 							//task.Status = TaskFail
 							task.ReleaseTask.TaskStatus = models.Failed
 							task.ReleaseTask.ReleaseMsg = "错误过多"
-							err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
+							_, err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
 							if err != nil {
 								logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
 							}
@@ -180,7 +180,7 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 							//task.Status = TaskFail
 							task.ReleaseTask.TaskStatus = models.Failed
 							task.ReleaseTask.ReleaseMsg = "错误过多"
-							err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
+							_, err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
 							if err != nil {
 								logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
 							}
@@ -192,7 +192,7 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 					}
 					if !ok {
 						var mApplication *outMarathon.Application
-						mApplication, err = utils.CreateMarathonAppFromJson(task.ReleaseTask.ReleaseConf.Service.MarathonConf)
+						mApplication, err = utils.CreateMarathonAppFromJson(task.ReleaseTask.Service.MarathonConf)
 						if err != nil {
 							logs.GetLogger("ReleaseRoutinePool").Println(err.Error())
 							instance.ReleaseMsg = err.Error()
@@ -203,7 +203,7 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 								//task.Status = TaskFail
 								task.ReleaseTask.TaskStatus = models.Failed
 								task.ReleaseTask.ReleaseMsg = "错误过多"
-								err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
+								_, err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
 								if err != nil {
 									logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
 								}
@@ -213,7 +213,7 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 								continue
 							}
 						}
-						imageTag := fmt.Sprintf("%s:%s", task.ReleaseTask.ReleaseConf.Service.Code, task.ReleaseTask.ImageTag)
+						imageTag := fmt.Sprintf("%s:%s", task.ReleaseTask.Service.Code, task.ReleaseTask.ImageTag)
 						mApplication.Container.Docker.Image = imageTag
 						mApplication.ID = applicationString
 						mApplication.Container.Docker.SetParameter("ip", instance.Instance.IpAddr)
@@ -229,7 +229,7 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 								//task.Status = TaskFail
 								task.ReleaseTask.TaskStatus = models.Failed
 								task.ReleaseTask.ReleaseMsg = "错误过多"
-								err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
+								_, err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
 								if err != nil {
 									logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
 								}
@@ -255,7 +255,7 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 								//task.Status = TaskFail
 								task.ReleaseTask.TaskStatus = models.Failed
 								task.ReleaseTask.ReleaseMsg = "错误过多"
-								err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
+								_, err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
 								if err != nil {
 									logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
 								}
@@ -282,7 +282,7 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 							//task.Status = TaskFail
 							task.ReleaseTask.TaskStatus = models.Failed
 							task.ReleaseTask.ReleaseMsg = "错误过多"
-							err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
+							_, err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
 							if err != nil {
 								logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
 							}
@@ -308,7 +308,7 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 								//task.Status = TaskFail
 								task.ReleaseTask.TaskStatus = models.Failed
 								task.ReleaseTask.ReleaseMsg = "错误过多"
-								err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
+								_, err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus", "ReleaseMsg")
 								if err != nil {
 									logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
 								}
@@ -338,7 +338,7 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 			case <-task.abandon:
 				//task.Status = TaskAbandon
 				task.ReleaseTask.TaskStatus = models.Abandon
-				err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus")
+				_, err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "TaskStatus")
 				if err != nil {
 					logs.GetLogger("ReleaseRoutinePool").Printf("update Task status fail,detail:%s", err.Error())
 				}
@@ -367,6 +367,7 @@ func AddTask(mReleaseTask *models.ReleaseTask) error {
 func CheckTaskStatus(mReleaseTask *models.ReleaseTask) (*ReleaseRoutine, error) {
 	for _, mReleaseRoutine := range ReleaseRoutineTasks {
 		if mReleaseRoutine.ReleaseTask.Id == mReleaseTask.Id {
+			mReleaseTask.Service = mReleaseRoutine.ReleaseTask.Service
 			return mReleaseRoutine, nil
 		}
 	}
@@ -398,7 +399,7 @@ func StartReleaseRoutinePool() {
 					}
 					task.ReleaseTask.ReleaseResult = string(testjson)
 					o := orm.NewOrm()
-					err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "ReleaseResult")
+					_, err = models.CreateOrUpdateRelease(o, task.ReleaseTask, "ReleaseResult")
 					if err != nil {
 						logs.GetLogger("ReleaseRoutinePool").Printf("save release result fail,detail:%s", err.Error())
 					}

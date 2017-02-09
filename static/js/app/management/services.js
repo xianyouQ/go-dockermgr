@@ -301,7 +301,7 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
       Users:[],
       Role: {}
     };
-    $http.get("/api/auth/user").then(function(resp){
+    $http.get("/api/auth/user/get?serviceId="+$service.Id).then(function(resp){
         if(resp.data.status) {
           angular.forEach(resp.data.data,function(item){
             var isSkip = false;
@@ -323,7 +323,7 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
       });
     $scope.ok = function () {
       $scope.formError = null;
-      $http.post('/api/auth/new',{Users:$scope.selected.Users,Service:$service,Role:$scope.selected.Role}).then(function(response) {
+      $http.post('/api/auth/new?serviceId='+$service.Id,{Users:$scope.selected.Users,Service:$service,Role:$scope.selected.Role}).then(function(response) {
           if (response.data.status){
           }
           if  (!response.data.status ) {

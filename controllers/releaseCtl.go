@@ -17,8 +17,14 @@ type ReleaseController struct {
 func (c *ReleaseController) NewReleaseTask() {
 	var err error
 	releaseTask := models.ReleaseTask{}
+	serviceId, _ := c.GetInt("serviceId")
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &releaseTask); err != nil {
 		c.Rsp(false, err.Error(), nil)
+		return
+	}
+	if releaseTask.Service.Id != serviceId {
+		c.Ctx.Output.SetStatus(403)
+		c.Rsp(false, "permission denied", nil)
 		return
 	}
 	o := orm.NewOrm()
@@ -31,67 +37,98 @@ func (c *ReleaseController) NewReleaseTask() {
 	uinfo := c.Ctx.Input.Session("userinfo")
 	releaseUser := uinfo.(models.User)
 	releaseTask.ReleaseUser = &releaseUser
-	err = models.CreateOrUpdateRelease(o, &releaseTask)
+	_, err = models.CreateOrUpdateRelease(o, &releaseTask)
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		err = o.Rollback()
 		if err != nil {
-			logs.GetLogger("RegistryCtl").Printf("rollback error:%s", err.Error())
+			logs.GetLogger("releaseCtl").Printf("rollback error:%s", err.Error())
 		}
 		return
 	}
 	err = o.Commit()
 	if err != nil {
-		logs.GetLogger("RegistryCtl").Printf("commit error:%s", err.Error())
+		logs.GetLogger("releaseCtl").Printf("commit error:%s", err.Error())
 	}
 	c.Rsp(true, "success", releaseTask)
 }
 
 func (c *ReleaseController) ReviewReleaseTask() {
 	var err error
+	var taskId, serviceId int
+	var num int64
 	releaseTask := models.ReleaseTask{}
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &releaseTask); err != nil {
+	service := models.Service{}
+	serviceId, _ = c.GetInt("serviceId")
+	taskId, err = c.GetInt("taskId")
+	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
-
+	service.Id = serviceId
+	releaseTask.Id = taskId
+	releaseTask.Service = &service
 	o := orm.NewOrm()
 	err = o.Begin()
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
-	releaseTask.TaskStatus = models.Ready
 	uinfo := c.Ctx.Input.Session("userinfo")
 	reviewTime := time.Now()
 	reviewUser := uinfo.(models.User)
+	params := make(orm.Params)
+	params["TaskStatus"] = models.Ready
+	releaseTask.TaskStatus = models.Ready
+	params["ReviewUser"] = reviewUser.Id
 	releaseTask.ReviewUser = &reviewUser
+	params["ReviewTime"] = reviewTime
 	releaseTask.ReviewTime = reviewTime
-	err = models.CreateOrUpdateRelease(o, &releaseTask, "ReviewUser", "TaskStatus", "ReviewTime")
+	num, err = models.UpdateRelease(o, &releaseTask, models.NotReady, params)
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		err = o.Rollback()
 		if err != nil {
-			logs.GetLogger("RegistryCtl").Printf("rollback error:%s", err.Error())
+			logs.GetLogger("releaseCtl").Printf("rollback error:%s", err.Error())
+		}
+		return
+	}
+
+	if num == 0 {
+		c.Ctx.Output.SetStatus(400)
+		c.Rsp(false, "relaseTask info didn't match", nil)
+		err = o.Rollback()
+		if err != nil {
+			logs.GetLogger("releaseCtl").Printf("rollback error:%s", err.Error())
 		}
 		return
 	}
 	err = o.Commit()
 	if err != nil {
-		logs.GetLogger("RegistryCtl").Printf("commit error:%s", err.Error())
+		logs.GetLogger("releaseCtl").Printf("commit error:%s", err.Error())
 	}
 	c.Rsp(true, "success", releaseTask)
 }
 
 func (c *ReleaseController) OperationReleaseTask() {
 	var err error
+	var taskId, serviceId int
 	releaseTask := models.ReleaseTask{}
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &releaseTask); err != nil {
+	serviceId, _ = c.GetInt("serviceId")
+	taskId, err = c.GetInt("taskId")
+	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
+	releaseTask.Id = taskId
+
 	o := orm.NewOrm()
-	err = models.LoadReleaseConf(o, releaseTask.ReleaseConf)
+	err = models.LoadReleaseConf(o, &releaseTask)
+	if releaseTask.Service.Id != serviceId {
+		c.Ctx.Output.SetStatus(403)
+		c.Rsp(false, "permission denied", nil)
+		return
+	}
 	err = o.Begin()
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
@@ -103,7 +140,7 @@ func (c *ReleaseController) OperationReleaseTask() {
 		c.Rsp(false, err.Error(), nil)
 		err = o.Rollback()
 		if err != nil {
-			logs.GetLogger("RegistryCtl").Printf("rollback error:%s", err.Error())
+			logs.GetLogger("releaseCtl").Printf("rollback error:%s", err.Error())
 		}
 		return
 	}
@@ -113,19 +150,19 @@ func (c *ReleaseController) OperationReleaseTask() {
 	operationTime := time.Now()
 	releaseTask.OperationUser = &operationUser
 	releaseTask.OperationTime = operationTime
-	err = models.CreateOrUpdateRelease(o, &releaseTask, "OperationUser", "TaskStatus", "OperationTime")
+	_, err = models.CreateOrUpdateRelease(o, &releaseTask, "OperationUser", "TaskStatus", "OperationTime")
 	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		err = o.Rollback()
 		if err != nil {
-			logs.GetLogger("RegistryCtl").Printf("rollback error:%s", err.Error())
+			logs.GetLogger("releaseCtl").Printf("rollback error:%s", err.Error())
 		}
 		return
 	}
 
 	err = o.Commit()
 	if err != nil {
-		logs.GetLogger("RegistryCtl").Printf("commit error:%s", err.Error())
+		logs.GetLogger("releaseCtl").Printf("commit error:%s", err.Error())
 	}
 	c.Rsp(true, "success", releaseTask)
 
@@ -134,11 +171,15 @@ func (c *ReleaseController) OperationReleaseTask() {
 func (c *ReleaseController) CheckReleaseTaskStatus() {
 	var err error
 	var mReleaseRoutine *ReleaseRoutine
+	var taskId, serviceId int
 	releaseTask := models.ReleaseTask{}
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &releaseTask); err != nil {
+	serviceId, _ = c.GetInt("serviceId")
+	taskId, err = c.GetInt("taskId")
+	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
+	releaseTask.Id = taskId
 	mReleaseRoutine, err = CheckTaskStatus(&releaseTask)
 	if err != nil {
 		o := orm.NewOrm()
@@ -156,45 +197,26 @@ func (c *ReleaseController) CheckReleaseTaskStatus() {
 		}
 		releaseTask.ReleaseResult = string(jsonByte)
 	}
-	c.Rsp(true, "success", releaseTask)
-}
-
-func (c *ReleaseController) CancelReleaseTask() {
-	var err error
-	releaseTask := models.ReleaseTask{}
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &releaseTask); err != nil {
-		c.Rsp(false, err.Error(), nil)
+	if releaseTask.Service.Id != serviceId {
+		c.Ctx.Output.SetStatus(403)
+		c.Rsp(false, "permission denied", nil)
 		return
-	}
-
-	o := orm.NewOrm()
-	err = o.Begin()
-	if err != nil {
-		c.Rsp(false, err.Error(), nil)
-		return
-	}
-	releaseTask.TaskStatus = models.Cancel
-	err = models.CreateOrUpdateRelease(o, &releaseTask, "CancelUser", "TaskStatus")
-	if err != nil {
-		c.Rsp(false, err.Error(), nil)
-		err = o.Rollback()
-		if err != nil {
-			logs.GetLogger("RegistryCtl").Printf("rollback error:%s", err.Error())
-		}
-		return
-	}
-	err = o.Commit()
-	if err != nil {
-		logs.GetLogger("RegistryCtl").Printf("commit error:%s", err.Error())
 	}
 	c.Rsp(true, "success", releaseTask)
 }
 
 func (c *ReleaseController) CreateReleaseConf() {
 	var err error
+	var serviceId int
 	releaseConf := models.ReleaseConf{}
+	serviceId, _ = c.GetInt("serviceId")
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &releaseConf); err != nil {
 		c.Rsp(false, err.Error(), nil)
+		return
+	}
+	if releaseConf.Service.Id != serviceId {
+		c.Ctx.Output.SetStatus(403)
+		c.Rsp(false, "permission denied", nil)
 		return
 	}
 	o := orm.NewOrm()
@@ -209,13 +231,13 @@ func (c *ReleaseController) CreateReleaseConf() {
 		c.Rsp(false, err.Error(), nil)
 		err = o.Rollback()
 		if err != nil {
-			logs.GetLogger("RegistryCtl").Printf("rollback error:%s", err.Error())
+			logs.GetLogger("releaseCtl").Printf("rollback error:%s", err.Error())
 		}
 		return
 	}
 	err = o.Commit()
 	if err != nil {
-		logs.GetLogger("RegistryCtl").Printf("commit error:%s", err.Error())
+		logs.GetLogger("releaseCtl").Printf("commit error:%s", err.Error())
 	}
 	c.Rsp(true, "success", releaseConf)
 }
@@ -223,11 +245,9 @@ func (c *ReleaseController) CreateReleaseConf() {
 func (c *ReleaseController) QueryReleaseTasks() {
 	var err error
 	var tasks []*models.ReleaseTask
+	serviceId, _ := c.GetInt("serviceId")
 	querySerivce := models.Service{}
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &querySerivce); err != nil {
-		c.Rsp(false, err.Error(), nil)
-		return
-	}
+	querySerivce.Id = serviceId
 	o := orm.NewOrm()
 	tasks, err = models.QueryRelease(o, &querySerivce)
 	if err != nil {
@@ -239,11 +259,10 @@ func (c *ReleaseController) QueryReleaseTasks() {
 func (c *ReleaseController) GetReleaseConf() {
 	var err error
 	var conf models.ReleaseConf
+	var serviceId int
+	serviceId, _ = c.GetInt("serviceId")
 	querySerivce := models.Service{}
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &querySerivce); err != nil {
-		c.Rsp(false, err.Error(), nil)
-		return
-	}
+	querySerivce.Id = serviceId
 	o := orm.NewOrm()
 	conf, err = models.QueryReleaseConf(o, &querySerivce)
 	if err == orm.ErrNoRows {

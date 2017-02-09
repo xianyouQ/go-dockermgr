@@ -95,7 +95,7 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','$in
       } 
   });
 
-    $http.get('/api/idc').then(function (resp) {
+    $http.get('/api/idc/get').then(function (resp) {
       if (resp.data.status ){
         $scope.idcs = resp.data.data;
       }
@@ -159,7 +159,7 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','$in
     $scope.releaseConf.IdcParalle = Number($scope.releaseConf.IdcParalle)
     $scope.releaseConf.IdcInnerParalle = Number($scope.releaseConf.IdcInnerParalle)
     $scope.releaseConf.TimeOut = Number($scope.releaseConf.TimeOut)
-    $http.post("/api/release/conf",$scope.releaseConf).then(function(resp){
+    $http.post("/api/release/conf?serviceId="+$scope.selectedService.Id,$scope.releaseConf).then(function(resp){
       if(resp.data.status) {
         $scope.releaseConf = resp.data.data;
       }
@@ -182,7 +182,7 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','$in
     $scope.padderSelect = selectPadder;
     if(selectPadder == "list") {
       $scope.stopRefreshStatus();
-      $http.post("/api/release/task",$scope.selectedService).then(function(resp){
+      $http.get("/api/release/task?serviceId="+$scope.selectedService.Id).then(function(resp){
         if(resp.data.status) {
           $scope.releases = resp.data.data;
         }
@@ -195,7 +195,7 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','$in
     }
     if(selectPadder == "new" || selectPadder == "config"||selectPadder == "operation") {
       $scope.stopRefreshStatus();
-      $http.post("/api/release/getconf",$scope.selectedService).then(function(resp){
+      $http.get("/api/release/getconf?serviceId="+$scope.selectedService.Id).then(function(resp){
         if(resp.data.status) {
           $scope.releaseConf = resp.data.data
           angular.forEach($scope.releaseConf.ReleaseIdc,function(outIdc){
@@ -217,12 +217,16 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','$in
     if(selectPadder == "detail") {
       $scope.refreshStatus = $interval(function() {
         $scope.selectedTask.ReleaseResult = undefined;
-        $http.post("/api/release/status",$scope.selectedTask).then(function(resp){
+        $http.get("/api/release/status?serviceId="+$scope.selectedService.Id+"&taskId="+$scope.selectedTask.Id).then(function(resp){
           if(resp.data.status) {
             //$scope.selectedTask = resp.data.data;
-            $scope.selectedTask.ReleaseResult = JSON.parse(resp.data.data.ReleaseResult);
+            try{
+              $scope.selectedTask.ReleaseResult = JSON.parse(resp.data.data.ReleaseResult);
+            } catch(e) {
+
+            }
             $scope.selectedTask.TaskStatus = resp.data.data.TaskStatus;
-            if ($scope.selectedTask.TaskStatus == 4) {
+            if ($scope.selectedTask.TaskStatus >= 4) {
               console.log("stop refresh before");
               $scope.stopRefreshStatus();
             }
@@ -232,8 +236,8 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','$in
           }
         });
       },1000);
-
     }
+    
   }
 
   $scope.selectTask = function(release) {
@@ -252,7 +256,7 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','$in
   $scope.submitTask = function() {
     $scope.newReleaseTask.ReleaseConf = $scope.releaseConf;
     $scope.newReleaseTask.Service = $scope.selectedService;
-    $http.post("/api/release/newtask",$scope.newReleaseTask).then(function(resp){
+    $http.post("/api/release/newtask?serviceId="+ $scope.selectedService.Id,$scope.newReleaseTask).then(function(resp){
       if(resp.data.status) {
         $scope.releases.push(resp.data.data)
       }
@@ -264,11 +268,11 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','$in
     });
   }
   $scope.reviewTask = function() {
-    $http.post("/api/release/review",$scope.selectedTask).then(function(resp){
+    $http.get("/api/release/review?serviceId="+$scope.selectedService.Id+"&taskId="+$scope.selectedTask.Id).then(function(resp){
       if(resp.data.status) {
-        $scope.releases.remove($scope.selectedTask);
-        $scope.selectedTask = resp.data.data;
-        $scope.releases.push(resp.data.data);
+        $scope.selectedTask.TaskStatus = resp.data.data.TaskStatus;
+        $scope.selectedTask.ReviewUser = resp.data.data.ReviewUser;
+        $scope.selectedTask.ReviewTime = resp.data.data.ReviewTime;
       }
       else {
         toaster.pop("error","review task error",resp.data.info);
@@ -279,8 +283,7 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','$in
   };
   $scope.operationTask = function() {
     //$scope.selectedTask.ReleaseConf = $scope.releaseConf;
-    $scope.selectedTask.ReleaseConf.Service = $scope.selectedService;
-    $http.post("/api/release/operate",$scope.selectedTask).then(function(resp){
+    $http.get("/api/release/operate?serviceId="+$scope.selectedService.Id+"&taskId="+$scope.selectedTask.Id).then(function(resp){
       if(resp.data.status) {
         $scope.releases.remove($scope.selectedTask);
         $scope.selectedTask = resp.data.data;

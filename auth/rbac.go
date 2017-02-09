@@ -2,12 +2,12 @@ package auth
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
+	"github.com/astaxie/beego/logs"
 	m "github.com/xianyouQ/go-dockermgr/models"
 	"github.com/xianyouQ/go-dockermgr/utils"
 )
@@ -19,38 +19,42 @@ func AccessRegister() {
 		rbac_auth_gateway := beego.AppConfig.String("rbac_auth_gateway")
 		rbac_auth_signup := beego.AppConfig.String("rbac_auth_signup")
 		requestUrl := strings.ToLower(ctx.Request.RequestURI)
-		var accesslist []string
+		var accesslist []*m.ServiceAuthUser
 		var err error
-		if requestUrl==rbac_auth_gateway || requestUrl==rbac_auth_signup {
+		if requestUrl == rbac_auth_gateway || requestUrl == rbac_auth_signup {
 			return
 		}
 		if user_auth_type > 0 {
 			uinfo := ctx.Input.Session("userinfo")
 			if uinfo == nil {
-				 //ctx.Redirect(302, rbac_auth_gateway)
+				//ctx.Redirect(302, rbac_auth_gateway)
 				ctx.Output.SetStatus(401)
-				ctx.Output.JSON(&map[string]interface{}{"status": false, "info": "未登录"}, true, false)	
+				ctx.Output.JSON(&map[string]interface{}{"status": false, "info": "未登录"}, true, false)
 				return
 			}
-				//admin用户不用认证权限
+			//admin用户不用认证权限
 			adminuser := beego.AppConfig.String("rbac_admin_user")
 			if uinfo.(m.User).Username == adminuser {
 				return
 			}
 
 			if user_auth_type == 1 {
-					listbysession := ctx.Input.Session("accesslist")
-					if listbysession != nil {
-						accesslist = listbysession.([]string)
-					} else {
-						accesslist,err = AccessList(uinfo.(m.User).Id)
-						if err != nil {
-							ctx.Output.SetStatus(403)
-							ctx.Output.JSON(&map[string]interface{}{"status": false, "info": "获取权限信息失败"}, true, false)
-						}
-						ctx.Output.Session("accesslist",accesslist)
+				listbysession := ctx.Input.Session("accesslist")
+				if listbysession != nil {
+					accesslist = listbysession.([]*m.ServiceAuthUser)
+				} else {
+					accesslist, err = AccessList(uinfo.(m.User).Id)
+					if err != nil {
+						ctx.Output.SetStatus(403)
+						ctx.Output.JSON(&map[string]interface{}{"status": false, "info": "获取权限信息失败"}, true, false)
 					}
-				ret := AccessDecision(ctx.Request.RequestURI, accesslist)
+					ctx.Output.Session("accesslist", accesslist)
+				}
+				var ret bool
+				ret, err = AccessDecision(ctx.Request.RequestURI, accesslist)
+				if err != nil {
+					logs.GetLogger("rbac").Printf("check auth fail,detail:%s", err.Error())
+				}
 				if !ret {
 					ctx.Output.SetStatus(403)
 					ctx.Output.JSON(&map[string]interface{}{"status": false, "info": "权限不足"}, true, false)
@@ -62,54 +66,57 @@ func AccessRegister() {
 	beego.InsertFilter("/api/*", beego.BeforeRouter, Check)
 }
 
-
-
 //To test whether permissions
-func AccessDecision(url string,accesslist []string) bool {
-	for _,access := range accesslist {
-		if access == url {
-			return true
-		}
-	}
-	return false
-}
-
-
-
-func AccessList(uid int64) ([]string,error){
-	var err error
-	var auths []*m.ServiceAuth
-	var roles []*m.Role
-	nodes := make([]string,5,5)
-	auths,err = m.GetAuthList(uid)
+func AccessDecision(url string, accesslist []*m.ServiceAuthUser) (bool, error) {
+	baseUrl, params := ParseUrl(url)
+	RoleNodes, err := m.GetRoleNodes()
 	if err != nil {
-		return nodes,err
+		return false, err
 	}
-	roles,err = m.GetRoleNodes()
-	if err != nil {
-		return nodes,err
-	}
-	for _,auth := range auths {
-		for _,role := range roles {
-			if auth.Role.Id == role.Id {
-				if auth.Service == nil {
-					for _,node := range role.Nodes {
-						nodes = append(nodes,node.Url)
+	for _, RoleNode := range RoleNodes {
+		for _, Node := range RoleNode.Nodes {
+			if Node.Url == baseUrl {
+				for _, access := range accesslist {
+					if RoleNode.Id == access.ServiceAuth.Role.Id {
+						if RoleNode.NeedAddAuth == true && params["serviceId"] == string(access.ServiceAuth.Service.Id) {
+							return true, nil
+						}
+						if RoleNode.NeedAddAuth == false {
+							return true, nil
+						}
 					}
-				} else {
-					for _,node := range role.Nodes {
-						nodename := fmt.Sprintf("%s/%s",auth.Service.Name,node.Url)
-						nodes = append(nodes,nodename)
-					}	
-					
+
 				}
-	
-			} 
+			}
 		}
 	}
-	return nodes,err
+	return false, nil
+
 }
 
+func ParseUrl(url string) (string, map[string]string) {
+	urlSplits := strings.Split(url, "?")
+	params := make(map[string]string)
+	if len(urlSplits) == 1 {
+		return urlSplits[0], params
+	}
+	paramSplit := strings.Split(urlSplits[1], "&")
+	for _, param := range paramSplit {
+		kv := strings.Split(param, "=")
+		if len(kv) < 2 {
+			continue
+		}
+		params[kv[0]] = kv[1]
+	}
+	return urlSplits[0], params
+}
+
+func AccessList(uid int64) ([]*m.ServiceAuthUser, error) {
+	var err error
+	var auths []*m.ServiceAuthUser
+	auths, err = m.GetAuthList(uid)
+	return auths, err
+}
 
 //check login
 func CheckLogin(username string, password string) (user m.User, err error) {

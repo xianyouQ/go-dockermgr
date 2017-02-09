@@ -2,7 +2,7 @@ app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal','toa
     $scope.idcs = [];
     $scope.selectedidc = null;
 
-    $http.get('/api/idc').then(function (resp) {
+    $http.get('/api/idc/get').then(function (resp) {
       if (resp.data.status ){
         $scope.idcs = resp.data.data;
         //$scope.selectedidc = $filter('orderBy')($scope.idcs, 'first')[0];
