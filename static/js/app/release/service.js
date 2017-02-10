@@ -1,4 +1,4 @@
-app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','$interval','toaster',function($scope, $http, $filter,$modal,$interval,toaster) {
+app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','$interval','$q','toaster','myCache',function($scope, $http, $filter,$modal,$interval,$q,toaster,myCache) {
   function isObjectValueEqual(a, b) {
    if(a.Id === b.Id){
      return true;
@@ -46,62 +46,75 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','$in
   $scope.refreshStatus = undefined;
 
 
-  $http.get("/api/service/count").then(function (resp) {
-        if (resp.data.status ){
-          for(var i = 0 ;i < resp.data.data ; i++)
-          {
-            $scope.count.push(i);
-            $scope.filter[i]="";
+   $scope.initData = function(){
+    var serviceCount = myCache.getCount();
+    console.log(serviceCount);
+    if(serviceCount == null){
+      return;
+    }
+    for(var i = 0 ;i < serviceCount ; i++)
+    {
+      $scope.count.push(i);
+      $scope.filter[i]="";
+    }
+    var tmpservices = myCache.getServices();
+    if(tmpservices == null){
+      return;
+    }
+    angular.forEach(tmpservices,function(service){
+      var codeSplit = service.Code.split("-")
+      if(codeSplit.length != serviceCount){
+        console.log("invaild service:",service)
+        return true
+      }
+      var tempService = {Code:""};
+      angular.forEach(codeSplit,function(item,index){        
+        if($scope.services[index] == undefined) {
+          $scope.services[index] = [];
+        }
+        if(tempService.Code == "") {
+          tempService.Code = item
+        } else {
+          tempService.Code = tempService.Code + "-" + item
+        }
+
+        if(!$scope.services[index].contains(tempService) && index < $scope.count.length - 1) {        
+          var newService = {Code:""};
+          newService.Code = tempService.Code;
+          $scope.services[index].push(newService)
+        }
+      });
+    });
+    $scope.services[$scope.count.length - 1] = tmpservices;
+    $scope.idcs = myCache.getIdcs();
+    if($scope.idcs == null){
+      return;
+    }
+  }
+  var timer = function(){
+    return $q(function(resolve,reject){
+      myCache.fresh();
+      var count = 0;
+      var wait = $interval(function() {
+        console.log(count);
+        if(myCache.dataOk() == true){
+          resolve();
+          $interval.cancel(wait);
+        }
+        else {
+          count = count + 1;
+          if (count > 5){
+            reject("timeout");
+            $interval.cancel(wait);
           }
-      }
-      else {
-        toaster.pop("error","get count error",resp.data.info);
-      } 
-  });
+        }
+      },200);
+    })
+  }
+  timer().then(function(){
+     $scope.initData();
+  },function(){
 
-  $http.get("/api/service/get").then(function (resp) {
-        if (resp.data.status ){
-          angular.forEach(resp.data.data,function(service){
-            var codeSplit = service.Code.split("-")
-            if(codeSplit.length != $scope.count.length){
-              console.log("invaild service:",service)
-              return true
-            }
-            var tempService = {Code:""};
-            angular.forEach(codeSplit,function(item,index){
-              
-              if($scope.services[index] == undefined) {
-                $scope.services[index] = [];
-              }
-              if(tempService.Code == "") {
-                tempService.Code = item
-              } else {
-                tempService.Code = tempService.Code + "-" + item
-              }
-
-              if(!$scope.services[index].contains(tempService) && index < $scope.count.length - 1) {
-                
-                var newService = {Code:""};
-                newService.Code = tempService.Code;
-                $scope.services[index].push(newService)
-              }
-            });
-          });
-          $scope.services[$scope.count.length - 1] = resp.data.data;
-          console.log($scope.services)
-      }
-      else {
-        toaster.pop("error","get service error",resp.data.info);
-      } 
-  });
-
-    $http.get('/api/idc/get').then(function (resp) {
-      if (resp.data.status ){
-        $scope.idcs = resp.data.data;
-      }
-      else {
-        toaster.pop("error","get idc error",resp.data.info);
-      } 
   });
 
   $scope.isShow = function(idx) {

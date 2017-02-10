@@ -17,12 +17,20 @@ app.controller('SigninFormController', ['$scope', '$http', '$state','authService
           if ( !response.data.status ) {
             $scope.authError = response.data.info;
             if (response.data.data != null && "Username" in response.data.data) {
-              authService.login(response.data.data.Username);
+              authService.login(response.data.data);
+              if(authService.getLastState() != undefined){
+                $state.go(authService.getLastState());
+                return;
+              }
               $state.go('docker.dashboard');
             }
           }else{
-          authService.login(response.data.data.Username);
-          $state.go('docker.dashboard');
+              authService.login(response.data.data);
+              if(authService.getLastState() != undefined){
+                $state.go(authService.getLastState());
+                return;
+              }
+              $state.go('docker.dashboard');
         }
       }, function(x) {
         $scope.authError = 'Server Error';

@@ -8,6 +8,7 @@ import (
 	"github.com/astaxie/beego/orm"
 	"github.com/xianyouQ/go-dockermgr/auth"
 	m "github.com/xianyouQ/go-dockermgr/models"
+	"github.com/xianyouQ/go-dockermgr/utils"
 )
 
 type UserController struct {
@@ -85,10 +86,11 @@ func (this *UserController) DelUser() {
 
 //登录
 func (this *UserController) Login() {
-	uinfo := this.Ctx.Input.Session("userinfo")
-	data := make(map[string]string)
+	uinfo := this.GetSession("userinfo")
+	data := make(map[string]interface{})
 	if uinfo != nil {
 		data["Username"] = uinfo.(m.User).Username
+		data["auth"] = this.GetSession("accesslist").([]*m.ServiceAuthUser)
 		this.Rsp(false, "不可重复登陆", data)
 		return
 	}
@@ -100,18 +102,23 @@ func (this *UserController) Login() {
 	}
 
 	user, err := auth.CheckLogin(u.Username, u.Password)
-	if err == nil {
-		this.SetSession("userinfo", user)
-		//accesslist, _ := auth.GetAccessList(user.Id)
-		//this.SetSession("accesslist", accesslist)
-		data["Username"] = user.Username
-		//datajson,_ := json.Marshal(data)
-		this.Rsp(true, "登陆成功", data)
-		return
-	} else {
+	if err != nil {
 		this.Rsp(false, err.Error(), nil)
 		return
 	}
+	this.SetSession("userinfo", user)
+	data["Username"] = user.Username
+	var accesslist []*m.ServiceAuthUser
+	accesslist, err = auth.AccessList(user.Id)
+	if err != nil {
+		logs.GetLogger("userCtl").Printf("get auth fail,detail:%s", err.Error())
+	} else {
+		data["auth"] = accesslist
+		this.SetSession("accesslist", accesslist)
+	}
+	this.Rsp(true, "登陆成功", data)
+	return
+
 }
 
 //退出
@@ -126,17 +133,20 @@ func (this *UserController) Changepwd() {
 	if userinfo == nil {
 		this.Rsp(false, "请先登录", nil)
 	}
-	oldpassword := this.GetString("oldpassword")
-	newpassword := this.GetString("newpassword")
-	repeatpassword := this.GetString("repeatpassword")
-	if newpassword != repeatpassword {
+	u := m.User{}
+	if err := json.Unmarshal(this.Ctx.Input.RequestBody, &u); err != nil {
+		//handle error
+		this.Rsp(false, err.Error(), nil)
+		return
+	}
+
+	if u.Password != u.Repassword {
 		this.Rsp(false, "两次输入密码不一致", nil)
 	}
-	user, err := auth.CheckLogin(userinfo.(m.User).Username, oldpassword)
+	user, err := auth.CheckLogin(userinfo.(m.User).Username, u.OldPassword)
 	if err == nil {
-		var u m.User
 		u.Id = user.Id
-		u.Password = newpassword
+		u.Password = utils.Pwdhash(u.Password)
 		o := orm.NewOrm()
 		id, err := m.UpdateUser(o, &u, "Password")
 		if err == nil && id > 0 {

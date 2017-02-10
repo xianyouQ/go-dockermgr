@@ -42,14 +42,6 @@ func initData() {
 		panic(err.Error())
 	}
 	o := orm.NewOrm()
-	adminUserName := beego.AppConfig.String("rbac_admin_user")
-	if adminUserName == "" {
-		panic("adminUser not Set in App.conf")
-	}
-	defaultPasswd := beego.AppConfig.String("rbac_auth_defaultpasswd")
-	if defaultPasswd == "" {
-		panic("defaultPasswd not Set in App.conf")
-	}
 
 	adminRole := &models.Role{Name: "SYSTEM", Status: true}
 	baseRole := &models.Role{Name: "BASE", Status: true}
@@ -113,10 +105,23 @@ func initData() {
 	if err != nil {
 		panic(err.Error())
 	}
+	adminUserName := beego.AppConfig.String("rbac_admin_user")
+	if adminUserName == "" {
+		panic("adminUser not Set in App.conf")
+	}
+	defaultPasswd := beego.AppConfig.String("rbac_auth_defaultpasswd")
+	if defaultPasswd == "" {
+		panic("defaultPasswd not Set in App.conf")
+	}
 	adminUser := &models.User{Username: adminUserName, Password: defaultPasswd, Repassword: defaultPasswd}
 	_, err = models.AddUser(o, adminUser)
 	if err != nil {
 		panic(err.Error())
 	}
-
+	users := make([]*models.User, 0, 1)
+	users = append(users, adminUser)
+	err = models.AddUserAuth(o, users, adminRole, nil)
+	if err != nil {
+		panic(err.Error())
+	}
 }

@@ -37,13 +37,13 @@ angular.module('app')
                       }]
                   }
               })
-              .state('access.signup', {
-                  url: '/signup',
-                  templateUrl: 'tpl/page_signup.html',
+              .state('access.passwdchange', {
+                  url: '/passwdchange',
+                  templateUrl: 'tpl/page_pwchange.html',
                   resolve: {
                       deps: ['uiLoad',
                         function( uiLoad ){
-                          return uiLoad.load( ['js/controllers/signup.js'] );
+                          return uiLoad.load( ['js/controllers/passwdchange.js'] );
                       }]
                   }
               })

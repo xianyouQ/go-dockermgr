@@ -78,8 +78,14 @@ func AccessDecision(url string, accesslist []*m.ServiceAuthUser) (bool, error) {
 			if Node.Url == baseUrl {
 				for _, access := range accesslist {
 					if RoleNode.Id == access.ServiceAuth.Role.Id {
-						if RoleNode.NeedAddAuth == true && params["serviceId"] == string(access.ServiceAuth.Service.Id) {
-							return true, nil
+						if RoleNode.NeedAddAuth == true {
+							if serviceId, ok := params["serviceId"]; ok {
+								serviceID, _ := strconv.Atoi(serviceId)
+								if access.ServiceAuth.Service.Id == serviceID {
+									return true, nil
+								}
+							}
+
 						}
 						if RoleNode.NeedAddAuth == false {
 							return true, nil

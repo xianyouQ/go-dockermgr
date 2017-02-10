@@ -4,11 +4,11 @@
     <span translate="aside.nav.docker_nav.dockermgr_TITLE">Docker Management</span>
   </li>  
   <li>
-    <a ui-sref="docker.dashboard">
+    <a ui-sref="docker.dashboard" ng-show="UserhasRole('SYSTEM')">
       <i class="icon-user icon"></i>
       <span translate="aside.nav.docker_nav.DASHBOARD">Dashboard</span>
     </a>
-    <a ui-sref="docker.containers">
+    <a ui-sref="docker.containers" ng-show="UserhasRole('SYSTEM') || UserhasRole('OPS')">
       <i class="icon-user icon"></i>
       <span translate="aside.nav.docker_nav.CONTAINERS">Services</span>
     </a>
@@ -20,30 +20,30 @@
     <span translate="aside.nav.release_nav.Release_TITLE">Release</span>
   </li>  
   <li>
-    <a ui-sref="release.service">
+    <a ui-sref="release.service" ng-show="UserhasRole('SYSTEM') || UserhasRole('OPS') || UserhasRole('DEV') || UserhasRole('QA')">
       <i class="icon-user icon"></i>
       <span translate="aside.nav.release_nav.SERVICE">Service</span>
     </a>
   </li>
 
   <li class="line dk hidden-folded"></li>
-  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">          
+  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs" >          
     <span translate="aside.nav.manager_nav.Manager_TITLE">Manager</span>
   </li>  
   <li>
-    <a ui-sref="management.users">
+    <a ui-sref="management.users" ng-show="UserhasRole('SYSTEM')">
       <i class="icon-user icon"></i>
       <span translate="aside.nav.manager_nav.USER">Users</span>
     </a>
-    <a ui-sref="management.idcs">
+    <a ui-sref="management.idcs" ng-show="UserhasRole('SYSTEM')">
       <i class="icon-user icon"></i>
       <span translate="aside.nav.manager_nav.IDCS">IDCs</span>
     </a>
-    <a ui-sref="management.services">
+    <a ui-sref="management.services" ng-show="UserhasRole('SYSTEM') || UserhasRole('OPS')">
       <i class="icon-user icon"></i>
       <span translate="aside.nav.manager_nav.SERVICES">Services</span>
     </a>
-    <a ui-sref="management.auth">
+    <a ui-sref="management.auth" ng-show="UserhasRole('SYSTEM')">
       <i class="icon-user icon"></i>
       <span translate="aside.nav.manager_nav.AUTH">Auth</span>
     </a>
