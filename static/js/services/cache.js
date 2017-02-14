@@ -20,15 +20,16 @@ app.factory('myCache', function ($http,toaster,authService) {
             if (resp.data.status){
               if(authService.userHasRole("SYSTEM")){
                 services = resp.data.data;
-              }
-              angular.forEach(resp.data.data,function(service){
-                angular.forEach(auths,function(auth){
-                  if(String(auth.ServiceAuth.Name).startsWith(service.Code)){
-                      services.push(service);
-                      return false;
-                  } 
+              } else {
+                angular.forEach(resp.data.data,function(service){
+                  angular.forEach(auths,function(auth){
+                    if(String(auth.ServiceAuth.Name).startsWith(service.Code)){
+                        services.push(service);
+                        return false;
+                    } 
+                  });
                 });
-              });
+              }
 
             }
             else {

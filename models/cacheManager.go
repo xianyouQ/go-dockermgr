@@ -43,6 +43,9 @@ func GetIdcs() ([]*IdcConf, error) {
 	return idcs, nil
 }
 
+func DeleteCache(cache string) {
+	bm.Delete(cache)
+}
 func GetRoleNodes() ([]*Role, error) {
 	var err error
 	var roles []*Role
@@ -56,39 +59,6 @@ func GetRoleNodes() ([]*Role, error) {
 		err = bm.Put("roles", roles, 600*time.Second)
 	}
 	return roles, err
-}
-func UpdateRoleNodes(Updaterole *Role, isnew bool) {
-	if !bm.IsExist("roles") {
-		return
-	}
-	roles := bm.Get("roles").([]*Role)
-	if isnew {
-		roles = append(roles, Updaterole)
-	} else {
-		for inx, role := range roles {
-			if role.Id == Updaterole.Id {
-				roles[inx] = Updaterole
-			}
-		}
-	}
-	bm.Put("roles", roles, 600*time.Second)
-}
-
-func UpdateIdcs(UpdateIdc *IdcConf, isnew bool) {
-	if !bm.IsExist("idcs") {
-		return
-	}
-	idcs := bm.Get("idcs").([]*IdcConf)
-	if isnew {
-		idcs = append(idcs, UpdateIdc)
-	} else {
-		for inx, idc := range idcs {
-			if idc.Id == UpdateIdc.Id {
-				idcs[inx] = UpdateIdc
-			}
-		}
-	}
-	bm.Put("idcs", idcs, 600*time.Second)
 }
 
 func GetServices() ([]*Service, error) {
@@ -104,20 +74,4 @@ func GetServices() ([]*Service, error) {
 		err = bm.Put("services", services, 600*time.Second)
 	}
 	return services, err
-}
-func UpdateServices(UpdateService *Service, isnew bool) {
-	if !bm.IsExist("services") {
-		return
-	}
-	services := bm.Get("services").([]*Service)
-	if isnew {
-		services = append(services, UpdateService)
-	} else {
-		for inx, service := range services {
-			if service.Id == UpdateService.Id {
-				services[inx] = UpdateService
-			}
-		}
-	}
-	bm.Put("services", services, 600*time.Second)
 }

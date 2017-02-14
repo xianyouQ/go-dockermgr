@@ -137,9 +137,30 @@ func (c *AuthController) UpdateRoleNode() {
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
+	var nowRoles []*models.Role
+	var nowRole *models.Role
+	nowRoles, err = models.GetRoleNodes()
+	if err != nil {
+		c.Rsp(false, err.Error(), nil)
+		return
+	}
+	for _, role := range nowRoles {
+		if role.Id == oldRole.Id {
+			nowRole = role
+		}
+	}
 	for _, node := range oldRole.Nodes {
+		found := false
 		if node.Active == true {
-			activeNodes = append(activeNodes, node)
+			for _, innerNode := range nowRole.Nodes {
+				if innerNode.Id == node.Id {
+					found = true
+					break
+				}
+			}
+			if found == false {
+				activeNodes = append(activeNodes, node)
+			}
 		} else {
 			inActiveNodes = append(inActiveNodes, node)
 		}
@@ -167,6 +188,7 @@ func (c *AuthController) UpdateRoleNode() {
 	if err != nil {
 		logs.GetLogger("AuthCtl").Printf("commit error:%s", err.Error())
 	}
+	models.DeleteCache("roles")
 	c.Rsp(true, "success", nil)
 }
 func (c *AuthController) GetUserAuthList() {
@@ -189,14 +211,17 @@ type UserAuthForm struct {
 
 func (c *AuthController) AddUserAuth() {
 	var err error
-	serviceId, _ := c.GetInt("serviceId")
+	var serviceId int
 	mUserAuthForm := UserAuthForm{}
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &mUserAuthForm); err != nil {
 		//handle error
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
-	if serviceId != mUserAuthForm.Service.Id {
+	serviceId, err = c.GetInt("serviceId")
+	if err != nil {
+
+	} else if serviceId != mUserAuthForm.Service.Id {
 		c.Ctx.Output.SetStatus(403)
 		c.Rsp(false, "permission denied", nil)
 		return

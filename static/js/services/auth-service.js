@@ -11,24 +11,30 @@ app.factory('authService', function ($sessionStorage) {
             }
             var yes = false;
             angular.forEach($sessionStorage.auths,function(auth){
-                if(String(auth.ServiceAuth.Name).startsWith(role)){
-                    yes = true;
-                    return false;
-                } else if(String(auth.ServiceAuth.Name).endsWith(role)){
-                    yes = true;
+                var authNameSplits = String(auth.ServiceAuth.Name).split(".");
+                angular.forEach(authNameSplits,function(Split){
+                    if(Split == role){
+                        yes = true;
+                        return false;
+                    }
+                });
+                if(yes == true){
                     return false;
                 }
+
             });
             return yes;
         },
  
         isUrlAccessibleForUser: function (route) {
             if($sessionStorage.user == undefined) {
-                lastState = route;
                 return undefined;
             }
 
             return true;
+        },
+        saveLastState: function(route){
+            lastState = route;
         },
         returnUser: function () {
             return $sessionStorage.user

@@ -51,13 +51,12 @@ func checkService(newService *Service) error {
 func AddOrUpdateService(o orm.Ormer, newService *Service, updatecols ...string) error {
 	var err error
 	var roles []*Role
-	var pid int64
 	err = checkService(newService)
 	if err != nil {
 		return err
 	}
 	if newService.Id == 0 {
-		pid, err = o.Insert(newService)
+		_, err = o.Insert(newService)
 		if err != nil {
 			return err
 		}
@@ -84,9 +83,7 @@ func AddOrUpdateService(o orm.Ormer, newService *Service, updatecols ...string) 
 			return err
 		}
 	}
-	if pid != 0 {
-		UpdateServices(newService, true)
-	}
+	DeleteCache("services")
 	return err
 }
 

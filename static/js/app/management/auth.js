@@ -14,8 +14,7 @@ app.controller('ManageMentAuthCtrl', ['$scope', '$http', '$filter','$modal','toa
     $http.get('/api/auth/get').then(function (resp) {
       if (resp.data.status ){
         $scope.roles = resp.data.data;
-        $scope.selectedrole = $filter('orderBy')($scope.roles, 'Code')[0];
-        $scope.selectedrole.selected = true;
+
       }
       else {
         toaster.pop("error","get auth error",resp.data.info);

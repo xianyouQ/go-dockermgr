@@ -62,9 +62,9 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','$in
       return;
     }
     angular.forEach(tmpservices,function(service){
+      console.log(service.Code);
       var codeSplit = service.Code.split("-")
       if(codeSplit.length != serviceCount){
-        console.log("invaild service:",service)
         return true
       }
       var tempService = {Code:""};

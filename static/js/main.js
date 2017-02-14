@@ -39,7 +39,8 @@ angular.module('app')
       }
       $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {  
         var authresult = authService.isUrlAccessibleForUser(toState);
-       if( authresult===undefined && toState.name !== "access.signin" && toState.name !== "access.signup")  {
+       if( authresult===undefined && toState.name !== "access.signin" && toState.name !== "access.passwdchange")  {
+         authService.saveLastState(toState.name);
           event.preventDefault();
           $state.go('access.signin');
           

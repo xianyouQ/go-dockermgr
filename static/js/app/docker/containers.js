@@ -140,6 +140,7 @@ app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal','$
   $scope.selectService = function(item,idx){
     if (idx == $scope.count.length - 1) {
       $scope.selectedService = item;
+      $scope.returnIdc();
       return
     } 
     angular.forEach($scope.services, function(item) {

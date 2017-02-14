@@ -54,13 +54,12 @@ func GetRoleListFromOrm() ([]*Role, error) {
 }
 
 func AddOrUpdateRole(o orm.Ormer, role *Role, updatecols ...string) error {
-	var id int64
 	var err error
 	if err = checkRole(role); err != nil {
 		return err
 	}
 	if role.Id == 0 {
-		id, err = o.Insert(role)
+		_, err = o.Insert(role)
 		if err != nil {
 			return err
 		}
@@ -92,12 +91,7 @@ func AddOrUpdateRole(o orm.Ormer, role *Role, updatecols ...string) error {
 			return err
 		}
 	}
-
-	if id != 0 {
-		UpdateRoleNodes(role, true)
-	} else {
-		UpdateRoleNodes(role, false)
-	}
+	DeleteCache("roles")
 	return err
 }
 

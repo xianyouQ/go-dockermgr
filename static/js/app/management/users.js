@@ -1,5 +1,37 @@
 app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',function($scope, $http, $filter,$modal) { 
+  function isObjectValueEqual(a, b) {
+   if(a.Id === b.Id){
+     return true;
+   } 
+   else {
+     return false;
+   }
+}
 
+  Array.prototype.contains = function(obj) {
+    var i = this.length;
+    while (i--) {
+        if (isObjectValueEqual(this[i],obj)) {
+            return true;
+        }
+    }
+    return false;
+ }
+
+ Array.prototype.remove=function(obj){ 
+  for(var i =0;i <this.length;i++){ 
+    var temp = this[i]; 
+    if(!isNaN(obj)){ 
+      temp=i; 
+    } 
+    if(isObjectValueEqual(temp,obj)){ 
+      for(var j = i;j <this.length;j++){ 
+        this[j]=this[j+1]; 
+        } 
+      this.length = this.length-1; 
+      } 
+  } 
+  }
 
   $scope.users = [];
   $scope.roles = [];
@@ -95,13 +127,13 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
         controller: 'delUserConfirmModalInstanceCtrl',
         size: 'lg',
         resolve: {
-          deluser: function () {
+          delUser: function () {
             return delUser;
           }
         }
       });
-       modalInstance.result.then(function (delService) {
-      $scope.services[$scope.count.length -1].remove(delService);
+       modalInstance.result.then(function (delUser) {
+        $scope.users.remove(delUser);
        }, function () {
         //log error
       });
@@ -139,9 +171,9 @@ app.controller('ManageMentUsersCtrl', ['$scope', '$http', '$filter','$modal',fun
     $scope.confirm="delete user?";
     $scope.ok = function () {
       $scope.formError = null;
-     $http.delete('/api/auth/user',$delUser).then(function(response) {
+     $http.delete('/api/auth/user?Id='+$delUser.Id).then(function(response) {
           if (response.data.status){
-            $modalInstance.close($selectedService);
+            $modalInstance.close($delUser);
           }
           if  (!response.data.status ) {
             $scope.formError = response.data.info;
