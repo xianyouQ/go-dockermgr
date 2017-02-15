@@ -13,13 +13,13 @@
               <input placeholder="Name" class="form-control no-border" ng-model="user.Username" disabled>
             </div>
             <div class="list-group-item">
-               <input type="password" placeholder="Password" class="form-control no-border" ng-model="user.OldPassword" required>
+               <input type="password" placeholder="old Password" class="form-control no-border" ng-model="user.OldPassword" required>
             </div>
             <div class="list-group-item">
-               <input type="password" placeholder="Password again" class="form-control no-border" ng-model="user.Password" required>
+               <input type="password" placeholder="new Password" class="form-control no-border" ng-model="user.Password" required>
             </div>
             <div class="list-group-item">
-               <input type="password" placeholder="Password again" class="form-control no-border" ng-model="user.Repassword" required>
+               <input type="password" placeholder="new Password again" class="form-control no-border" ng-model="user.Repassword" required>
             </div>
           </div>
           <button type="submit" class="btn btn-lg btn-primary btn-block" ng-click="signup()" ng-disabled='form.$invalid'>ChangePassword</button>

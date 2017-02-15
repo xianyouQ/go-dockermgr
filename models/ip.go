@@ -13,7 +13,6 @@ import (
 const (
 	IpUsed = iota
 	IpUnUsed
-	IpAllocated
 )
 
 type Cidr struct {
@@ -127,7 +126,7 @@ func RecycleIp(o orm.Ormer, service *Service, idc *IdcConf, num int) ([]*Ip, err
 	if len(idc.Cidrs) == 0 {
 		return IpList, errors.New("no Cidr in this idc")
 	}
-	qnum, err := o.QueryTable(beego.AppConfig.String("dockermgr_ip_table")).Filter("BelongNet__id__in", idc.Cidrs).Filter("Status", IpUsed).Filter("BelongService", service).Limit(num).All(&IpList)
+	qnum, err := o.QueryTable(beego.AppConfig.String("dockermgr_ip_table")).Filter("BelongNet__Id__in", idc.Cidrs).Filter("Status", IpUsed).Filter("BelongService", service).Limit(num).All(&IpList)
 	if qnum < int64(num) {
 		return IpList, errors.New("No enough ip to recycle")
 	}
@@ -136,6 +135,24 @@ func RecycleIp(o orm.Ormer, service *Service, idc *IdcConf, num int) ([]*Ip, err
 	return IpList, err
 }
 
+func GetCidrCount(o orm.Ormer, queryIdc *IdcConf) (int64, error) {
+	qnum, err := o.QueryTable(beego.AppConfig.String("dockermgr_cidr_table")).Filter("BelongIdc__Id", queryIdc.Id).Count()
+	return qnum, err
+}
+
+func DelCidr(o orm.Ormer, delCidr *Cidr) error {
+	var qnum int64
+	var err error
+	qnum, err = o.QueryTable(beego.AppConfig.String("dockermgr_ip_table")).Filter("BelongNet__id__in", delCidr.Id).Filter("Status", IpUsed).Count()
+	if err != nil {
+		return err
+	}
+	if qnum > 0 {
+		return errors.New("some Container still running in this Cidr")
+	}
+	_, err = o.Delete(delCidr)
+	return err
+}
 func init() {
 	orm.RegisterModel(new(Cidr), new(Ip))
 }

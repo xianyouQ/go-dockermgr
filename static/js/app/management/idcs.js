@@ -1,12 +1,11 @@
 app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal','toaster',function($scope, $http, $filter,$modal,toaster) {
     $scope.idcs = [];
     $scope.selectedidc = null;
+    $scope.padderSelect='conf';
 
     $http.get('/api/idc/get').then(function (resp) {
       if (resp.data.status ){
         $scope.idcs = resp.data.data;
-        //$scope.selectedidc = $filter('orderBy')($scope.idcs, 'first')[0];
-        //$scope.selectedidc.selected = true;
       }
       else {
         toaster.pop("error","get idc error",resp.data.info);
@@ -81,6 +80,41 @@ app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal','toa
       });
  };
 
+ $scope.delIdc = function(delIdc) {
+      var modalInstance = $modal.open({
+        templateUrl: 'delIdcConfirmModalContent.html',
+        controller: 'delIdcConfirmModalInstanceCtrl',
+        size: 'lg',
+        resolve: {
+          delIdc: function () {
+            return delIdc;
+          }
+        }
+      });
+       modalInstance.result.then(function (delIdc) {
+      $scope.idcs.remove(delIdc);
+       }, function () {
+        //log error
+      });
+ }
+ $scope.delCidr = function(delCidr) {
+      var modalInstance = $modal.open({
+        templateUrl: 'delCidrConfirmModalContent.html',
+        controller: 'delCidrConfirmModalInstanceCtrl',
+        size: 'lg',
+        resolve: {
+          delCidr: function () {
+            return delCidr;
+          }
+        }
+      });
+       modalInstance.result.then(function (delCidr) {
+        $scope.selectedidc.Cidrs.remove(delCidr);
+       }, function () {
+        //log error
+      });
+ }
+
 }]);
 
   app.controller('addIDCModalInstanceCtrl', ['$scope', '$modalInstance','$http',function($scope, $modalInstance,$http) {
@@ -120,7 +154,7 @@ app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal','toa
     if ($scope.newCidr.Net == "" || $scope.newCidr.StartIP == "" || $scope.newCidr.EndIP == ""){
           return
       }
-        $http.post('/api/Cidr/Add',$scope.newCidr).then(function(response) {
+        $http.post('/api/Cidr',$scope.newCidr).then(function(response) {
           if (response.data.status ){
             $modalInstance.close($scope.newCidr);
           }
@@ -131,6 +165,52 @@ app.controller('ManageMentIDCsCtrl', ['$scope', '$http', '$filter','$modal','toa
         $scope.formError = 'Server Error';
       });
       
+    };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }]); 
+
+   app.controller('delIdcConfirmModalInstanceCtrl', ['$scope', '$modalInstance','$http','delIdc',function($scope, $modalInstance,$http,$delIdc) {
+   
+    $scope.formError = null;
+    $scope.confirm="delete Idc?";
+    $scope.ok = function () {
+      $scope.formError = null;
+     $http.delete('/api/idc?idcId='+$delIdc.Id).then(function(response) {
+          if (response.data.status){
+            $modalInstance.close($delIdc);
+          }
+          if  (!response.data.status ) {
+            $scope.formError = response.data.info;
+          }
+        }, function(x) {
+        console.log('Server Error')
+      });
+    };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }]); 
+
+   app.controller('delCidrConfirmModalInstanceCtrl', ['$scope', '$modalInstance','$http','delCidr',function($scope, $modalInstance,$http,$delCidr) {
+   
+    $scope.formError = null;
+    $scope.confirm="delete Cidr?";
+    $scope.ok = function () {
+      $scope.formError = null;
+     $http.delete('/api/Cidr?cidrId='+$delCidr.Id).then(function(response) {
+          if (response.data.status){
+            $modalInstance.close($delCidr);
+          }
+          if  (!response.data.status ) {
+            $scope.formError = response.data.info;
+          }
+        }, function(x) {
+        console.log('Server Error')
+      });
     };
 
     $scope.cancel = function () {

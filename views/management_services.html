@@ -12,6 +12,9 @@
   <script type="text/ng-template" id="delConfirmModalContent.html">
     <div ng-include="'tpl/confirm_modal.html'"></div>
   </script>
+  <script type="text/ng-template" id="delUserAuthConfirmModalContent.html">
+    <div ng-include="'tpl/confirm_modal.html'"></div>
+  </script>
   <script type="text/ng-template" id="addAuthModalContent.html">
     <div ng-include="'tpl/add_auth_modal.html'"></div>
   </script>
@@ -46,13 +49,17 @@
 
   <!-- column -->
   <div class="col bg-white-only">
-    <div class="vbox">
-      <div class="row-row">
-        <div class="cell">
-          <div class="cell-inner">
-            <div class="wrapper-lg">
+    <div ng-show="ConfShow()">
+      <div class="wrapper bg-white b-b">
+        <ul class="nav nav-pills nav-sm">
+          <li ng-class="{'active':padderSelect=='conf'}"><a ng-click="padderSelect='conf'">业务配置</a></li>
+          <li ng-class="{'active':padderSelect=='auth'}"><a ng-click="padderSelect='auth'">业务权限</a></li>
+        </ul>
+      </div>
+      <div class="padder">
+            <div class="wrapper-lg" ng-show="padderSelect=='conf'">
               <!-- fields -->
-                  <div class="panel panel-default" ng-show="ConfShow()">
+                  <div class="panel panel-default">
                     <div class=panel-heading>
                       <strong>Service Conf</strong>
                     </div>
@@ -78,7 +85,9 @@
                       <button type="submit" class="btn btn-success" ng-click="commitService()" ng-disabled='form.$invalid'>Submit</button>
                     </footer>
                   </div>
-                  <div class="panel panel-default" ng-show="ConfShow()">
+            </div>
+            <div class="wrapper-lg" ng-show="padderSelect=='auth'">
+                  <div class="panel panel-default">
                     <div class="panel-heading">
                       Service auth table
                     </div>
@@ -110,7 +119,7 @@
                           <tr ng-repeat="User in Users">
                               <td>{{User.Username}}</td>
                               <td>{{User.ServiceAuths[0].Role.Name}}</td>
-                              <td><button class="btn m-b-xs btn-sm btn-danger" ng-click="deleteUser(User)"><i class="fa fa-trash-o"></i></button></td>
+                              <td><button class="btn m-b-xs btn-sm btn-danger" ng-click="delUserAuth(User,User.ServiceAuths[0])"><i class="fa fa-trash-o"></i></button></td>
                           </tr>
                         </tbody>
                         <tfoot class="hide-if-no-paging">
@@ -125,8 +134,6 @@
                 </div>
               </div>
               <!-- / fields -->
-            </div>
-          </div>
         </div>
       </div>  
     </div>

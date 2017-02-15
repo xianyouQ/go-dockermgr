@@ -73,9 +73,8 @@ func AddUserAuth(o orm.Ormer, users []*User, role *Role, service *Service) error
 	return err
 }
 
-func DelUserAuth(o orm.Ormer, user *User, role *Role, service *Service) error {
-	mServiceAuth := ServiceAuth{Role: role, Service: service}
-	m2m := o.QueryM2M(&mServiceAuth, "Users")
-	_, err := m2m.Remove(&user)
+func DelUserAuth(o orm.Ormer, user *User, serviceAuth *ServiceAuth) error {
+	m2m := o.QueryM2M(serviceAuth, "Users")
+	_, err := m2m.Remove(user)
 	return err
 }

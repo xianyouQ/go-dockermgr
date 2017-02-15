@@ -1,6 +1,6 @@
 app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal','$q','$interval','myCache',function($scope, $http, $filter,$modal,$q,$interval,myCache) {
   function isObjectValueEqual(a, b) {
-   if(a.Code === b.Code){
+   if(a.Id === b.Id){
      return true;
    } 
    else {
@@ -39,6 +39,7 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
   $scope.filter = new Map();
   $scope.count = [];
   $scope.Users = [];
+  $scope.padderSelect='conf';
  //$scope.$watch('services',null,true);
 
     $http.get('/api/auth/get').then(function (resp) {
@@ -248,8 +249,28 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
           }
         }
       });
-       modalInstance.result.then(function () {
-         
+       modalInstance.result.then(function (Users) {
+         $scope.Users.push(Users);
+       }, function () {
+        //log error
+      });
+  };
+  $scope.delUserAuth = function(delUser,serviceAuth) {
+      var modalInstance = $modal.open({
+        templateUrl: 'delUserAuthConfirmModalContent.html',
+        controller: 'delUserAuthConfirmModalInstanceCtrl',
+        size: 'lg',
+        resolve: {
+          delUser: function () {
+            return delUser;
+          },
+          serviceAuth: function(){
+            return serviceAuth;
+          }
+        }
+      });
+       modalInstance.result.then(function (delUser) {
+      $scope.Users.remove(delUser);
        }, function () {
         //log error
       });
@@ -286,6 +307,30 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
       $modalInstance.dismiss('cancel');
     };
   }]); 
+
+  app.controller('delUserAuthConfirmModalInstanceCtrl', ['$scope', '$modalInstance','$http','delUser','serviceAuth',function($scope, $modalInstance,$http,$delUser,$serviceAuth) {
+   
+    $scope.formError = null;
+    $scope.confirm="delete User's auth?";
+    $scope.ok = function () {
+      $scope.formError = null;
+     $http.post('/api/auth/delete?serviceId='+$serviceAuth.Service.Id,{User:$delUser,ServiceAuth:$serviceAuth}).then(function(response) {
+          if (response.data.status){
+            $modalInstance.close($delUser);
+          }
+          if  (!response.data.status ) {
+            $scope.formError = response.data.info;
+          }
+        }, function(x) {
+        console.log('Server Error')
+      });
+    };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }]); 
+
 
   app.controller('delConfirmModalInstanceCtrl', ['$scope', '$modalInstance','$http','selectedService',function($scope, $modalInstance,$http,$selectedService) {
    
@@ -336,12 +381,12 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
         else {
           $scope.formError = resp.data.info;
         }
-        console.log($scope.Users);
       });
     $scope.ok = function () {
       $scope.formError = null;
       $http.post('/api/auth/new?serviceId='+$service.Id,{Users:$scope.selected.Users,Service:$service,Role:$scope.selected.Role}).then(function(response) {
           if (response.data.status){
+            $modalInstance.close(response.data.data);
           }
           if  (!response.data.status ) {
             $scope.formError = response.data.info;

@@ -86,6 +86,20 @@ func getIdcsfromOrm() ([]*IdcConf, error) {
 	return idcs, nil
 }
 
+func DelIdc(o orm.Ormer, delIdc *IdcConf) error {
+	var cidrCount int64
+	var err error
+	cidrCount, err = GetCidrCount(o, delIdc)
+	if err != nil {
+		return err
+	}
+	if cidrCount > 0 {
+		return errors.New("please delete all cidr in this idc first")
+	}
+	_, err = o.Delete(delIdc)
+	return err
+}
+
 func init() {
 	orm.RegisterModel(new(IdcConf))
 }

@@ -81,11 +81,11 @@ func initData() {
 		{Desc: "add/delete node to role", Url: "/api/authnode/post"},
 		{Desc: "add or update node", Url: "/api/node/post"},
 		{Desc: "get node list", Url: "/api/node/get"},
-		{Desc: "add or update idc Conf", Url: "/api/idc"},
+		{Desc: "add or update or delete idc Conf", Url: "/api/idc"},
 		{Desc: "get idc list", Url: "/api/idc/get"},
 		{Desc: "add or update marathon conf", Url: "/api/marathon/conf"},
 		{Desc: "add or update registry conf", Url: "/api/registry/conf"},
-		{Desc: "add cidr for idc", Url: "/api/Cidr/Add"},
+		{Desc: "add/delete cidr for idc", Url: "/api/Cidr"},
 		{Desc: "add or update service", Url: "/api/service/Add"},
 		{Desc: "delete service", Url: "/api/service/Delete"},
 		{Desc: "get service split count", Url: "/api/service/count"},
@@ -100,6 +100,8 @@ func initData() {
 		{Desc: "create release task conf", Url: "/api/release/conf"},
 		{Desc: "get release task conf", Url: "/api/release/getconf"},
 		{Desc: "get release task status", Url: "/api/release/status"},
+		{Desc: "delete role", Url: "/api/auth/delrole"},
+		{Desc: "delete user's auth for service", Url: "/api/auth/delete"},
 	}
 	_, err = o.InsertMulti(10, Nodes)
 	if err != nil {

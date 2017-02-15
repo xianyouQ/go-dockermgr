@@ -2,7 +2,7 @@
 
 /* Controllers */
   // signin controller
-app.controller('SigninFormController', ['$scope', '$http', '$state','authService' ,function($scope, $http, $state,authService) {
+app.controller('SigninFormController', ['$scope','$rootScope', '$http', '$state','authService' ,function($scope, $rootScope,$http, $state,authService) {
     $scope.user = {};
     $scope.authError = null;
     $scope.login = function() {
@@ -22,6 +22,7 @@ app.controller('SigninFormController', ['$scope', '$http', '$state','authService
                 $state.go(authService.getLastState());
                 return;
               }
+              $rootScope.Username = authService.returnUser();
               $state.go('docker.dashboard');
             }
           }else{
@@ -30,6 +31,7 @@ app.controller('SigninFormController', ['$scope', '$http', '$state','authService
                 $state.go(authService.getLastState());
                 return;
               }
+              $rootScope.Username = authService.returnUser();
               $state.go('docker.dashboard');
         }
       }, function(x) {

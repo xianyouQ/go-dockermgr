@@ -3,8 +3,8 @@
 /* Controllers */
 
 angular.module('app')
-  .controller('AppCtrl', ['$scope', '$translate', '$localStorage', '$window', '$state','$http','authService','myCache',
-    function($scope,   $translate,   $localStorage,   $window , $state,$http,authService) {
+  .controller('AppCtrl', ['$scope', '$rootScope','$translate', '$localStorage', '$window', '$state','$http','authService','myCache',
+    function($scope, $rootScope, $translate,   $localStorage,   $window , $state,$http,authService) {
       // add 'ie' classes to html
       var isIE = !!navigator.userAgent.match(/MSIE/i);
       isIE && angular.element($window.document.body).addClass('ie');
@@ -90,6 +90,7 @@ angular.module('app')
       $scope.UserhasRole = function(role) {
         return authService.userHasRole(role);
       };
+      $rootScope.Username = authService.returnUser();
       function isSmartDevice( $window )
       {
           // Adapted from http://www.detectmobilebrowsers.com

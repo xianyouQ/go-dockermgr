@@ -12,7 +12,9 @@
   <script type="text/ng-template" id="addNodeModalContent.html">
     <div ng-include="'tpl/add_node_modal.html'"></div>
   </script>
-
+  <script type="text/ng-template" id="delRoleConfirmModalContent.html">
+    <div ng-include="'tpl/confirm_modal.html'"></div>
+  </script>
   <!-- column -->
   <div class="col w b-r">
     <div class="vbox">
@@ -21,6 +23,7 @@
           <div class="cell-inner">
             <div class="list-group no-radius no-border no-bg m-b-none">
               <a ng-repeat="item in roles|orderBy:'Name'" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectRole(item)">
+                <span ng-click='delRole(item)' class="pull-right text-muted hover-action"><i class="fa fa-times"></i></span>
                 <span class="block m-l-n" ng-class="{'m-n': item.selected }">{{ item.Name}}</span>
               </a>
             </div>

@@ -45,12 +45,14 @@ func (c *AuthController) AddOrUpdateRole() {
 
 func (c *AuthController) DelRole() {
 	var err error
+	var roleId int64
 	oldRole := models.Role{}
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &oldRole); err != nil {
-		//handle error
+	roleId, err = c.GetInt64("roleId")
+	if err != nil {
 		c.Rsp(false, err.Error(), nil)
 		return
 	}
+	oldRole.Id = roleId
 	o := orm.NewOrm()
 	err = o.Begin()
 	if err != nil {
@@ -209,6 +211,11 @@ type UserAuthForm struct {
 	Role    *models.Role
 }
 
+type DelUserAuthForm struct {
+	User        *models.User
+	ServiceAuth *models.ServiceAuth
+}
+
 func (c *AuthController) AddUserAuth() {
 	var err error
 	var serviceId int
@@ -233,4 +240,30 @@ func (c *AuthController) AddUserAuth() {
 		return
 	}
 	c.Rsp(true, "success", mUserAuthForm.Users)
+}
+
+func (c *AuthController) DelUserAuth() {
+	var err error
+	var serviceId int
+	mDelUserAuthForm := DelUserAuthForm{}
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &mDelUserAuthForm); err != nil {
+		//handle error
+		c.Rsp(false, err.Error(), nil)
+		return
+	}
+	serviceId, err = c.GetInt("serviceId")
+	if err != nil {
+
+	} else if serviceId != mDelUserAuthForm.ServiceAuth.Service.Id {
+		c.Ctx.Output.SetStatus(403)
+		c.Rsp(false, "permission denied", nil)
+		return
+	}
+	o := orm.NewOrm()
+	err = models.DelUserAuth(o, mDelUserAuthForm.User, mDelUserAuthForm.ServiceAuth)
+	if err != nil {
+		c.Rsp(false, err.Error(), nil)
+		return
+	}
+	c.Rsp(true, "success", nil)
 }

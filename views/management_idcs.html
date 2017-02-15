@@ -13,7 +13,12 @@
   <script type="text/ng-template" id="addCidrModalContent.html">
     <div ng-include="'tpl/add_cidr_modal.html'"></div>
   </script>
-
+  <script type="text/ng-template" id="delIdcConfirmModalContent.html">
+    <div ng-include="'tpl/confirm_modal.html'"></div>
+  </script>
+  <script type="text/ng-template" id="delCidrConfirmModalContent.html">
+    <div ng-include="'tpl/confirm_modal.html'"></div>
+  </script>
   <!-- column -->
   <div class="col w b-r">
     <div class="vbox">
@@ -22,6 +27,7 @@
           <div class="cell-inner">
             <div class="list-group no-radius no-border no-bg m-b-none">
               <a ng-repeat="item in idcs|orderBy:'name'" class="list-group-item m-l hover-anchor b-a no-select" ng-class="{'focus m-l-none': item.selected}" ng-click="selectIDC(item)">
+                <span ng-click='delIdc(item)' class="pull-right text-muted hover-action"><i class="fa fa-times"></i></span>
                 <span class="block m-l-n" ng-class="{'m-n': item.selected }">{{ item.IdcName}}</span>
               </a>
             </div>
@@ -38,14 +44,19 @@
 
   <!-- column -->
   <div class="col bg-white-only">
-    <div class="vbox">
-      <div class="row-row">
-        <div class="cell">
-          <div class="cell-inner">
-            <div class="wrapper-lg" ng-show="selectedidc">
+    <div ng-show="selectedidc">
+      <div class="wrapper bg-white b-b">
+        <ul class="nav nav-pills nav-sm">
+          <li ng-class="{'active':padderSelect=='conf'}"><a ng-click="padderSelect='conf'">机房配置</a></li>
+          <li ng-class="{'active':padderSelect=='network'}"><a ng-click="padderSelect='network'">网络配置</a></li>
+        </ul>
+      </div>
+
+      <div class="padder">
+            <div class="wrapper-lg" ng-show="padderSelect=='conf'">
               <!-- fields -->
               <div class="form-horizontal">
-                  <div class="panel panel-default ">
+                  <div class="panel panel-default">
                     <div class=panel-heading>
                       <strong>MgrConf Base</strong>
                     </div>
@@ -119,6 +130,12 @@
                       <button type="submit" class="btn btn-success" ng-click="commitRegistryConf()" ng-disabled='form.$invalid'>Submit</button>
                     </footer>
                   </div>
+
+              </div>
+              <!-- / fields -->
+
+        
+        <div class="wrapper-lg" ng-show="padderSelect=='network'">
                    <div class="panel panel-default">
                     <div class=panel-heading>
                       <strong>Cidrs</strong>
@@ -139,6 +156,7 @@
                                 <th>NetAddr</th>
                                 <th>StartIP</th>
                                 <th>EndIP</th>
+                                <th>Delete</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -146,15 +164,13 @@
                                 <td>{{cidr.Net}}</td>
                                 <td>{{cidr.StartIp}}</td>
                                 <td>{{cidr.EndIp}}</td>
+                                <td><button class="btn m-b-xs btn-sm btn-danger" ng-click="delCidr(cidr)"><i class="fa fa-trash-o"></i></button></td>
                               </tr>
                             </tbody>
                           </table>
                     </div>
                   </div>
-              </div>
-              <!-- / fields -->
-            </div>
-          </div>
+        </div>
         </div>
       </div>
     </div>

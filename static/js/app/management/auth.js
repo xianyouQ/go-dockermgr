@@ -1,5 +1,37 @@
 app.controller('ManageMentAuthCtrl', ['$scope', '$http', '$filter','$modal','toaster',function($scope, $http, $filter,$modal,toaster) {
+function isObjectValueEqual(a, b) {
+   if(a.Id === b.Id){
+     return true;
+   } 
+   else {
+     return false;
+   }
+}
 
+  Array.prototype.contains = function(obj) {
+    var i = this.length;
+    while (i--) {
+        if (isObjectValueEqual(this[i],obj)) {
+            return true;
+        }
+    }
+    return false;
+ }
+
+ Array.prototype.remove=function(obj){ 
+  for(var i =0;i <this.length;i++){ 
+    var temp = this[i]; 
+    if(!isNaN(obj)){ 
+      temp=i; 
+    } 
+    if(isObjectValueEqual(temp,obj)){ 
+      for(var j = i;j <this.length;j++){ 
+        this[j]=this[j+1]; 
+        } 
+      this.length = this.length-1; 
+      } 
+  } 
+  }
     $scope.roles = [];
     $scope.selectedrole = null;
     $scope.nodes = [];
@@ -53,7 +85,23 @@ app.controller('ManageMentAuthCtrl', ['$scope', '$http', '$filter','$modal','toa
         //log error
       });
   };
-
+  $scope.delRole = function(item) {
+      var modalInstance = $modal.open({
+        templateUrl: 'delRoleConfirmModalContent.html',
+        controller: 'delRoleConfirmModalInstanceCtrl',
+        size: 'lg',
+        resolve: {
+          delRole: function () {
+            return item;
+          }
+        }
+      });
+  modalInstance.result.then(function (delRole) {
+        $scope.roles.remove(delRole);
+      }, function () {
+        //log error
+      });
+  };
   $scope.createNode = function () {
       var modalInstance = $modal.open({
         templateUrl: 'addNodeModalContent.html',
@@ -146,6 +194,29 @@ app.controller('ManageMentAuthCtrl', ['$scope', '$http', '$filter','$modal','toa
         $scope.formError = 'Server Error';
       });
       
+    };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }]); 
+
+
+    app.controller('delRoleConfirmModalInstanceCtrl', ['$scope', '$modalInstance','$http','delRole',function($scope, $modalInstance,$http,$delRole) {
+    $scope.formError = null;
+    $scope.confirm="delete role?";
+    $scope.ok = function () {
+      $scope.formError = null;
+     $http.get('/api/auth/delrole?roleId='+$delRole.Id).then(function(response) {
+          if (response.data.status){
+            $modalInstance.close($delRole);
+          }
+          if  (!response.data.status ) {
+            $scope.formError = response.data.info;
+          }
+        }, function(x) {
+        console.log('Server Error')
+      });
     };
 
     $scope.cancel = function () {
