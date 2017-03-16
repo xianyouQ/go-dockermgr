@@ -69,6 +69,12 @@ func init() {
 	orm.RegisterModel(new(ReleaseTask), new(ReleaseConf), new(ReleaseConfIdc))
 }
 func checkReleaseTask(t *ReleaseTask) (err error) {
+	if t.ReleaseConf.Id < 1 {
+		return errors.New("invaild releaseConf Id,Must greater 0")
+	}
+	if t.Service.Id < 1 {
+		return errors.New("invaild Service Id,Must greater 0")
+	}
 	valid := validation.Validation{}
 	b, _ := valid.Valid(&t)
 	if !b {

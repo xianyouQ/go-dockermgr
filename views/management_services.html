@@ -53,14 +53,15 @@
       <div class="wrapper bg-white b-b">
         <ul class="nav nav-pills nav-sm">
           <li ng-class="{'active':padderSelect=='conf'}"><a ng-click="padderSelect='conf'">业务配置</a></li>
+          <li ng-class="{'active':padderSelect=='idc'}"><a ng-click="padderSelect='idc'">机房分布</a></li>
           <li ng-class="{'active':padderSelect=='auth'}"><a ng-click="padderSelect='auth'">业务权限</a></li>
         </ul>
       </div>
       <div class="padder">
-            <div class="wrapper-lg" ng-show="padderSelect=='conf'">
+            <div class="row-row" ng-show="padderSelect=='conf'">
               <!-- fields -->
                   <div class="panel panel-default">
-                    <div class=panel-heading>
+                    <div class="panel-heading font-bold">
                       <strong>Service Conf</strong>
                     </div>
                     <div class="panel-body">                    
@@ -86,7 +87,7 @@
                     </footer>
                   </div>
             </div>
-            <div class="wrapper-lg" ng-show="padderSelect=='auth'">
+            <div class="row-row" ng-show="padderSelect=='auth'">
                   <div class="panel panel-default">
                     <div class="panel-heading">
                       Service auth table
@@ -132,6 +133,48 @@
                       </table>
                     </div>
                 </div>
+              </div>
+              <div class="row-row" ng-show="padderSelect=='idc'">
+
+                     
+                          <!-- accordion -->
+                          <accordion close-others="false">
+                              <accordion-group heading="机房：{{idc.IdcName}} ({{idc.IdcCode}})" ng-repeat="idc in idcs">
+                                  <div class="panel-body">
+                                      <form class="form-horizontal form-validation">
+                                          <div class="form-group">
+                                              <label class="col-sm-2 control-label">容器数量</label>
+                                              <div class="col-sm-3">
+                                                  <input ui-jq="TouchSpin" type="text" ng-model="idc.container_num_new" class="form-control" data-min="2" data-max="1000" data-decimals="0" >
+                                              </div>
+                                          </div>
+                                          <div class="line line-dashed b-b line-lg pull-in"></div>
+                                          <div class="form-group">
+                                              <label class="col-sm-2 control-label">CPU</label>
+                                              <div class="col-sm-3">
+                                                  <input ui-jq="TouchSpin" type="text" ng-model="idc.cpu_core_new" class="form-control" data-min="1" data-max="8" data-step="1" data-decimals="0" data-postfix="core">
+                                              </div>
+                                          </div>
+                                          <div class="form-group">
+                                              <label class="col-sm-2 control-label">内存</label>
+                                              <div class="col-sm-3">
+                                                  <input ui-jq="TouchSpin" type="text" ng-model="idc.mem_max_new" class="form-control" data-min="1" data-max="8" data-step="1" data-decimals="0" data-postfix="GB">
+                                              </div>
+                                          </div>
+                                          <div class="form-group">
+                                              <label class="col-sm-2 control-label">磁盘</label>
+                                              <div class="col-sm-3">
+                                                  <input ui-jq="TouchSpin" type="text" ng-model="idc.disk_size_new" class="form-control" data-min="10" data-max="200" data-step="10" data-decimals="0" data-postfix="GB">
+                                              </div>
+                                          </div>
+                                      </form>
+                                      <a class="btn btn-sm btn-primary">更新配置</a>
+                                  </div>
+
+                              </accordion-group>
+                          </accordion>
+                          <!-- / accordion -->
+
               </div>
               <!-- / fields -->
         </div>

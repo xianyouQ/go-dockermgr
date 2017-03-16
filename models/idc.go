@@ -97,7 +97,11 @@ func DelIdc(o orm.Ormer, delIdc *IdcConf) error {
 		return errors.New("please delete all cidr in this idc first")
 	}
 	_, err = o.Delete(delIdc)
-	return err
+	if err != nil {
+		return err
+	}
+	DeleteCache("idcs")
+	return nil
 }
 
 func init() {

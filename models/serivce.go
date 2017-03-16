@@ -112,6 +112,7 @@ func DelService(o orm.Ormer, oldService *Service) error {
 	if err != nil {
 		return err
 	}
+	DeleteCache("services")
 	return nil
 }
 

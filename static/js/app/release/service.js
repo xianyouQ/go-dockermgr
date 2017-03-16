@@ -221,7 +221,7 @@ app.controller('ReleaseServiceCtrl', ['$scope', '$http', '$filter','$modal','$in
           
         }
         else {
-          toaster.pop("error","get conf error",resp.data.info);
+          //toaster.pop("error","get conf error",resp.data.info);
         }
       },function(){
 

@@ -36,6 +36,7 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
   $scope.mainbuses = [] ;
   $scope.services = new Map();
   $scope.roles = [] ;
+  $scope.idcs = [];
   $scope.filter = new Map();
   $scope.count = [];
   $scope.Users = [];
@@ -95,14 +96,16 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
       });
     });
     $scope.services[$scope.count.length - 1] = tmpservices;
-
+    $scope.idcs = myCache.getIdcs();
+    if($scope.idcs == null){
+      return;
+    }
   }
   var timer = function(){
     return $q(function(resolve,reject){
       myCache.fresh();
       var count = 0;
       var wait = $interval(function() {
-        console.log(count);
         if(myCache.dataOk() == true){
           resolve();
           $interval.cancel(wait);
@@ -150,6 +153,8 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
   $scope.selectService = function(item,idx){
     if (idx == $scope.count.length - 1) {
       $scope.selectedService = item;
+      console.log(item);
+      console.log($scope.services);
       $http.get("/api/auth/auths?serviceId="+$scope.selectedService.Id).then(function(resp){
         $scope.Users = resp.data.data;
       });
@@ -191,7 +196,7 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
         }
       });
       modalInstance.result.then(function (newService) {
-        $scope.selectedService = newService;
+        //$scope.selectedService = newService;
          var codeSplit = newService.Code.split("-")
          var tempService = {Code:""};
         angular.forEach(codeSplit,function(item,index){
@@ -221,7 +226,7 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
         size: 'lg',
         resolve: {
           selectedService: function () {
-            return $scope.selectedService;
+            return item;
           }
         }
       });
@@ -278,7 +283,7 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
 }]);
   app.controller('addServiceModalInstanceCtrl', ['$scope', '$modalInstance','$http','count',function($scope, $modalInstance,$http,$count) {
    
-    $scope.newService = {"Name":"","Code":""};
+    $scope.newService = {"Name":"","Code":"","Id":0};
     $scope.formError = null;
     $scope.ok = function () {
       $scope.formError = null;
@@ -293,6 +298,7 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
      $http.post('/api/service/Add',$scope.newService).then(function(response) {
           if (response.data.status){
             $scope.newService = response.data.data
+            $modalInstance.close($scope.newService);
           }
           if  (!response.data.status ) {
             $scope.formError = response.data.info;
@@ -300,7 +306,7 @@ app.controller('ManageMentServicesCtrl', ['$scope', '$http', '$filter','$modal',
         }, function(x) {
         console.log('Server Error')
       });
-      $modalInstance.close($scope.newService);
+      
     };
 
     $scope.cancel = function () {
