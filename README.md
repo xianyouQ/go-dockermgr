@@ -7,12 +7,12 @@ ip 池管理，机房管理，业务管理，容器扩容,发布
 权限控制
 ## 效果如下：
 Dashboard:
-![Dashboard](https://raw.githubusercontent.com/xianyouQ/go-dockermgr/master/introduction/dashboard.png)
+![Dashboard](https://raw.githubusercontent.com/xianyouQ/go-dockermgr/mesos-marathon/introduction/dashboard.png)
 容器展示：
-![容器管理](https://raw.githubusercontent.com/xianyouQ/go-dockermgr/master/introduction/container.png)
+![容器管理](https://raw.githubusercontent.com/xianyouQ/go-dockermgr/mesos-marathon/introduction/container.png)
 上图所建容器对应marathon的截图：
-![上图对应marathon状态的截图](https://raw.githubusercontent.com/xianyouQ/go-dockermgr/master/introduction/marathon.png)
+![上图对应marathon状态的截图](https://raw.githubusercontent.com/xianyouQ/go-dockermgr/mesos-marathon/introduction/marathon.png)
 发布管理(目前只做了一部分)：
-![发布管理](https://raw.githubusercontent.com/xianyouQ/go-dockermgr/master/introduction/release.png)
+![发布管理](https://raw.githubusercontent.com/xianyouQ/go-dockermgr/mesos-marathon/introduction/release.png)
 业务管理：
-![业务管理](https://raw.githubusercontent.com/xianyouQ/go-dockermgr/master/introduction/yewu.png)
+![业务管理](https://raw.githubusercontent.com/xianyouQ/go-dockermgr/mesos-marathon/introduction/yewu.png)
