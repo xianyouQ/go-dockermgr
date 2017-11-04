@@ -5,11 +5,11 @@
   </li>  
   <li>
     <a ui-sref="docker.dashboard" ng-show="UserhasRole('SYSTEM')">
-      <i class="icon-user icon"></i>
+      <i class="fa fa-tachometer"></i>
       <span translate="aside.nav.docker_nav.DASHBOARD">Dashboard</span>
     </a>
     <a ui-sref="docker.containers" ng-show="UserhasRole('SYSTEM') || UserhasRole('OPS')">
-      <i class="icon-user icon"></i>
+      <i class="fa fa-list-ul"></i>
       <span translate="aside.nav.docker_nav.CONTAINERS">Services</span>
     </a>
   </li>
@@ -20,7 +20,7 @@
   </li>  
   <li>
     <a ui-sref="release.service" ng-show="UserhasRole('SYSTEM') || UserhasRole('OPS') || UserhasRole('DEV') || UserhasRole('QA')">
-      <i class="icon-user icon"></i>
+      <i class="fa fa-cogs"></i>
       <span translate="aside.nav.release_nav.SERVICE">Service</span>
     </a>
   </li>
@@ -31,19 +31,19 @@
   </li>  
   <li>
     <a ui-sref="management.users" ng-show="UserhasRole('SYSTEM')">
-      <i class="icon-user icon"></i>
+      <i class="fa fa-users"></i>
       <span translate="aside.nav.manager_nav.USER">Users</span>
     </a>
     <a ui-sref="management.idcs" ng-show="UserhasRole('SYSTEM')">
-      <i class="icon-user icon"></i>
+      <i class="fa fa-building" aria-hidden="true"></i>
       <span translate="aside.nav.manager_nav.IDCS">IDCs</span>
     </a>
     <a ui-sref="management.services" ng-show="UserhasRole('SYSTEM') || UserhasRole('OPS')">
-      <i class="icon-user icon"></i>
+      <i class="icon-wrench icon"></i>
       <span translate="aside.nav.manager_nav.SERVICES">Services</span>
     </a>
     <a ui-sref="management.auth" ng-show="UserhasRole('SYSTEM')">
-      <i class="icon-user icon"></i>
+      <i class="fa fa-newspaper-o" aria-hidden="true"></i>
       <span translate="aside.nav.manager_nav.AUTH">Auth</span>
     </a>
   </li>

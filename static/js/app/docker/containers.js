@@ -38,7 +38,10 @@ app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal','$
   $scope.filter = new Map();
   $scope.count = [];
   $scope.idcs = [];
-  $scope.instances = [];
+  $scope.instances = new Map();
+  $scope.instancekey = undefined;
+  $scope.scaleTask = new Map();
+  $scope.scaleTask["container_num_new"] = 0;
  //$scope.$watch('services',null,true);
   $scope.initData = function(){
     var serviceCount = myCache.getCount();
@@ -158,10 +161,13 @@ app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal','$
   }
   $scope.detail = function(idc) {
     $scope.selectedIdc = idc;
-    $scope.instances = [];
+    $scope.instancekey=$scope.selectedService.Id+ "_"+$scope.selectedIdc.Id;
+    if($scope.instances[$scope.instancekey] != undefined){
+       return;
+    }
     $http.get("/api/docker/list?serviceId="+$scope.selectedService.Id+"&idcId="+$scope.selectedIdc.Id).then(function(resp){
       if(resp.data.status){
-        $scope.instances = resp.data.data;
+        $scope.instances[$scope.instancekey] = resp.data.data;
       }
       else {
         toaster.pop("error","get container error",resp.data.info);
@@ -174,52 +180,24 @@ app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal','$
     $scope.selectedIdc = undefined;
   }
   $scope.scaleContainer = function() {
-      var modalInstance = $modal.open({
-        templateUrl: 'scaleContianerModalContent.html',
-        controller: 'scaleContianerModalInstanceCtrl',
-        size: 'lg',
-        resolve: {
-          selectedIdc: function () {
-            return $scope.selectedIdc;
-          },
-          selectedService: function () {
-            return $scope.selectedService;
-          }
-        }
-      });
- 
-      modalInstance.result.then(function (newAuth) {
-      }, function () {
-        //log error
-      });
+    console.log($scope.scaleTask)
+   if(isNaN($scope.scaleTask.container_num_new) == true){
+     toaster.pop("error","input error","ContainerCount must be a number")
+     return;
+   }
+   console.log($scope.selectedService);
+   console.log($scope.selectedIdc);
+   $http.get('/api/docker/scale?serviceId='+$scope.selectedService.Id+"&idcId="+$scope.selectedIdc.Id+'&scaleCount='+$scope.scaleTask.container_num_new).then(function(response) {
+    if (response.data.status ){
+      console.log(response.data.data);
+      $modalInstance.close(response.data.data);
+    }
+    if  (!response.data.status ) {
+      $scope.formError = response.data.info;
+    }
+  }, function(x) {
+  $scope.formError = 'Server Error';
+});
   }
 }]);
 
-   app.controller('scaleContianerModalInstanceCtrl', ['$scope', '$modalInstance','$http','selectedIdc','selectedService',function($scope, $modalInstance,$http,$selectedIdc,$selectedService) {
-    $scope.formError = null;
-    $scope.ContainerScaleForm = {"Scale":0};
-    $scope.ok = function () {
-      $scope.formError = null;
-      if (isNaN($scope.ContainerCount) == false){
-        $scope.formError = "ContainerCount must be a number";
-        return
-      }
-      $scope.Scale = Number($scope.ContainerScaleForm.Scale);
-        $http.get('/api/docker/scale?serviceId='+$selectedService.Id+"&idcId="+$selectedIdc.Id+'&scaleCount='+$scope.Scale).then(function(response) {
-          if (response.data.status ){
-            console.log(response.data.data);
-            $modalInstance.close(response.data.data);
-          }
-          if  (!response.data.status ) {
-            $scope.formError = response.data.info;
-          }
-        }, function(x) {
-        $scope.formError = 'Server Error';
-      });
-      
-    };
-
-    $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
-    };
-  }]); 
