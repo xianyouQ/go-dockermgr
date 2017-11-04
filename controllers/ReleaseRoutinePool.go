@@ -10,9 +10,9 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
+	outMarathon "github.com/gambol99/go-marathon"
 	"github.com/xianyouQ/go-dockermgr/models"
 	"github.com/xianyouQ/go-dockermgr/utils"
-	outMarathon "github.com/xianyouQ/go-marathon"
 )
 
 const (
@@ -217,8 +217,10 @@ func releaseTaskFunc(task *ReleaseRoutine) {
 						imageTag := fmt.Sprintf("%s:%s", task.ReleaseTask.Service.Code, task.ReleaseTask.ImageTag)
 						mApplication.Container.Docker.Image = imageTag
 						mApplication.ID = applicationString
-						mApplication.Container.Docker.SetParameter("ip", instance.Instance.IpAddr)
-						mApplication.Container.Docker.SetParameter("mac-address", instance.Instance.MacAddr)
+						mApplication.Container.Docker.EmptyParameters()
+						mApplication.Container.Docker.AddParameter("ip", instance.Instance.IpAddr)
+						mApplication.Container.Docker.AddParameter("mac-address", instance.Instance.MacAddr)
+						mApplication.Container.Docker.AddParameter("net", "dockerbr0")
 						_, err = idc.client.CreateApplication(mApplication)
 						if err != nil {
 							logs.GetLogger("ReleaseRoutinePool").Println(err.Error())

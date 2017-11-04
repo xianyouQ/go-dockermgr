@@ -6,8 +6,8 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
+	outMarathon "github.com/gambol99/go-marathon"
 	"github.com/xianyouQ/go-dockermgr/utils"
-	outMarathon "github.com/xianyouQ/go-marathon"
 )
 
 const (

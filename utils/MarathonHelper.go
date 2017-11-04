@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	outMarathon "github.com/xianyouQ/go-marathon"
+	outMarathon "github.com/gambol99/go-marathon"
 )
 
 type MesosInfo struct {
@@ -55,12 +55,12 @@ func GetMesosInfo(marathonClient outMarathon.Marathon) (*MesosInfo, error) {
 		return mesosInfo, err
 	}
 	var api string
-	if strings.HasSuffix(marathonInfo.MarathonConfig.MesosLeaderUrl, "/") {
+	if strings.HasSuffix(marathonInfo.MarathonConfig.MesosLeaderUIURL, "/") {
 		api = "metrics/snapshot"
 	} else {
 		api = "/metrics/snapshot"
 	}
-	mesosMetricsUrl := fmt.Sprintf("%s%s", marathonInfo.MarathonConfig.MesosLeaderUrl, api)
+	mesosMetricsUrl := fmt.Sprintf("%s%s", marathonInfo.MarathonConfig.MesosLeaderUIURL, api)
 	resp, err := http.Get(mesosMetricsUrl)
 	if err != nil {
 		return mesosInfo, err

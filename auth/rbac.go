@@ -128,10 +128,10 @@ func AccessList(uid int64) ([]*m.ServiceAuthUser, error) {
 func CheckLogin(username string, password string) (user m.User, err error) {
 	user = m.GetUserByUsername(username)
 	if user.Id == 0 {
-		return user, errors.New("用户不存在")
+		return user, errors.New("用户或密码错误")
 	}
 	if user.Password != utils.Pwdhash(password) {
-		return user, errors.New("密码错误")
+		return user, errors.New("用户或密码错误")
 	}
 	return user, nil
 }

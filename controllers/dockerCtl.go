@@ -6,9 +6,9 @@ import (
 
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
+	outMarathon "github.com/gambol99/go-marathon"
 	m "github.com/xianyouQ/go-dockermgr/models"
 	"github.com/xianyouQ/go-dockermgr/utils"
-	outMarathon "github.com/xianyouQ/go-marathon"
 )
 
 type DockerController struct {
@@ -215,15 +215,17 @@ func (c *DockerController) ScaleContainers() {
 		}
 		for idx, ip := range requestIp {
 			application.ID = fmt.Sprintf("/%s/%s", queryService.Code, ip.IpAddr)
-			//application.Container.Docker.EmptyParameters()
+
 			if queryService.ReleaseVer == nil {
 
 			} else {
 				imageTag := fmt.Sprintf("%s:%s", queryService.Code, queryService.ReleaseVer.ImageTag)
 				application.Container.Docker.Image = imageTag
 			}
-			application.Container.Docker.SetParameter("ip", ip.IpAddr)
-			application.Container.Docker.SetParameter("mac-address", ip.MacAddr)
+			application.Container.Docker.EmptyParameters()
+			application.Container.Docker.AddParameter("ip", ip.IpAddr)
+			application.Container.Docker.AddParameter("mac-address", ip.MacAddr)
+			application.Container.Docker.AddParameter("net", "dockerbr0")
 			//application.Container.Docker.AddParameter("hostname",XXXXX)
 			_, err = client.CreateApplication(application)
 			if err != nil {

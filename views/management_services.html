@@ -53,7 +53,7 @@
       <div class="wrapper bg-white b-b">
         <ul class="nav nav-pills nav-sm">
           <li ng-class="{'active':padderSelect=='conf'}"><a ng-click="padderSelect='conf'">业务配置</a></li>
-          <li ng-class="{'active':padderSelect=='idc'}"><a ng-click="padderSelect='idc'">机房分布</a></li>
+          <!-- <li ng-class="{'active':padderSelect=='idc'}"><a ng-click="padderSelect='idc'">机房分布</a></li> -->
           <li ng-class="{'active':padderSelect=='auth'}"><a ng-click="padderSelect='auth'">业务权限</a></li>
         </ul>
       </div>
@@ -134,10 +134,10 @@
                     </div>
                 </div>
               </div>
+              <!--
               <div class="row-row" ng-show="padderSelect=='idc'">
 
-                     
-                          <!-- accordion -->
+
                           <accordion close-others="false">
                               <accordion-group heading="机房：{{idc.IdcName}} ({{idc.IdcCode}})" ng-repeat="idc in idcs">
                                   <div class="panel-body">
@@ -173,9 +173,9 @@
 
                               </accordion-group>
                           </accordion>
-                          <!-- / accordion -->
 
               </div>
+              -->
               <!-- / fields -->
         </div>
       </div>  
