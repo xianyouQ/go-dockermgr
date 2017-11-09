@@ -38,7 +38,7 @@
   <div class="col bg-white-only">
     <div class="row-row" ng-show="ConfShow()">
       <accordion close-others="false">
-        <accordion-group heading="机房：{{idc.IdcName}} ({{idc.IdcCode}})" ng-repeat="idc in idcs" show="detail(idc)">
+        <accordion-group heading="机房：{{idc.IdcName}} ({{idc.IdcCode}})" ng-repeat="idc in idcs" ng-click="detail(idc)">
           <table class="table m-b-none" ui-jq="footable" data-page-size="5">
             <thead>
               <tr>

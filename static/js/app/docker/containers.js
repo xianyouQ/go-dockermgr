@@ -1,4 +1,4 @@
-app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal','$interval','$q','myCache',function($scope, $http, $filter,$modal,$interval,$q,myCache) {
+app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal','$interval','$q','myCache','toaster',function($scope, $http, $filter,$modal,$interval,$q,myCache,toaster) {
   function isObjectValueEqual(a, b) {
    if(a.Code === b.Code){
      return true;
@@ -156,10 +156,12 @@ app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal','$
   };
 
   $scope.returnUpper = function(idx) {
+    console.log("return idc");
     $scope.filter[idx-1] = "";
     $scope.selectedService = undefined;
   }
   $scope.detail = function(idc) {
+    console.log("set idc");
     $scope.selectedIdc = idc;
     $scope.instancekey=$scope.selectedService.Id+ "_"+$scope.selectedIdc.Id;
     if($scope.instances[$scope.instancekey] != undefined){
@@ -177,6 +179,7 @@ app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal','$
     })
   }
   $scope.returnIdc = function() {
+    console.log("return idc");
     $scope.selectedIdc = undefined;
   }
   $scope.scaleContainer = function() {
@@ -190,13 +193,12 @@ app.controller('DockerContainersCtrl', ['$scope', '$http', '$filter','$modal','$
    $http.get('/api/docker/scale?serviceId='+$scope.selectedService.Id+"&idcId="+$scope.selectedIdc.Id+'&scaleCount='+$scope.scaleTask.container_num_new).then(function(response) {
     if (response.data.status ){
       console.log(response.data.data);
-      $modalInstance.close(response.data.data);
     }
     if  (!response.data.status ) {
-      $scope.formError = response.data.info;
+      toaster.pop("error","get idc error",resp.data.info);
     }
   }, function(x) {
-  $scope.formError = 'Server Error';
+    toaster.pop("error","get idc error",null);
 });
   }
 }]);
